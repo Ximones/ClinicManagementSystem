@@ -4,6 +4,7 @@
  */
 package adt;
 
+import enitity.Patient;
 import java.util.Arrays;
 
 /**
