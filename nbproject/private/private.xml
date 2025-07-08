@@ -5,9 +5,14 @@
         <group>
             <file>file:/C:/Users/deadb/ClinicManagementSystem/src/adt/Pair.java</file>
             <file>file:/C:/Users/deadb/ClinicManagementSystem/src/adt/ExampleMain.java</file>
+            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/enitity/Prescription.java</file>
             <file>file:/C:/Users/deadb/ClinicManagementSystem/src/adt/ListInterface.java</file>
+            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/enitity/Consultation.java</file>
             <file>file:/C:/Users/deadb/ClinicManagementSystem/src/adt/DoublyLinkedListIterator.java</file>
-            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/adt/Patient.java</file>
+            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/enitity/Doctor.java</file>
+            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/enitity/Treatment.java</file>
+            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/enitity/Patient.java</file>
+            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/enitity/Medicine.java</file>
             <file>file:/C:/Users/deadb/ClinicManagementSystem/src/adt/DoublyLinkedList.java</file>
             <file>file:/C:/Users/deadb/ClinicManagementSystem/src/adt/Node.java</file>
         </group>
