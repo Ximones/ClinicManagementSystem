@@ -10,7 +10,7 @@ import java.util.Arrays;
  *
  * @author deadb
  */
-public class Main {
+public class ExampleMain {
 
     /**
      * @param args the command line arguments
@@ -22,8 +22,8 @@ public class Main {
         list.insertLast("Day");
         list.insertAtPosition("Nigga", 2);
 //        list.deleteAtPosition(3);
-        list.displayFromFirst(list.head);
-        list.displayFromLast(list.tail);
+        list.displayFromFirst(list.getFirst());
+        list.displayFromLast(list.getLast());
         System.out.println(list.getElement(3).entry);
         System.out.println(list.getSize());
 //        list.clear();
@@ -31,7 +31,7 @@ public class Main {
 //        System.out.println(list.getSize());
         System.out.println(list.contains("Nigga"));
         System.out.println(list.replace(1, "Sad"));
-        list.displayFromFirst(list.head);
+        list.displayFromFirst(list.getFirst());
         for (String string : list) {
             System.out.println(string);
         }
@@ -53,8 +53,8 @@ public class Main {
         patientList.insertLast(patientPair2);
 
         // 5. Display the final list (assuming you've fixed the display method)
-        patientList.displayFromFirst(patientList.head);
-        System.out.println(patientPair1.findByKey("P001", patientList));
+        patientList.displayFromFirst(patientList.getFirst());
+        System.out.println(patientList.findByKey("P001"));
     }
 
 }

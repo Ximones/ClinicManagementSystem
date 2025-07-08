@@ -9,6 +9,7 @@ import java.util.Iterator;
 /**
  *
  * @author deadb
+ * @param <T>
  */
 public class DoublyLinkedListIterator<T> implements Iterator<T> {
 
