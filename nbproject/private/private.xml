@@ -3,18 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/adt/Pair.java</file>
-            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/adt/ExampleMain.java</file>
-            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/enitity/Prescription.java</file>
-            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/adt/ListInterface.java</file>
-            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/enitity/Consultation.java</file>
-            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/adt/DoublyLinkedListIterator.java</file>
-            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/enitity/Doctor.java</file>
-            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/enitity/Treatment.java</file>
-            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/enitity/Patient.java</file>
-            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/enitity/Medicine.java</file>
-            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/adt/DoublyLinkedList.java</file>
-            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/adt/Node.java</file>
+            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/utility/ImageUtils.java</file>
+            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/boundary/MainFrame.java</file>
+            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/boundary/ClinicMenuPanel.java</file>
+            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/utility/TitleUtils.java</file>
+            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/boundary/DoctorManagementPanel.java</file>
         </group>
     </open-files>
 </project-private>
