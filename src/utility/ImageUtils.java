@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package utility;
 
 import java.awt.Image;
@@ -10,7 +6,7 @@ import javax.swing.JLabel;
 
 /**
  *
- * @author deadb
+ * @author Chok Chun Fai
  */
 public class ImageUtils {
 
@@ -19,13 +15,13 @@ public class ImageUtils {
     private static JLabel imageLabel;
     private static final String IMAGE_DIR = "/resources/";
 
-    public static JLabel getImageLabel(String imageName,JLabel jLabel) {
+    public static JLabel getImageLabel(String imageName, JLabel jLabel) {
 
         imageLabel = jLabel;
-        
+
         if (imageLabel != null) {
             try {
-                imageLabel.setIcon(getLogoIcon(IMAGE_DIR+imageName, 100));
+                imageLabel.setIcon(getLogoIcon(IMAGE_DIR + imageName, 100));
                 imageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
                 imageLabel.setBorder(new javax.swing.border.EmptyBorder(10, 0, 0, 0));
             } catch (Exception ex) {

@@ -37,8 +37,7 @@ public class DoctorManagementPanel extends javax.swing.JPanel {
         titlePanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
         buttonWrapperPanel = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        buttonWrapperPanel1 = new javax.swing.JPanel();
+        buttonWrapper = new javax.swing.JPanel();
         buttonPanel = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
@@ -74,7 +73,7 @@ public class DoctorManagementPanel extends javax.swing.JPanel {
         buttonPanel.setMinimumSize(new java.awt.Dimension(1000, 800));
         buttonPanel.setLayout(new java.awt.GridLayout(3, 2, 50, 50));
 
-        jButton1.setText("Doctor Information");
+        jButton1.setText("Manage Information");
         jButton1.setPreferredSize(new java.awt.Dimension(200, 50));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -83,7 +82,7 @@ public class DoctorManagementPanel extends javax.swing.JPanel {
         });
         buttonPanel.add(jButton1);
 
-        jButton2.setText("Doctor Schedule");
+        jButton2.setText("Manage Schedule");
         jButton2.setPreferredSize(new java.awt.Dimension(200, 50));
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -110,11 +109,9 @@ public class DoctorManagementPanel extends javax.swing.JPanel {
         });
         buttonPanel.add(jButton4);
 
-        buttonWrapperPanel1.add(buttonPanel);
+        buttonWrapper.add(buttonPanel);
 
-        jPanel2.add(buttonWrapperPanel1);
-
-        buttonWrapperPanel.add(jPanel2, java.awt.BorderLayout.CENTER);
+        buttonWrapperPanel.add(buttonWrapper, java.awt.BorderLayout.CENTER);
 
         titlePanel.add(buttonWrapperPanel, java.awt.BorderLayout.CENTER);
 
@@ -126,12 +123,12 @@ public class DoctorManagementPanel extends javax.swing.JPanel {
         mainFrame.showPanel("doctorInformation");
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    // Button 1 to switch Doctor Schedule window
+    // Button 2 to switch Doctor Schedule window
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         mainFrame.showPanel("doctorSchedule");
     }//GEN-LAST:event_jButton2ActionPerformed
 
-    // Button 3 to return Clinic Menu window
+    // Button 3 to back to Clinic Menu window
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         mainFrame.showPanel("clinicMenu");
     }//GEN-LAST:event_jButton3ActionPerformed
@@ -144,14 +141,13 @@ public class DoctorManagementPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttonPanel;
+    private javax.swing.JPanel buttonWrapper;
     private javax.swing.JPanel buttonWrapperPanel;
-    private javax.swing.JPanel buttonWrapperPanel1;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;

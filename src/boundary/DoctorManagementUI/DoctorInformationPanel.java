@@ -4,7 +4,12 @@
  */
 package boundary.DoctorManagementUI;
 
+import adt.DoublyLinkedList;
+import adt.Pair;
 import boundary.MainFrame;
+import enitity.Doctor;
+import utility.ImageUtils;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -12,11 +17,71 @@ import boundary.MainFrame;
  */
 public class DoctorInformationPanel extends javax.swing.JPanel {
 
+    MainFrame mainFrame;
+
     /**
      * Creates new form DoctorInformationPanel
+     *
+     * @param mainFrame
      */
     public DoctorInformationPanel(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
         initComponents();
+        logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
+
+        DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
+
+        Doctor doc1 = new Doctor("Simon", 20, "01118566866", "Doctor");
+        Doctor doc2 = new Doctor("ZB", 21, "01118566866", "Doctor");
+        Doctor doc3 = new Doctor("JY", 30, "01118566866", "Internship");
+        Doctor doc4 = new Doctor("Desmond", 32, "01118566866", "Internship");
+
+        Pair<String, Doctor> doctorPair1 = new Pair<>("D001", doc1);
+        Pair<String, Doctor> doctorPair2 = new Pair<>("D002", doc2);
+        Pair<String, Doctor> doctorPair3 = new Pair<>("D003", doc3);
+        Pair<String, Doctor> doctorPair4 = new Pair<>("D004", doc4);
+
+        doctorList.insertFirst(doctorPair1);
+        doctorList.insertLast(doctorPair2);
+        doctorList.insertLast(doctorPair3);
+        doctorList.insertLast(doctorPair4);
+
+        doctorList.displayFromFirst(doctorList.getFirst());
+        System.out.println(doctorList.findByKey("D001"));
+
+        populateDoctorTable(doctorList);
+    }
+
+    /**
+     * Clears the table and populates it with a list of doctors.
+     *
+     * @param doctorList The list of Doctor objects to display.
+     */
+    public void populateDoctorTable(DoublyLinkedList<Pair<String, Doctor>> doctorList) {
+        // 1. Get the Table Model
+        DefaultTableModel model = (DefaultTableModel) doctorTable.getModel();
+
+        // 2. Clear Previous Data
+        // This removes all existing rows from the table.
+        model.setRowCount(0);
+
+        for (Pair<String, Doctor> pair : doctorList) {
+
+            // Get the Doctor object from the Pair
+            Doctor doctor = pair.getValue();
+
+            // Create an array of objects for each row
+            Object[] row = {
+                pair.getKey(), // The Doctor's ID from the Pair's key
+                doctor.getName(), // The Doctor's name from the Doctor object
+                doctor.getAge(), // Example: add other fields as needed
+                doctor.getPhoneNumber(),
+                doctor.getPosition()
+            };
+
+            // Add the row to the model, which updates the JTable
+            model.addRow(row);
+        }
     }
 
     /**
@@ -28,19 +93,132 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
+        logoPanel = new javax.swing.JPanel();
+        logoLabel = new javax.swing.JLabel();
+        titlePanel = new javax.swing.JPanel();
+        titleLabel = new javax.swing.JLabel();
+        searchWrapperPanel = new javax.swing.JPanel();
+        searchPanel = new javax.swing.JPanel();
+        searchLabel = new javax.swing.JLabel();
+        searchBox = new javax.swing.JComboBox<>();
+        searchField = new javax.swing.JTextField();
+        doctorTablePanel = new javax.swing.JScrollPane();
+        doctorTable = new javax.swing.JTable();
+        ButtonPanel = new javax.swing.JPanel();
+        addDoctorButton = new javax.swing.JButton();
+        doneButton = new javax.swing.JButton();
+
+        setLayout(new java.awt.BorderLayout());
+
+        logoPanel.setLayout(new java.awt.BorderLayout());
+        logoPanel.add(logoLabel, java.awt.BorderLayout.PAGE_START);
+
+        titlePanel.setLayout(new java.awt.BorderLayout());
+
+        titleLabel.setFont(new java.awt.Font("Corbel", 1, 36)); // NOI18N
+        titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        titleLabel.setText(" Doctor Information");
+        titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
+
+        searchWrapperPanel.setLayout(new java.awt.BorderLayout());
+
+        searchLabel.setText("Search By :");
+        searchPanel.add(searchLabel);
+
+        searchBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ID", "Name", "Position" }));
+        searchPanel.add(searchBox);
+
+        searchField.setText("ID,Name,Position");
+        searchPanel.add(searchField);
+
+        searchWrapperPanel.add(searchPanel, java.awt.BorderLayout.PAGE_START);
+
+        doctorTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
+            },
+            new String [] {
+                "ID", "Name", "Age", "Contact", "Position"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, true, true, true, true
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        doctorTablePanel.setViewportView(doctorTable);
+
+        searchWrapperPanel.add(doctorTablePanel, java.awt.BorderLayout.CENTER);
+
+        addDoctorButton.setText("Add Doctor");
+        addDoctorButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addDoctorButtonActionPerformed(evt);
+            }
+        });
+        ButtonPanel.add(addDoctorButton);
+
+        doneButton.setText("Done");
+        doneButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                doneButtonActionPerformed(evt);
+            }
+        });
+        ButtonPanel.add(doneButton);
+
+        searchWrapperPanel.add(ButtonPanel, java.awt.BorderLayout.PAGE_END);
+
+        titlePanel.add(searchWrapperPanel, java.awt.BorderLayout.CENTER);
+
+        logoPanel.add(titlePanel, java.awt.BorderLayout.CENTER);
+
+        add(logoPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void addDoctorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDoctorButtonActionPerformed
+        DefaultTableModel model = (DefaultTableModel) doctorTable.getModel();
+        Object[] row = {};
+        int lastRowCount = model.getRowCount();
+        int lastColumnCount = model.getColumnCount();
+        System.out.println(lastRowCount);
+        System.out.println(lastColumnCount);
+        model.addRow(row);
+//        Doctor newDoctor = new Doctor();
+    }//GEN-LAST:event_addDoctorButtonActionPerformed
+
+    private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
+        mainFrame.showPanel("doctorManagement");
+    }//GEN-LAST:event_doneButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel ButtonPanel;
+    private javax.swing.JButton addDoctorButton;
+    private javax.swing.JTable doctorTable;
+    private javax.swing.JScrollPane doctorTablePanel;
+    private javax.swing.JButton doneButton;
+    private javax.swing.JLabel logoLabel;
+    private javax.swing.JPanel logoPanel;
+    private javax.swing.JComboBox<String> searchBox;
+    private javax.swing.JTextField searchField;
+    private javax.swing.JLabel searchLabel;
+    private javax.swing.JPanel searchPanel;
+    private javax.swing.JPanel searchWrapperPanel;
+    private javax.swing.JLabel titleLabel;
+    private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables
 }

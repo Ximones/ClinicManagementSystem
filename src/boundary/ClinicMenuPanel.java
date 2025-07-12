@@ -4,7 +4,7 @@ import utility.ImageUtils;
 
 /**
  *
- * @author deadb
+ * @author Chok Chun Fai
  */
 public class ClinicMenuPanel extends javax.swing.JPanel {
 
