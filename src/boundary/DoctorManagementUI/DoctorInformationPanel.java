@@ -8,8 +8,12 @@ import adt.DoublyLinkedList;
 import adt.Pair;
 import boundary.MainFrame;
 import enitity.Doctor;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
 import utility.ImageUtils;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 /**
  *
@@ -27,19 +31,41 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
     public DoctorInformationPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         initComponents();
+
+        String[] position = {"Consultant", "Doctor", "Internship"};
+        String[] status = {"Present", "Absent", "Resigned"};
+
+        JComboBox<String> positionComboBox = new JComboBox<>(position);
+        JComboBox<String> statusComboBox = new JComboBox<>(status);
+
+        // Create a cell editor 
+        DefaultCellEditor positionEditor = new DefaultCellEditor(positionComboBox);
+        DefaultCellEditor statusEditor = new DefaultCellEditor(statusComboBox);
+
+        // Get the column model from table
+        TableColumnModel columnModel = doctorTable.getColumnModel();
+
+        // Change the index to match table's column order
+        TableColumn positionColumn = columnModel.getColumn(4);
+        TableColumn statusColumn = columnModel.getColumn(5);
+
+        // Set the custom editor for that column
+        positionColumn.setCellEditor(positionEditor);
+        statusColumn.setCellEditor(statusEditor);
+
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
 
         DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
 
-        Doctor doc1 = new Doctor("Simon", 20, "01118566866", "Doctor");
-        Doctor doc2 = new Doctor("ZB", 21, "01118566866", "Doctor");
-        Doctor doc3 = new Doctor("JY", 30, "01118566866", "Internship");
-        Doctor doc4 = new Doctor("Desmond", 32, "01118566866", "Internship");
+        Doctor doc1 = new Doctor("Simon", 20, "01118566866", "Doctor", "Present");
+        Doctor doc2 = new Doctor("ZB", 21, "01118566866", "Doctor", "Absent");
+        Doctor doc3 = new Doctor("JY", 30, "01118566866", "Consultant", "Resigned");
+        Doctor doc4 = new Doctor("Desmond", 32, "01118566866", "Internship", "Present");
 
-        Pair<String, Doctor> doctorPair1 = new Pair<>("D001", doc1);
-        Pair<String, Doctor> doctorPair2 = new Pair<>("D002", doc2);
-        Pair<String, Doctor> doctorPair3 = new Pair<>("D003", doc3);
-        Pair<String, Doctor> doctorPair4 = new Pair<>("D004", doc4);
+        Pair<String, Doctor> doctorPair1 = new Pair<>(doc1.getDoctorID(), doc1);
+        Pair<String, Doctor> doctorPair2 = new Pair<>(doc2.getDoctorID(), doc2);
+        Pair<String, Doctor> doctorPair3 = new Pair<>(doc3.getDoctorID(), doc3);
+        Pair<String, Doctor> doctorPair4 = new Pair<>(doc4.getDoctorID(), doc4);
 
         doctorList.insertFirst(doctorPair1);
         doctorList.insertLast(doctorPair2);
@@ -50,6 +76,7 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         System.out.println(doctorList.findByKey("D001"));
 
         populateDoctorTable(doctorList);
+
     }
 
     /**
@@ -57,7 +84,7 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
      *
      * @param doctorList The list of Doctor objects to display.
      */
-    public void populateDoctorTable(DoublyLinkedList<Pair<String, Doctor>> doctorList) {
+    private void populateDoctorTable(DoublyLinkedList<Pair<String, Doctor>> doctorList) {
         // 1. Get the Table Model
         DefaultTableModel model = (DefaultTableModel) doctorTable.getModel();
 
@@ -76,7 +103,8 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
                 doctor.getName(), // The Doctor's name from the Doctor object
                 doctor.getAge(), // Example: add other fields as needed
                 doctor.getPhoneNumber(),
-                doctor.getPosition()
+                doctor.getPosition(),
+                doctor.getStatus()
             };
 
             // Add the row to the model, which updates the JTable
@@ -136,20 +164,20 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
 
         doctorTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
             },
             new String [] {
-                "ID", "Name", "Age", "Contact", "Position"
+                "ID", "Name", "Age", "Contact", "Position", "Status"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class
+                java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, true, true, true, true
+                false, true, true, true, true, true
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -160,6 +188,7 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
                 return canEdit [columnIndex];
             }
         });
+        doctorTable.getTableHeader().setReorderingAllowed(false);
         doctorTablePanel.setViewportView(doctorTable);
 
         searchWrapperPanel.add(doctorTablePanel, java.awt.BorderLayout.CENTER);
@@ -191,16 +220,35 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
 
     private void addDoctorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDoctorButtonActionPerformed
         DefaultTableModel model = (DefaultTableModel) doctorTable.getModel();
-        Object[] row = {};
-        int lastRowCount = model.getRowCount();
-        int lastColumnCount = model.getColumnCount();
-        System.out.println(lastRowCount);
-        System.out.println(lastColumnCount);
+        Doctor newDoctor = new Doctor();
+        Object[] row = {newDoctor.getDoctorID(), "", "", "", "", ""};
         model.addRow(row);
-//        Doctor newDoctor = new Doctor();
+
     }//GEN-LAST:event_addDoctorButtonActionPerformed
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
+        DefaultTableModel model = (DefaultTableModel) doctorTable.getModel();
+        
+        
+        
+        DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
+        
+        Doctor.resetDoctorIndex();
+        
+        for (int i = 0; model.getRowCount() > i; i++) {
+            String docName = (String) model.getValueAt(i, 1);
+            int docAge = (Integer) model.getValueAt(i, 2);
+            String docContact = (String) model.getValueAt(i, 3);
+            String position = (String) model.getValueAt(i, 4);
+            String status = (String) model.getValueAt(i, 5);
+
+            Doctor newDoctor = new Doctor(docName, docAge, docContact, position, status);
+            Pair<String, Doctor> doctorPair = new Pair<>(newDoctor.getDoctorID(), newDoctor);
+            doctorList.insertLast(doctorPair);
+        }
+
+        doctorList.displayFromFirst(doctorList.getFirst());
+        
         mainFrame.showPanel("doctorManagement");
     }//GEN-LAST:event_doneButtonActionPerformed
 

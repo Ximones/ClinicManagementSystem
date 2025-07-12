@@ -8,18 +8,30 @@ import java.util.Objects;
  */
 public class Doctor {
 
+    private final String ID_PREFIX = "D";
+
     private String name;
     private int age;
     private String phoneNumber;
     private String position;
+    private String doctorID;
+    private String status;
+    private static int doctorIndex = 0;
 
-    public Doctor(String name, int age, String phoneNumber, String position) {
+    public Doctor() {
+        doctorIndex++;
+        this.doctorID = setDoctorID(doctorIndex);
+    }
+
+    public Doctor(String name, int age, String phoneNumber, String position, String status) {
         this.name = name;
         this.age = age;
         this.phoneNumber = phoneNumber;
         this.position = position;
+        this.status = status;
+        doctorIndex++;
+        this.doctorID = setDoctorID(doctorIndex);
     }
-
 
     public String getName() {
         return name;
@@ -53,43 +65,54 @@ public class Doctor {
         this.position = position;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 23 * hash + Objects.hashCode(this.name);
-        hash = 23 * hash + this.age;
-        hash = 23 * hash + Objects.hashCode(this.phoneNumber);
-        hash = 23 * hash + Objects.hashCode(this.position);
-        return hash;
+    private String setDoctorID(int doctorIndex) {
+
+        String generateID = "";
+
+        switch (Integer.toString(doctorIndex).length()) {
+            case 1 ->
+                generateID = ID_PREFIX.concat("00" + Integer.toString(doctorIndex));
+            case 2 ->
+                generateID = ID_PREFIX.concat("0" + Integer.toString(doctorIndex));
+            case 3 ->
+                generateID = ID_PREFIX.concat(Integer.toString(doctorIndex));
+            default -> {
+                System.out.println("Failed to generate ID");
+            }
+        }
+
+        return generateID;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Doctor other = (Doctor) obj;
-        if (this.age != other.age) {
-            return false;
-        }
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        if (!Objects.equals(this.phoneNumber, other.phoneNumber)) {
-            return false;
-        }
-        return Objects.equals(this.position, other.position);
+    public String getDoctorID() {
+        return doctorID;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public static int getDoctorIndex() {
+        return doctorIndex;
+    }
+
+    public static void setDoctorIndex(int doctorIndex) {
+        Doctor.doctorIndex = doctorIndex;
+    }
+    
+    public static void resetDoctorIndex(){
+        Doctor.doctorIndex = 0;
     }
 
     @Override
     public String toString() {
-        return "Doctor{" + "name=" + name + ", age=" + age + ", phoneNumber=" + phoneNumber + ", position=" + position + '}';
+        return "Doctor{name=" + name + ", age=" + age + ", phoneNumber=" + phoneNumber + ", position=" + position + ", doctorID=" + doctorID + ", status=" + status + '}';
     }
+
+   
 
 }
