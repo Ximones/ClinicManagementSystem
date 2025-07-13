@@ -10,18 +10,24 @@ import boundary.MainFrame;
 import enitity.Doctor;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import utility.ImageUtils;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import utility.FileUtils;
 
 /**
  *
- * @author deadb
+ * @author Chok Chun Fai
  */
 public class DoctorInformationPanel extends javax.swing.JPanel {
 
     MainFrame mainFrame;
+    private DoublyLinkedList<Pair<String, Doctor>> masterDoctorList;
+    private Doctor[] newDoctorArray = new Doctor[20];
+    private static int newDoctorCount = 0;
 
     /**
      * Creates new form DoctorInformationPanel
@@ -55,28 +61,53 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
 
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
 
-        DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
+        loadInitialData();
+//        DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
+//        Doctor doc1 = new Doctor("Simon", 20, "01118566866", "Doctor", "Present");
+//        Doctor doc2 = new Doctor("ZB", 21, "01118566866", "Doctor", "Absent");
+//        Doctor doc3 = new Doctor("JY", 30, "01118566866", "Consultant", "Resigned");
+//        Doctor doc4 = new Doctor("Desmond", 32, "01118566866", "Internship", "Present");
+//
+//        Pair<String, Doctor> doctorPair1 = new Pair<>(doc1.getDoctorID(), doc1);
+//        Pair<String, Doctor> doctorPair2 = new Pair<>(doc2.getDoctorID(), doc2);
+//        Pair<String, Doctor> doctorPair3 = new Pair<>(doc3.getDoctorID(), doc3);
+//        Pair<String, Doctor> doctorPair4 = new Pair<>(doc4.getDoctorID(), doc4);
+//
+//        doctorList.insertFirst(doctorPair1);
+//        doctorList.insertLast(doctorPair2);
+//        doctorList.insertLast(doctorPair3);
+//        doctorList.insertLast(doctorPair4);
+        populateDoctorTable(masterDoctorList);
 
-        Doctor doc1 = new Doctor("Simon", 20, "01118566866", "Doctor", "Present");
-        Doctor doc2 = new Doctor("ZB", 21, "01118566866", "Doctor", "Absent");
-        Doctor doc3 = new Doctor("JY", 30, "01118566866", "Consultant", "Resigned");
-        Doctor doc4 = new Doctor("Desmond", 32, "01118566866", "Internship", "Present");
+        filterField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                // Called when a character is inserted
+                filterTable();
+            }
 
-        Pair<String, Doctor> doctorPair1 = new Pair<>(doc1.getDoctorID(), doc1);
-        Pair<String, Doctor> doctorPair2 = new Pair<>(doc2.getDoctorID(), doc2);
-        Pair<String, Doctor> doctorPair3 = new Pair<>(doc3.getDoctorID(), doc3);
-        Pair<String, Doctor> doctorPair4 = new Pair<>(doc4.getDoctorID(), doc4);
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                // Called when a character is removed
+                filterTable();
+            }
 
-        doctorList.insertFirst(doctorPair1);
-        doctorList.insertLast(doctorPair2);
-        doctorList.insertLast(doctorPair3);
-        doctorList.insertLast(doctorPair4);
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                // Not typically used for plain text fields, but good to include
+                filterTable();
+            }
+        });
+    }
 
-        doctorList.displayFromFirst(doctorList.getFirst());
-        System.out.println(doctorList.findByKey("D001"));
+    private void loadInitialData() {
+        DoublyLinkedList<Pair<String, Doctor>> doctorList = (DoublyLinkedList<Pair<String, Doctor>>) FileUtils.readDataFromFile("doctors");
 
-        populateDoctorTable(doctorList);
+        if (!doctorList.isEmpty()) {
+            Doctor.setDoctorIndex(doctorList.getSize());
+        }
 
+        masterDoctorList = doctorList;
     }
 
     /**
@@ -84,7 +115,7 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
      *
      * @param doctorList The list of Doctor objects to display.
      */
-    private void populateDoctorTable(DoublyLinkedList<Pair<String, Doctor>> doctorList) {
+    private void populateDoctorTable(DoublyLinkedList<Pair<String, Doctor>> doctorMasterList) {
         // 1. Get the Table Model
         DefaultTableModel model = (DefaultTableModel) doctorTable.getModel();
 
@@ -92,7 +123,7 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         // This removes all existing rows from the table.
         model.setRowCount(0);
 
-        for (Pair<String, Doctor> pair : doctorList) {
+        for (Pair<String, Doctor> pair : doctorMasterList) {
 
             // Get the Doctor object from the Pair
             Doctor doctor = pair.getValue();
@@ -112,6 +143,48 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         }
     }
 
+    private void filterTable() {
+        // Get the current search inputs
+        String selectedCriterion = (String) filterBox.getSelectedItem();
+        String searchText = filterField.getText().trim().toLowerCase();
+
+        // If search text is empty, show all doctors
+        if (searchText.isEmpty()) {
+            populateDoctorTable(masterDoctorList);
+            return;
+        }
+
+        DoublyLinkedList<Pair<String, Doctor>> searchResults = new DoublyLinkedList<>();
+
+        // Loop through the master list to find matches
+        for (Pair<String, Doctor> pair : masterDoctorList) {
+            Doctor doctor = pair.getValue();
+            String doctorId = pair.getKey();
+            boolean match = false;
+
+            if ("ID".equals(selectedCriterion)) {
+                if (doctorId.toLowerCase().equals(searchText)) {
+                    match = true;
+                }
+            } else if ("Name".equals(selectedCriterion)) {
+                if (doctor.getName().toLowerCase().contains(searchText)) {
+                    match = true;
+                }
+            } else if ("Position".equals(selectedCriterion)) {
+                if (doctor.getPosition().toLowerCase().contains(searchText)) {
+                    match = true;
+                }
+            }
+
+            if (match) {
+                searchResults.insertLast(pair);
+            }
+        }
+
+        // Update the table with the filtered results
+        populateDoctorTable(searchResults);
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -127,9 +200,9 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         titleLabel = new javax.swing.JLabel();
         searchWrapperPanel = new javax.swing.JPanel();
         searchPanel = new javax.swing.JPanel();
-        searchLabel = new javax.swing.JLabel();
-        searchBox = new javax.swing.JComboBox<>();
-        searchField = new javax.swing.JTextField();
+        filterLabel = new javax.swing.JLabel();
+        filterBox = new javax.swing.JComboBox<>();
+        filterField = new javax.swing.JTextField();
         doctorTablePanel = new javax.swing.JScrollPane();
         doctorTable = new javax.swing.JTable();
         ButtonPanel = new javax.swing.JPanel();
@@ -151,14 +224,24 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
 
         searchWrapperPanel.setLayout(new java.awt.BorderLayout());
 
-        searchLabel.setText("Search By :");
-        searchPanel.add(searchLabel);
+        filterLabel.setText("Filter By :");
+        searchPanel.add(filterLabel);
 
-        searchBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ID", "Name", "Position" }));
-        searchPanel.add(searchBox);
+        filterBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ID", "Name", "Position" }));
+        filterBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterBoxActionPerformed(evt);
+            }
+        });
+        searchPanel.add(filterBox);
 
-        searchField.setText("ID,Name,Position");
-        searchPanel.add(searchField);
+        filterField.setColumns(15);
+        filterField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterFieldActionPerformed(evt);
+            }
+        });
+        searchPanel.add(filterField);
 
         searchWrapperPanel.add(searchPanel, java.awt.BorderLayout.PAGE_START);
 
@@ -221,36 +304,42 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
     private void addDoctorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDoctorButtonActionPerformed
         DefaultTableModel model = (DefaultTableModel) doctorTable.getModel();
         Doctor newDoctor = new Doctor();
+        newDoctorArray[newDoctorCount] = newDoctor;
+        newDoctorCount++;
         Object[] row = {newDoctor.getDoctorID(), "", "", "", "", ""};
         model.addRow(row);
-
+        System.out.println(newDoctor.toString());
     }//GEN-LAST:event_addDoctorButtonActionPerformed
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
         DefaultTableModel model = (DefaultTableModel) doctorTable.getModel();
-        
-        
-        
-        DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
-        
-        Doctor.resetDoctorIndex();
-        
-        for (int i = 0; model.getRowCount() > i; i++) {
-            String docName = (String) model.getValueAt(i, 1);
-            int docAge = (Integer) model.getValueAt(i, 2);
-            String docContact = (String) model.getValueAt(i, 3);
-            String position = (String) model.getValueAt(i, 4);
-            String status = (String) model.getValueAt(i, 5);
 
-            Doctor newDoctor = new Doctor(docName, docAge, docContact, position, status);
-            Pair<String, Doctor> doctorPair = new Pair<>(newDoctor.getDoctorID(), newDoctor);
-            doctorList.insertLast(doctorPair);
-        }
+//        DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
+//
+//        for (int i = 0; model.getRowCount() > i; i++) {
+//            String docName = (String) model.getValueAt(i, 1);
+//            int docAge = (Integer) model.getValueAt(i, 2);
+//            String docContact = (String) model.getValueAt(i, 3);
+//            String position = (String) model.getValueAt(i, 4);
+//            String status = (String) model.getValueAt(i, 5);
+//
+//            Doctor newDoctor = new Doctor(docName, docAge, docContact, position, status);
+//            Pair<String, Doctor> doctorPair = new Pair<>(newDoctor.getDoctorID(), newDoctor);
+//            doctorList.insertLast(doctorPair);
+//        }
 
-        doctorList.displayFromFirst(doctorList.getFirst());
-        
+        FileUtils.writeDataToFile("doctors", masterDoctorList);
+
         mainFrame.showPanel("doctorManagement");
     }//GEN-LAST:event_doneButtonActionPerformed
+
+    private void filterBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_filterBoxActionPerformed
+
+    private void filterFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_filterFieldActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -259,11 +348,11 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
     private javax.swing.JTable doctorTable;
     private javax.swing.JScrollPane doctorTablePanel;
     private javax.swing.JButton doneButton;
+    private javax.swing.JComboBox<String> filterBox;
+    private javax.swing.JTextField filterField;
+    private javax.swing.JLabel filterLabel;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JPanel logoPanel;
-    private javax.swing.JComboBox<String> searchBox;
-    private javax.swing.JTextField searchField;
-    private javax.swing.JLabel searchLabel;
     private javax.swing.JPanel searchPanel;
     private javax.swing.JPanel searchWrapperPanel;
     private javax.swing.JLabel titleLabel;

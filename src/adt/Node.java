@@ -1,12 +1,14 @@
 package adt;
 
+import java.io.Serializable;
+
 /**
  * Represents a single node in a Doubly Linked List.
  * Each node acts as a container for a data entry and holds references (pointers)
  * to the next and previous nodes in the sequence.
  * @param <T> The type of data stored in the node.
  */
-public class Node<T> {
+public class Node<T> implements Serializable{
 
     // The actual data element stored in the node.
     T entry;

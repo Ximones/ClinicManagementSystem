@@ -1,12 +1,12 @@
 package enitity;
 
-import java.util.Objects;
+import java.io.Serializable;
 
 /**
  *
  * @author Chok Chun Fai
  */
-public class Doctor {
+public class Doctor implements Serializable {
 
     private final String ID_PREFIX = "D";
 

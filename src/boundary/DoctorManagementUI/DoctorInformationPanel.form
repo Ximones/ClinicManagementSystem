@@ -74,12 +74,12 @@
 
                   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
                   <SubComponents>
-                    <Component class="javax.swing.JLabel" name="searchLabel">
+                    <Component class="javax.swing.JLabel" name="filterLabel">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Search By :"/>
+                        <Property name="text" type="java.lang.String" value="Filter By :"/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JComboBox" name="searchBox">
+                    <Component class="javax.swing.JComboBox" name="filterBox">
                       <Properties>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
                           <StringArray count="3">
@@ -89,14 +89,20 @@
                           </StringArray>
                         </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="filterBoxActionPerformed"/>
+                      </Events>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
                       </AuxValues>
                     </Component>
-                    <Component class="javax.swing.JTextField" name="searchField">
+                    <Component class="javax.swing.JTextField" name="filterField">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="ID,Name,Position"/>
+                        <Property name="columns" type="int" value="15"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="filterFieldActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>

@@ -1,5 +1,6 @@
 package adt;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
 /**
@@ -9,7 +10,7 @@ import java.util.Iterator;
  *
  * @param <T> The type of data stored in the list.
  */
-public class DoublyLinkedList<T> implements Iterable<T>, ListInterface<T> {
+public class DoublyLinkedList<T> implements Iterable<T>, ListInterface<T>,Serializable {
 
     // A reference to the first node in the list.
     private Node<T> head;
