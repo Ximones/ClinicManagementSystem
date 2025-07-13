@@ -140,7 +140,7 @@ public class ClinicMenuPanel extends javax.swing.JPanel {
 
     // Button 5 - to switch Pharmacy Management window
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        // TODO add your handling code here:
+        mainFrame.showPanel("pharmacyManagement");
     }//GEN-LAST:event_jButton5ActionPerformed
 
     // Button 6 - to exit program
