@@ -26,8 +26,6 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
 
     MainFrame mainFrame;
     private DoublyLinkedList<Pair<String, Doctor>> masterDoctorList;
-    private Doctor[] newDoctorArray = new Doctor[20];
-    private static int newDoctorCount = 0;
 
     /**
      * Creates new form DoctorInformationPanel
@@ -61,7 +59,6 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
 
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
 
-        loadInitialData();
 //        DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
 //        Doctor doc1 = new Doctor("Simon", 20, "01118566866", "Doctor", "Present");
 //        Doctor doc2 = new Doctor("ZB", 21, "01118566866", "Doctor", "Absent");
@@ -77,6 +74,10 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
 //        doctorList.insertLast(doctorPair2);
 //        doctorList.insertLast(doctorPair3);
 //        doctorList.insertLast(doctorPair4);
+//        masterDoctorList = doctorList;
+//        populateDoctorTable(masterDoctorList);
+
+        loadInitialData();
         populateDoctorTable(masterDoctorList);
 
         filterField.getDocument().addDocumentListener(new DocumentListener() {
@@ -260,7 +261,7 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
                 java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, true, true, true, true, true
+                false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -302,34 +303,26 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addDoctorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDoctorButtonActionPerformed
-        DefaultTableModel model = (DefaultTableModel) doctorTable.getModel();
-        Doctor newDoctor = new Doctor();
-        newDoctorArray[newDoctorCount] = newDoctor;
-        newDoctorCount++;
-        Object[] row = {newDoctor.getDoctorID(), "", "", "", "", ""};
-        model.addRow(row);
-        System.out.println(newDoctor.toString());
+        DoctorDialog dialog = new DoctorDialog(mainFrame, true);
+
+        dialog.setVisible(true);
+
+        // Get the result from the dialog
+        Pair<String, Doctor> newDoctorPair = dialog.getResult();
+
+        // Check if the user clicked "Save" (result will not be null)
+        if (newDoctorPair != null) {
+            // Add the new doctor to your master list
+            masterDoctorList.insertLast(newDoctorPair);
+
+            // Refresh the table with the complete, updated list
+            populateDoctorTable(masterDoctorList);
+        }
     }//GEN-LAST:event_addDoctorButtonActionPerformed
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
-        DefaultTableModel model = (DefaultTableModel) doctorTable.getModel();
-
-//        DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
-//
-//        for (int i = 0; model.getRowCount() > i; i++) {
-//            String docName = (String) model.getValueAt(i, 1);
-//            int docAge = (Integer) model.getValueAt(i, 2);
-//            String docContact = (String) model.getValueAt(i, 3);
-//            String position = (String) model.getValueAt(i, 4);
-//            String status = (String) model.getValueAt(i, 5);
-//
-//            Doctor newDoctor = new Doctor(docName, docAge, docContact, position, status);
-//            Pair<String, Doctor> doctorPair = new Pair<>(newDoctor.getDoctorID(), newDoctor);
-//            doctorList.insertLast(doctorPair);
-//        }
 
         FileUtils.writeDataToFile("doctors", masterDoctorList);
-
         mainFrame.showPanel("doctorManagement");
     }//GEN-LAST:event_doneButtonActionPerformed
 

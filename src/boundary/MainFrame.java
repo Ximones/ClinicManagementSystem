@@ -25,7 +25,7 @@ public class MainFrame extends javax.swing.JFrame {
         DoctorManagementPanel docPanel = new DoctorManagementPanel(this);
         DoctorInformationPanel docInfoPanel = new DoctorInformationPanel(this);
         DoctorSchedulePanel docSchedulePanel = new DoctorSchedulePanel(this);
-        
+
         PharmacyManagementPanel pharPanel = new PharmacyManagementPanel(this);
 
         // Add the panels to the cardPanel with unique names
@@ -33,7 +33,7 @@ public class MainFrame extends javax.swing.JFrame {
         cardPanel.add(docPanel, "doctorManagement");
         cardPanel.add(docInfoPanel, "doctorInformation");
         cardPanel.add(docSchedulePanel, "doctorSchedule");
-        
+
         cardPanel.add(pharPanel, "pharmacyManagement");
 
         // Set frame properties

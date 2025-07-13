@@ -103,8 +103,8 @@ public class Doctor implements Serializable {
     public static void setDoctorIndex(int doctorIndex) {
         Doctor.doctorIndex = doctorIndex;
     }
-    
-    public static void resetDoctorIndex(){
+
+    public static void resetDoctorIndex() {
         Doctor.doctorIndex = 0;
     }
 
@@ -112,7 +112,5 @@ public class Doctor implements Serializable {
     public String toString() {
         return "Doctor{name=" + name + ", age=" + age + ", phoneNumber=" + phoneNumber + ", position=" + position + ", doctorID=" + doctorID + ", status=" + status + '}';
     }
-
-   
 
 }
