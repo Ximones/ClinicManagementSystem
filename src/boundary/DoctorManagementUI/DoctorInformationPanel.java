@@ -76,7 +76,6 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
 //        doctorList.insertLast(doctorPair4);
 //        masterDoctorList = doctorList;
 //        populateDoctorTable(masterDoctorList);
-
         loadInitialData();
         populateDoctorTable(masterDoctorList);
 
@@ -99,6 +98,47 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
                 filterTable();
             }
         });
+
+        doctorTable.getModel().addTableModelListener((e) -> {
+            // Make sure the event is an actual cell update
+            if (e.getType() == javax.swing.event.TableModelEvent.UPDATE) {
+                // Get the row and column that were edited
+                int row = e.getFirstRow();
+                int column = e.getColumn();
+
+                // Get the Doctor ID from the first column of the edited row
+                String doctorId = (String) doctorTable.getValueAt(row, 0);
+
+                // Find the corresponding doctor in the master list
+                Pair<String, Doctor> targetPair = findDoctorPairById(doctorId);
+
+                if (targetPair != null) {
+                    Doctor doctorToUpdate = targetPair.getValue();
+                    Object newValue = doctorTable.getValueAt(row, column);
+
+                    // Check which column was edited and update the object
+                    if (column == 4) { // Column 4 is "Position"
+                        doctorToUpdate.setPosition((String) newValue);
+                        System.out.println("Updated " + doctorToUpdate.getName() + "'s position to " + newValue);
+                    } else if (column == 5) { // Column 5 is "Status"
+                        doctorToUpdate.setStatus((String) newValue);
+                        System.out.println("Updated " + doctorToUpdate.getName() + "'s status to " + newValue);
+                    }
+                }
+            }
+        });
+    }
+
+    private Pair<String, Doctor> findDoctorPairById(String id) {
+        if (id == null || masterDoctorList == null) {
+            return null;
+        }
+        for (Pair<String, Doctor> pair : masterDoctorList) {
+            if (id.equals(pair.getKey())) {
+                return pair;
+            }
+        }
+        return null;
     }
 
     private void loadInitialData() {
@@ -261,7 +301,7 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
                 java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+                false, false, false, true, true, true
             };
 
             public Class getColumnClass(int columnIndex) {

@@ -10,17 +10,23 @@ import java.io.Serializable;
  *
  * @author deadb
  */
-public class Schedule implements Serializable {
+public class DutySlot implements Serializable {
     private String dayOfWeek; // e.g., "Monday"
     private String shift;     // e.g., "Morning (8am-4pm)"
     private Doctor assignedDoctor; // The doctor assigned to this slot
 
-    public Schedule(String dayOfWeek, String shift) {
+    public DutySlot(String dayOfWeek, String shift) {
         this.dayOfWeek = dayOfWeek;
         this.shift = shift;
         this.assignedDoctor = null;
     }
 
+    public DutySlot(String dayOfWeek, String shift, Doctor assignedDoctor) {
+        this.dayOfWeek = dayOfWeek;
+        this.shift = shift;
+        this.assignedDoctor = assignedDoctor;
+    }
+    
     public String getDayOfWeek() {
         return dayOfWeek;
     }
