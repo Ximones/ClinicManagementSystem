@@ -4,6 +4,7 @@
  */
 package boundary.DoctorManagementUI;
 
+import adt.DoublyLinkedList;
 import adt.Pair;
 import enitity.Doctor;
 import javax.swing.JOptionPane;
@@ -31,7 +32,14 @@ public class DoctorDialog extends javax.swing.JDialog {
         initComponents();
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
         formDocIDfield.setText(newDoctor.getDoctorID());
-        this.setLocationRelativeTo(parent); 
+        DoublyLinkedList<String> position = new DoublyLinkedList<>();
+        position.insertLast("Consultation");
+        position.insertLast("Doctor");
+        position.insertLast("Internship");
+        for (String i : position) {
+            formPositionBox.addItem(i);
+        }
+        this.setLocationRelativeTo(parent);
     }
 
     /**
@@ -126,7 +134,6 @@ public class DoctorDialog extends javax.swing.JDialog {
         formPositionLabel.setText("Position :");
         formGridPanel.add(formPositionLabel);
 
-        formPositionBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Consultation", "Doctor", "Internship" }));
         formPositionBox.setPreferredSize(new java.awt.Dimension(100, 29));
         formGridPanel.add(formPositionBox);
 

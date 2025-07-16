@@ -36,11 +36,51 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         this.mainFrame = mainFrame;
         initComponents();
 
-        String[] position = {"Consultant", "Doctor", "Internship"};
-        String[] status = {"Present", "Absent", "Resigned"};
+        DoublyLinkedList<String> filterCriteria = new DoublyLinkedList<>();
+        filterCriteria.insertLast("ID");
+        filterCriteria.insertLast("Name");
+        filterCriteria.insertLast("Position");
+        for (String i : filterCriteria) {
+            filterBox.addItem(i);
+        }
 
-        JComboBox<String> positionComboBox = new JComboBox<>(position);
-        JComboBox<String> statusComboBox = new JComboBox<>(status);
+        DoublyLinkedList<String> position = new DoublyLinkedList<>();
+        position.insertLast("Consultant");
+        position.insertLast("Doctor");
+        position.insertLast("Internship");
+
+        DoublyLinkedList<String> status = new DoublyLinkedList<>();
+        status.insertLast("Present");
+        status.insertLast("Absent");
+        status.insertLast("Resigned");
+
+        JComboBox<String> positionComboBox = new JComboBox<>();
+
+        for (String i : position) {
+            positionComboBox.addItem(i);
+        }
+
+        JComboBox<String> statusComboBox = new JComboBox<>();
+
+        for (String i : status) {
+            statusComboBox.addItem(i);
+        }
+
+        DefaultTableModel model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                // Allow editing only for columns 3, 4 and 5 (Phone, Position and Status)
+                // The first four columns (0, 1, 2 ) will not be editable.
+                return column >= 3;
+            }
+        };
+        doctorTable.setModel(model);
+        model.addColumn("ID");
+        model.addColumn("Name");
+        model.addColumn("Age");
+        model.addColumn("Contact");
+        model.addColumn("Position");
+        model.addColumn("Status");
 
         // Create a cell editor 
         DefaultCellEditor positionEditor = new DefaultCellEditor(positionComboBox);
@@ -117,7 +157,10 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
                     Object newValue = doctorTable.getValueAt(row, column);
 
                     // Check which column was edited and update the object
-                    if (column == 4) { // Column 4 is "Position"
+                    if (column == 3) {
+                        doctorToUpdate.setPhoneNumber((String) newValue);
+                        System.out.println("Updated " + doctorToUpdate.getName() + "'s phone to " + newValue);
+                    } else if (column == 4) { // Column 4 is "Position"
                         doctorToUpdate.setPosition((String) newValue);
                         System.out.println("Updated " + doctorToUpdate.getName() + "'s position to " + newValue);
                     } else if (column == 5) { // Column 5 is "Status"
@@ -164,23 +207,23 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         // This removes all existing rows from the table.
         model.setRowCount(0);
 
-        for (Pair<String, Doctor> pair : doctorMasterList) {
+        int rowIndex = 0;
 
-            // Get the Doctor object from the Pair
+        for (Pair<String, Doctor> pair : doctorMasterList) {
             Doctor doctor = pair.getValue();
 
-            // Create an array of objects for each row
-            Object[] row = {
-                pair.getKey(), // The Doctor's ID from the Pair's key
-                doctor.getName(), // The Doctor's name from the Doctor object
-                doctor.getAge(), // Example: add other fields as needed
-                doctor.getPhoneNumber(),
-                doctor.getPosition(),
-                doctor.getStatus()
-            };
+            // 1. add a new (empty) row first
+            model.addRow(new Object[model.getColumnCount()]);
 
-            // Add the row to the model, which updates the JTable
-            model.addRow(row);
+            // 2. Now you can update the cells in the row you just created
+            model.setValueAt(pair.getKey(), rowIndex, 0);
+            model.setValueAt(doctor.getName(), rowIndex, 1);
+            model.setValueAt(doctor.getAge(), rowIndex, 2);
+            model.setValueAt(doctor.getPhoneNumber(), rowIndex, 3);
+            model.setValueAt(doctor.getPosition(), rowIndex, 4);
+            model.setValueAt(doctor.getStatus(), rowIndex, 5);
+
+            rowIndex++;
         }
     }
 
@@ -268,7 +311,6 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         filterLabel.setText("Filter By :");
         searchPanel.add(filterLabel);
 
-        filterBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ID", "Name", "Position" }));
         filterBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterBoxActionPerformed(evt);
@@ -288,30 +330,12 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
 
         doctorTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
+
             },
             new String [] {
-                "ID", "Name", "Age", "Contact", "Position", "Status"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, false, false, true, true, true
-            };
 
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
             }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
+        ));
         doctorTable.getTableHeader().setReorderingAllowed(false);
         doctorTablePanel.setViewportView(doctorTable);
 
