@@ -13,6 +13,7 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import utility.FileUtils;
 import utility.ImageUtils;
@@ -29,8 +30,10 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
     private DoublyLinkedList<Pair<String, Doctor>> masterDoctorList;
 
     // Keep your constants
-    final String[] DAYS = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-    final String[] SHIFTS = {"Morning (8am - 2pm)", "Evening (2pm - 8pm)"};
+//    final String[] DAYS = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+//    final String[] SHIFTS = {"Morning (8am - 2pm)", "Evening (2pm - 8pm)"};
+    final DoublyLinkedList<String> DAYS = new DoublyLinkedList<>();
+    final DoublyLinkedList<String> SHIFTS = new DoublyLinkedList<>();
 
     /**
      * Creates new form DoctorSchedulePanel
@@ -41,40 +44,58 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         this.mainFrame = mainFrame;
         initComponents();
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
+
+        DAYS.insertLast("Monday");
+        DAYS.insertLast("Tuesday");
+        DAYS.insertLast("Wednesday");
+        DAYS.insertLast("Thursday");
+        DAYS.insertLast("Friday");
+        DAYS.insertLast("Saturday");
+
+        SHIFTS.insertLast("Morning (8am - 2pm)");
+        SHIFTS.insertLast("Evening (2pm - 8pm)");
+
+        setupTable(oldScheduleTable, false); // 'false' because it's not editable
+        setupTable(newScheduleTable, true);  // 'true' because it IS editable
         runScheduleRolloverCheck(LocalDate.now());
         loadInitialData();
+//        hardCordedData();
+    }
 
-//        Initialize Data for this week
-//        thisWeekSchedule = new DoublyLinkedList<>();
-//        DutySlot dataSlot1 = new DutySlot("Monday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
-//        DutySlot dataSlot2 = new DutySlot("Tuesday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
-//        DutySlot dataSlot3 = new DutySlot("Wednesday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
-//        DutySlot dataSlot4 = new DutySlot("Thursday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
-//        DutySlot dataSlot5 = new DutySlot("Friday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
-//        DutySlot dataSlot6 = new DutySlot("Saturday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
-//        DutySlot dataSlot7 = new DutySlot("Monday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
-//        DutySlot dataSlot8 = new DutySlot("Tuesday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
-//        DutySlot dataSlot9 = new DutySlot("Wednesday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
-//        DutySlot dataSlot10 = new DutySlot("Thursday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
-//        DutySlot dataSlot11 = new DutySlot("Friday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
-//        DutySlot dataSlot12 = new DutySlot("Saturday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
-//
-//        thisWeekSchedule.insertLast(dataSlot1);
-//        thisWeekSchedule.insertLast(dataSlot2);
-//        thisWeekSchedule.insertLast(dataSlot3);
-//        thisWeekSchedule.insertLast(dataSlot4);
-//        thisWeekSchedule.insertLast(dataSlot5);
-//        thisWeekSchedule.insertLast(dataSlot6);
-//        thisWeekSchedule.insertLast(dataSlot7);
-//        thisWeekSchedule.insertLast(dataSlot8);
-//        thisWeekSchedule.insertLast(dataSlot9);
-//        thisWeekSchedule.insertLast(dataSlot10);
-//        thisWeekSchedule.insertLast(dataSlot11);
-//        thisWeekSchedule.insertLast(dataSlot12);
-//        FileUtils.writeDataToFile("this_week_schedule", thisWeekSchedule);
+//        Initialize Hard-coded Data for this week 
+    private void hardCordedData() {
+
+        thisWeekSchedule = new DoublyLinkedList<>();
+        DutySlot dataSlot1 = new DutySlot("Monday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
+        DutySlot dataSlot2 = new DutySlot("Tuesday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
+        DutySlot dataSlot3 = new DutySlot("Wednesday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
+        DutySlot dataSlot4 = new DutySlot("Thursday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
+        DutySlot dataSlot5 = new DutySlot("Friday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
+        DutySlot dataSlot6 = new DutySlot("Saturday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
+        DutySlot dataSlot7 = new DutySlot("Monday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
+        DutySlot dataSlot8 = new DutySlot("Tuesday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
+        DutySlot dataSlot9 = new DutySlot("Wednesday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
+        DutySlot dataSlot10 = new DutySlot("Thursday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
+        DutySlot dataSlot11 = new DutySlot("Friday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
+        DutySlot dataSlot12 = new DutySlot("Saturday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
+
+        thisWeekSchedule.insertLast(dataSlot1);
+        thisWeekSchedule.insertLast(dataSlot2);
+        thisWeekSchedule.insertLast(dataSlot3);
+        thisWeekSchedule.insertLast(dataSlot4);
+        thisWeekSchedule.insertLast(dataSlot5);
+        thisWeekSchedule.insertLast(dataSlot6);
+        thisWeekSchedule.insertLast(dataSlot7);
+        thisWeekSchedule.insertLast(dataSlot8);
+        thisWeekSchedule.insertLast(dataSlot9);
+        thisWeekSchedule.insertLast(dataSlot10);
+        thisWeekSchedule.insertLast(dataSlot11);
+        thisWeekSchedule.insertLast(dataSlot12);
+        FileUtils.writeDataToFile("this_week_schedule", thisWeekSchedule);
     }
 
     private void loadInitialData() {
+
         // --- 1. Load Data ---
         // Load the master list of all doctors
         masterDoctorList = (DoublyLinkedList<Pair<String, Doctor>>) FileUtils.readDataFromFile("doctors");
@@ -90,15 +111,18 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
 
         // Create a unassigned schedule for next week
         nextWeekSchedule = (DoublyLinkedList<DutySlot>) FileUtils.readDataFromFile("next_week_schedule");
-        nextWeekSchedule.displayFromFirst(nextWeekSchedule.getFirst());
-        if (nextWeekSchedule == null) {
-            nextWeekSchedule = new DoublyLinkedList<>();
+
+        // Initialize the schedule if the file doesn't exist OR if it's empty.
+        if (nextWeekSchedule == null || nextWeekSchedule.isEmpty()) {
+            nextWeekSchedule = new DoublyLinkedList<>(); // Make sure we have a fresh list
             for (String day : DAYS) {
                 for (String shift : SHIFTS) {
+                    // This now correctly creates the empty slots
                     nextWeekSchedule.insertLast(new DutySlot(day, shift));
                 }
             }
         }
+
         // --- 2. Populate UI ---
         populateTable(oldScheduleTable, thisWeekSchedule); // Populate "This Week" table
         populateTable(newScheduleTable, nextWeekSchedule); // Populate "Next Week" table
@@ -107,21 +131,7 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         oldScheduleTable.setDefaultEditor(Object.class, null);
 
         // --- 3. Setup JComboBox Editor for the "Next Week" Table ---
-        DoublyLinkedList<String> doctorNames = new DoublyLinkedList<>();
-        doctorNames.insertLast("Unassigned");
-        for (Pair<String, Doctor> pair : masterDoctorList) {
-            if (!pair.getValue().getStatus().equals("Absent") && !pair.getValue().getStatus().equals("Resigned")) {
-                doctorNames.insertLast(pair.getValue().getName());
-            }
-        }
-        Object[] doctorNamesArray = doctorNames.toArray();
-        JComboBox<Object> doctorComboBox = new JComboBox<>(doctorNamesArray);
-        DefaultCellEditor doctorEditor = new DefaultCellEditor(doctorComboBox);
-
-       
-        TableColumnModel columnModel = newScheduleTable.getColumnModel();
-        columnModel.getColumn(1).setCellEditor(doctorEditor);
-        columnModel.getColumn(2).setCellEditor(doctorEditor);
+        setupDoctorEditor();
 
         // --- 4. Add Listener to newScheduleTable to Handle Assignments ---
         newScheduleTable.getModel().addTableModelListener((TableModelEvent e) -> {
@@ -129,39 +139,124 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
                 int row = e.getFirstRow();
                 int column = e.getColumn();
 
+                if (column < 1) {
+                    return; // Ignore updates to the "Days" column
+                }
                 String selectedDoctorName = (String) newScheduleTable.getValueAt(row, column);
                 String day = (String) newScheduleTable.getValueAt(row, 0);
-                String shift = newScheduleTable.getColumnName(column);
+                String shift = null;
 
-                // Find the slot in our 'nextWeekSchedule' data and update it
+                
+                if (column == 1) {
+                    shift = SHIFTS.getFirst().getEntry(); // Morning shift
+                } else if (column == 2) {
+                    shift = SHIFTS.getLast().getEntry();  // Evening shift
+                }
+
+                if (shift == null) {
+                    System.out.println("ERROR: Could not determine shift for column " + column);
+                    return;
+                }
+
                 DutySlot targetSlot = findDutySlot(nextWeekSchedule, day, shift);
                 Doctor doctorToAssign = findDoctorByName(selectedDoctorName);
 
                 if (targetSlot != null) {
                     targetSlot.setAssignedDoctor(doctorToAssign);
-                    System.out.println("Assigned " + selectedDoctorName + " to " + day + " " + shift);
+                    System.out.println("SUCCESS: Assigned " + (doctorToAssign != null ? doctorToAssign.getName() : "Unassigned") + " to " + day + " " + shift);
+                } else {
+                    System.out.println("ERROR: Could not find DutySlot for Day: [" + day + "], Shift: [" + shift + "]");
                 }
             }
         });
     }
 
+    /**
+     * Sets up the model and columns for a schedule table. This should only be
+     * called once.
+     *
+     * @param table The JTable to configure.
+     * @param isEditable If true, the shift columns will be editable.
+     */
+    private void setupTable(javax.swing.JTable table, boolean isEditable) {
+        DefaultTableModel model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                // If the table is editable, allow editing columns 1 and 2.
+                return isEditable && column > 0;
+            }
+        };
+        table.setModel(model);
+
+        // Add columns at table.
+        model.addColumn("Days / Shifts");
+        model.addColumn("Morning (8am - 2pm)");
+        model.addColumn("Evening (2pm - 8pm)");
+    }
+
+    /**
+     * Clears the table and fills it with data from a schedule. This method is
+     * safe to call multiple times.
+     *
+     * @param table The JTable to populate.
+     * @param schedule The schedule data to display.
+     */
     private void populateTable(javax.swing.JTable table, DoublyLinkedList<DutySlot> schedule) {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
+
         model.setRowCount(0);
 
+        int rowIndex = 0;
+
         for (String day : DAYS) {
-            Object[] rowData = new Object[3]; // 1 for day + 2 for shifts
-            rowData[0] = day;
+            // 1. Add a new, empty row to the model first.
+            model.addRow(new Object[model.getColumnCount()]);
 
-            // Find assigned doctors for each shift and populate the row
-            Doctor morningDoctor = findDoctorForSlot(schedule, day, SHIFTS[0]);
-            Doctor eveningDoctor = findDoctorForSlot(schedule, day, SHIFTS[1]);
+            // 2. Set the value for the "Day" column (column 0)
+            model.setValueAt(day, rowIndex, 0);
 
-            rowData[1] = (morningDoctor != null) ? morningDoctor.getName() : "Unassigned";
-            rowData[2] = (eveningDoctor != null) ? eveningDoctor.getName() : "Unassigned";
+            // 3. Find the assigned doctors for this day
+            Doctor morningDoctor = findDoctorForSlot(schedule, day, "Morning (8am - 2pm)"); 
+            Doctor eveningDoctor = findDoctorForSlot(schedule, day, "Evening (2pm - 8pm)"); 
 
-            model.addRow(rowData);
+            // 4. Prepare the text to display
+            String morningText = (morningDoctor != null) ? morningDoctor.getName() : "Unassigned";
+            String eveningText = (eveningDoctor != null) ? eveningDoctor.getName() : "Unassigned";
+
+            // 5. Set the values for the shift columns (1 and 2)
+            model.setValueAt(morningText, rowIndex, 1);
+            model.setValueAt(eveningText, rowIndex, 2);
+
+            // 6. Move to the next row for the next iteration
+            rowIndex++;
         }
+
+    }
+
+    private void setupDoctorEditor() {
+        DoublyLinkedList<String> doctorNames = new DoublyLinkedList<>();
+
+        doctorNames.insertLast("Unassigned");
+
+        for (Pair<String, Doctor> pair : masterDoctorList) {
+            if (!pair.getValue().getStatus().equals("Absent") && !pair.getValue().getStatus().equals("Resigned")) {
+                doctorNames.insertLast(pair.getValue().getName());
+            }
+        }
+
+        JComboBox<String> doctorComboBox = new JComboBox<>();
+        for (String o : doctorNames) {
+            doctorComboBox.addItem(o);
+        }
+
+        DefaultCellEditor doctorEditor = new DefaultCellEditor(doctorComboBox);
+        TableColumnModel columnModel = newScheduleTable.getColumnModel();
+
+        TableColumn morningColumn = columnModel.getColumn(1);
+        TableColumn eveningColumn = columnModel.getColumn(2);
+
+        morningColumn.setCellEditor(doctorEditor);
+        eveningColumn.setCellEditor(doctorEditor);
     }
 
     private void runScheduleRolloverCheck(LocalDate today) {
@@ -207,7 +302,7 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         }
     }
 
-    // A helper method to find the right doctor in your list
+    // Method to find the right doctor in list
     private Doctor findDoctorForSlot(DoublyLinkedList<DutySlot> schedule, String day, String shift) {
         for (DutySlot slot : schedule) {
             if (slot.getDayOfWeek().equals(day) && slot.getShift().equals(shift)) {
@@ -217,8 +312,11 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         return null;
     }
 
-    // Helper method to find a schedule slot
+    // Method to find a schedule slot
     private DutySlot findDutySlot(DoublyLinkedList<DutySlot> schedule, String day, String shift) {
+
+        schedule.displayFromFirst(schedule.getFirst());
+
         for (DutySlot slot : schedule) {
             if (slot.getDayOfWeek().equals(day) && slot.getShift().equals(shift)) {
                 return slot;
@@ -227,14 +325,17 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         return null;
     }
 
-// Helper method to find a Doctor object by their name
+    // Helper method to find a Doctor object by their name
     private Doctor findDoctorByName(String name) {
+        // If the user selected "Unassigned", assign null.
         if (name == null || name.equals("Unassigned")) {
             return null;
         }
+        // Search the master list for a doctor with the matching name.
         for (Pair<String, Doctor> pair : masterDoctorList) {
-            if (pair.getValue().getName().equals(name)) {
-                return pair.getValue();
+            Doctor doctor = pair.getValue();
+            if (doctor.getName().equals(name)) {
+                return doctor; // Found 
             }
         }
         return null;
@@ -268,7 +369,7 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         buttonPanel = new javax.swing.JPanel();
         saveButton = new javax.swing.JButton();
         backButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        testButton = new javax.swing.JButton();
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -298,33 +399,17 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
 
         oldScheduleTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {"Monday", null, null},
-                {"Tuesday", null, null},
-                {"Wednesday", null, null},
-                {"Thursday", null, null},
-                {"Friday", null, null},
-                {"Saturday", null, null}
+
             },
             new String [] {
-                "Days & Shifts", "Morning (8am - 2pm)", "Evening (2pm - 8pm)"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class
-            };
 
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
             }
-        });
+        ));
+        oldScheduleTable.setName("oldScheduleTable"); // NOI18N
         oldScheduleTable.setShowGrid(true);
         oldScheduleTable.getTableHeader().setReorderingAllowed(false);
         oldSchedulePanel.setViewportView(oldScheduleTable);
-        if (oldScheduleTable.getColumnModel().getColumnCount() > 0) {
-            oldScheduleTable.getColumnModel().getColumn(0).setResizable(false);
-            oldScheduleTable.getColumnModel().getColumn(1).setResizable(false);
-            oldScheduleTable.getColumnModel().getColumn(2).setResizable(false);
-        }
+        oldScheduleTable.getAccessibleContext().setAccessibleName("olsScheduleTable");
 
         oldScheduleBorderPanel.add(oldSchedulePanel, java.awt.BorderLayout.CENTER);
 
@@ -339,6 +424,7 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         newScheduleWrapperPanel.add(newScheduleLabelPanel);
 
         oldScheduleBorderPanel.add(newScheduleWrapperPanel, java.awt.BorderLayout.PAGE_END);
+        newScheduleWrapperPanel.getAccessibleContext().setAccessibleName("newScheduleTable");
 
         oldScheduleLabelPanel.add(oldScheduleBorderPanel, java.awt.BorderLayout.PAGE_END);
 
@@ -348,33 +434,16 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
 
         newScheduleTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {"Monday", null, null},
-                {"Tuesday", null, null},
-                {"Wednesday", null, null},
-                {"Thursday", null, null},
-                {"Friday", null, null},
-                {"Saturday", null, null}
+
             },
             new String [] {
-                "Days & Shifts", "Morning (8am - 2pm)", "Evening (2pm - 8pm)"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class
-            };
 
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
             }
-        });
+        ));
+        newScheduleTable.setName("newScheduleTable"); // NOI18N
         newScheduleTable.setShowGrid(true);
         newScheduleTable.getTableHeader().setReorderingAllowed(false);
         newSchedulePanel.setViewportView(newScheduleTable);
-        if (newScheduleTable.getColumnModel().getColumnCount() > 0) {
-            newScheduleTable.getColumnModel().getColumn(0).setResizable(false);
-            newScheduleTable.getColumnModel().getColumn(1).setResizable(false);
-            newScheduleTable.getColumnModel().getColumn(2).setResizable(false);
-        }
 
         scheduleWrapperPanel.add(newSchedulePanel);
 
@@ -396,13 +465,13 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         });
         buttonPanel.add(backButton);
 
-        jButton1.setText("Test");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        testButton.setText("Test");
+        testButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                testButtonActionPerformed(evt);
             }
         });
-        buttonPanel.add(jButton1);
+        buttonPanel.add(testButton);
 
         titlePanel.add(buttonPanel, java.awt.BorderLayout.PAGE_END);
 
@@ -435,7 +504,7 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         mainFrame.showPanel("doctorManagement");
     }//GEN-LAST:event_backButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testButtonActionPerformed
         // Create a fake date that is 1 week in the future
         LocalDate futureDate = LocalDate.now().plusWeeks(1);
         System.out.println("--- TESTING ROLLOVER WITH FAKE DATE: " + futureDate + " ---");
@@ -445,18 +514,17 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         // 2. Re-load the data from the updated files into in-memory lists
         loadInitialData();
 
-        // 3. Re-populate both tables to show the new data on the screen
+//        // 3. Re-populate both tables to show the new data on the screen
         populateTable(oldScheduleTable, thisWeekSchedule);
         populateTable(newScheduleTable, nextWeekSchedule);
 
         javax.swing.JOptionPane.showMessageDialog(this, "Rollover test complete and tables refreshed!");
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_testButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton backButton;
     private javax.swing.JPanel buttonPanel;
-    private javax.swing.JButton jButton1;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JPanel logoPanel;
@@ -472,6 +540,7 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
     private javax.swing.JTable oldScheduleTable;
     private javax.swing.JButton saveButton;
     private javax.swing.JPanel scheduleWrapperPanel;
+    private javax.swing.JButton testButton;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables

@@ -18,7 +18,7 @@ public class DutySlot implements Serializable {
     public DutySlot(String dayOfWeek, String shift) {
         this.dayOfWeek = dayOfWeek;
         this.shift = shift;
-        this.assignedDoctor = null;
+//        this.assignedDoctor = null;
     }
 
     public DutySlot(String dayOfWeek, String shift, Doctor assignedDoctor) {

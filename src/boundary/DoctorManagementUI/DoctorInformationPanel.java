@@ -35,88 +35,11 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
     public DoctorInformationPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         initComponents();
-
-        DoublyLinkedList<String> filterCriteria = new DoublyLinkedList<>();
-        filterCriteria.insertLast("ID");
-        filterCriteria.insertLast("Name");
-        filterCriteria.insertLast("Position");
-        for (String i : filterCriteria) {
-            filterBox.addItem(i);
-        }
-
-        DoublyLinkedList<String> position = new DoublyLinkedList<>();
-        position.insertLast("Consultant");
-        position.insertLast("Doctor");
-        position.insertLast("Internship");
-
-        DoublyLinkedList<String> status = new DoublyLinkedList<>();
-        status.insertLast("Present");
-        status.insertLast("Absent");
-        status.insertLast("Resigned");
-
-        JComboBox<String> positionComboBox = new JComboBox<>();
-
-        for (String i : position) {
-            positionComboBox.addItem(i);
-        }
-
-        JComboBox<String> statusComboBox = new JComboBox<>();
-
-        for (String i : status) {
-            statusComboBox.addItem(i);
-        }
-
-        DefaultTableModel model = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                // Allow editing only for columns 3, 4 and 5 (Phone, Position and Status)
-                // The first four columns (0, 1, 2 ) will not be editable.
-                return column >= 3;
-            }
-        };
-        doctorTable.setModel(model);
-        model.addColumn("ID");
-        model.addColumn("Name");
-        model.addColumn("Age");
-        model.addColumn("Contact");
-        model.addColumn("Position");
-        model.addColumn("Status");
-
-        // Create a cell editor 
-        DefaultCellEditor positionEditor = new DefaultCellEditor(positionComboBox);
-        DefaultCellEditor statusEditor = new DefaultCellEditor(statusComboBox);
-
-        // Get the column model from table
-        TableColumnModel columnModel = doctorTable.getColumnModel();
-
-        // Change the index to match table's column order
-        TableColumn positionColumn = columnModel.getColumn(4);
-        TableColumn statusColumn = columnModel.getColumn(5);
-
-        // Set the custom editor for that column
-        positionColumn.setCellEditor(positionEditor);
-        statusColumn.setCellEditor(statusEditor);
-
-        logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
-
-//        DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
-//        Doctor doc1 = new Doctor("Simon", 20, "01118566866", "Doctor", "Present");
-//        Doctor doc2 = new Doctor("ZB", 21, "01118566866", "Doctor", "Absent");
-//        Doctor doc3 = new Doctor("JY", 30, "01118566866", "Consultant", "Resigned");
-//        Doctor doc4 = new Doctor("Desmond", 32, "01118566866", "Internship", "Present");
-//
-//        Pair<String, Doctor> doctorPair1 = new Pair<>(doc1.getDoctorID(), doc1);
-//        Pair<String, Doctor> doctorPair2 = new Pair<>(doc2.getDoctorID(), doc2);
-//        Pair<String, Doctor> doctorPair3 = new Pair<>(doc3.getDoctorID(), doc3);
-//        Pair<String, Doctor> doctorPair4 = new Pair<>(doc4.getDoctorID(), doc4);
-//
-//        doctorList.insertFirst(doctorPair1);
-//        doctorList.insertLast(doctorPair2);
-//        doctorList.insertLast(doctorPair3);
-//        doctorList.insertLast(doctorPair4);
-//        masterDoctorList = doctorList;
-//        populateDoctorTable(masterDoctorList);
+        
+        loadInitialComponent();
+        
         loadInitialData();
+        
         populateDoctorTable(masterDoctorList);
 
         filterField.getDocument().addDocumentListener(new DocumentListener() {
@@ -184,7 +107,93 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         return null;
     }
 
+    private void loadInitialComponent() {
+        
+        logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
+        
+        // Set up for combobox
+        DoublyLinkedList<String> filterCriteria = new DoublyLinkedList<>();
+        filterCriteria.insertLast("ID");
+        filterCriteria.insertLast("Name");
+        filterCriteria.insertLast("Position");
+        for (String i : filterCriteria) {
+            filterBox.addItem(i);
+        }
+
+        DoublyLinkedList<String> position = new DoublyLinkedList<>();
+        position.insertLast("Consultant");
+        position.insertLast("Doctor");
+        position.insertLast("Internship");
+
+        DoublyLinkedList<String> status = new DoublyLinkedList<>();
+        status.insertLast("Present");
+        status.insertLast("Absent");
+        status.insertLast("Resigned");
+
+        JComboBox<String> positionComboBox = new JComboBox<>();
+
+        for (String i : position) {
+            positionComboBox.addItem(i);
+        }
+
+        JComboBox<String> statusComboBox = new JComboBox<>();
+
+        for (String i : status) {
+            statusComboBox.addItem(i);
+        }
+
+        // Set up for table 
+        DefaultTableModel model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                // Allow editing only for columns 3, 4 and 5 (Phone, Position and Status)
+                // The first four columns (0, 1, 2 ) will not be editable.
+                return column >= 3;
+            }
+        };
+        doctorTable.setModel(model);
+        model.addColumn("ID");
+        model.addColumn("Name");
+        model.addColumn("Age");
+        model.addColumn("Contact");
+        model.addColumn("Position");
+        model.addColumn("Status");
+
+        // Create a cell editor 
+        DefaultCellEditor positionEditor = new DefaultCellEditor(positionComboBox);
+        DefaultCellEditor statusEditor = new DefaultCellEditor(statusComboBox);
+
+        // Get the column model from table
+        TableColumnModel columnModel = doctorTable.getColumnModel();
+
+        // Change the index to match table's column order
+        TableColumn positionColumn = columnModel.getColumn(4);
+        TableColumn statusColumn = columnModel.getColumn(5);
+
+        // Set the custom editor for that column
+        positionColumn.setCellEditor(positionEditor);
+        statusColumn.setCellEditor(statusEditor);
+    }
+
     private void loadInitialData() {
+
+//        DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
+//        Doctor doc1 = new Doctor("Simon", 20, "01118566866", "Doctor", "Present");
+//        Doctor doc2 = new Doctor("ZB", 21, "01118566866", "Doctor", "Absent");
+//        Doctor doc3 = new Doctor("JY", 30, "01118566866", "Consultant", "Resigned");
+//        Doctor doc4 = new Doctor("Desmond", 32, "01118566866", "Internship", "Present");
+//
+//        Pair<String, Doctor> doctorPair1 = new Pair<>(doc1.getDoctorID(), doc1);
+//        Pair<String, Doctor> doctorPair2 = new Pair<>(doc2.getDoctorID(), doc2);
+//        Pair<String, Doctor> doctorPair3 = new Pair<>(doc3.getDoctorID(), doc3);
+//        Pair<String, Doctor> doctorPair4 = new Pair<>(doc4.getDoctorID(), doc4);
+//
+//        doctorList.insertFirst(doctorPair1);
+//        doctorList.insertLast(doctorPair2);
+//        doctorList.insertLast(doctorPair3);
+//        doctorList.insertLast(doctorPair4);
+//        masterDoctorList = doctorList;
+//        populateDoctorTable(masterDoctorList);
         DoublyLinkedList<Pair<String, Doctor>> doctorList = (DoublyLinkedList<Pair<String, Doctor>>) FileUtils.readDataFromFile("doctors");
 
         if (!doctorList.isEmpty()) {
