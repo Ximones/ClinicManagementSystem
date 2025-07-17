@@ -8,15 +8,18 @@ import adt.DoublyLinkedList;
 import adt.Pair;
 import boundary.MainFrame;
 import enitity.Doctor;
+import utility.ImageUtils;
+import utility.FileUtils;
+import utility.ReportGenerator;
+
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import utility.ImageUtils;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import utility.FileUtils;
 
 /**
  *
@@ -35,11 +38,11 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
     public DoctorInformationPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         initComponents();
-        
+
         loadInitialComponent();
-        
+
         loadInitialData();
-        
+
         populateDoctorTable(masterDoctorList);
 
         filterField.getDocument().addDocumentListener(new DocumentListener() {
@@ -108,9 +111,9 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
     }
 
     private void loadInitialComponent() {
-        
+
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
-        
+
         // Set up for combobox
         DoublyLinkedList<String> filterCriteria = new DoublyLinkedList<>();
         filterCriteria.insertLast("ID");
@@ -301,6 +304,7 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         ButtonPanel = new javax.swing.JPanel();
         addDoctorButton = new javax.swing.JButton();
         doneButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -366,6 +370,14 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         });
         ButtonPanel.add(doneButton);
 
+        jButton1.setText("jButton1");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        ButtonPanel.add(jButton1);
+
         searchWrapperPanel.add(ButtonPanel, java.awt.BorderLayout.PAGE_END);
 
         titlePanel.add(searchWrapperPanel, java.awt.BorderLayout.CENTER);
@@ -407,6 +419,15 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_filterFieldActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // Generate the first report
+        ReportGenerator.generateSpecializationReport(masterDoctorList);
+        // Generate the second report
+        ReportGenerator.generateAvailabilityReport(masterDoctorList);
+
+        JOptionPane.showMessageDialog(this, "Reports generated successfully!");
+    }//GEN-LAST:event_jButton1ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ButtonPanel;
@@ -417,6 +438,7 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox<String> filterBox;
     private javax.swing.JTextField filterField;
     private javax.swing.JLabel filterLabel;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JPanel logoPanel;
     private javax.swing.JPanel searchPanel;

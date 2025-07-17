@@ -11,12 +11,14 @@ import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import utility.FileUtils;
 import utility.ImageUtils;
+import utility.ReportGenerator;
 
 /**
  *
@@ -146,7 +148,6 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
                 String day = (String) newScheduleTable.getValueAt(row, 0);
                 String shift = null;
 
-                
                 if (column == 1) {
                     shift = SHIFTS.getFirst().getEntry(); // Morning shift
                 } else if (column == 2) {
@@ -216,8 +217,8 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
             model.setValueAt(day, rowIndex, 0);
 
             // 3. Find the assigned doctors for this day
-            Doctor morningDoctor = findDoctorForSlot(schedule, day, "Morning (8am - 2pm)"); 
-            Doctor eveningDoctor = findDoctorForSlot(schedule, day, "Evening (2pm - 8pm)"); 
+            Doctor morningDoctor = findDoctorForSlot(schedule, day, "Morning (8am - 2pm)");
+            Doctor eveningDoctor = findDoctorForSlot(schedule, day, "Evening (2pm - 8pm)");
 
             // 4. Prepare the text to display
             String morningText = (morningDoctor != null) ? morningDoctor.getName() : "Unassigned";
@@ -370,6 +371,7 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         saveButton = new javax.swing.JButton();
         backButton = new javax.swing.JButton();
         testButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -473,6 +475,14 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         });
         buttonPanel.add(testButton);
 
+        jButton1.setText("jButton1");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        buttonPanel.add(jButton1);
+
         titlePanel.add(buttonPanel, java.awt.BorderLayout.PAGE_END);
 
         logoPanel.add(titlePanel, java.awt.BorderLayout.CENTER);
@@ -521,10 +531,18 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         javax.swing.JOptionPane.showMessageDialog(this, "Rollover test complete and tables refreshed!");
     }//GEN-LAST:event_testButtonActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // Generate a PDF for the "Next Week" schedule 
+        ReportGenerator.generateWeeklyScheduleReport(nextWeekSchedule, "Next Week's Duty Schedule", DAYS, SHIFTS);
+
+        JOptionPane.showMessageDialog(this, "Schedule PDF has been generated!");
+    }//GEN-LAST:event_jButton1ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton backButton;
     private javax.swing.JPanel buttonPanel;
+    private javax.swing.JButton jButton1;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JPanel logoPanel;

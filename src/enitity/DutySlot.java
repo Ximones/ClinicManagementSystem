@@ -1,14 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package enitity;
 
 import java.io.Serializable;
 
 /**
  *
- * @author deadb
+ * @author Chok Chun Fai
  */
 public class DutySlot implements Serializable {
     private String dayOfWeek; // e.g., "Monday"
@@ -18,7 +14,7 @@ public class DutySlot implements Serializable {
     public DutySlot(String dayOfWeek, String shift) {
         this.dayOfWeek = dayOfWeek;
         this.shift = shift;
-//        this.assignedDoctor = null;
+        this.assignedDoctor = null;
     }
 
     public DutySlot(String dayOfWeek, String shift, Doctor assignedDoctor) {
