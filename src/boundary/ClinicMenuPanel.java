@@ -120,7 +120,7 @@ public class ClinicMenuPanel extends javax.swing.JPanel {
 
     // Button 1 to switch Patient Management window
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+        mainFrame.showPanel("patientManagement");
     }//GEN-LAST:event_jButton1ActionPerformed
 
     // Button 2 to switch Doctor Management window

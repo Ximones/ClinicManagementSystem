@@ -4,17 +4,23 @@
  */
 package boundary.PatientManagementUI;
 
+import boundary.MainFrame;
+import utility.ImageUtils;
+
 /**
  *
  * @author szepi
  */
 public class PatientManagementPanel extends javax.swing.JPanel {
 
+    private MainFrame mainFrame; // Variable to hold the main window
     /**
      * Creates new form PatientManagementPanel
      */
-    public PatientManagementPanel() {
+    public PatientManagementPanel(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
         initComponents();
+        logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
     }
 
     /**
@@ -26,113 +32,119 @@ public class PatientManagementPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        checkbox1 = new java.awt.Checkbox();
-        label2 = new java.awt.Label();
-        Button1 = new java.awt.Button();
-        button2 = new java.awt.Button();
-        button3 = new java.awt.Button();
-        button4 = new java.awt.Button();
-        button5 = new java.awt.Button();
+        logoLabel = new javax.swing.JLabel();
+        titlePanel = new javax.swing.JPanel();
+        titleLabel = new javax.swing.JLabel();
+        buttonWrapperPanel = new javax.swing.JPanel();
+        buttonWrapper = new javax.swing.JPanel();
+        buttonPanel = new javax.swing.JPanel();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
 
-        checkbox1.setLabel("checkbox1");
+        setLayout(new java.awt.BorderLayout());
+        add(logoLabel, java.awt.BorderLayout.PAGE_START);
 
-        label2.setAlignment(1);
-        label2.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        label2.setFocusable(false);
-        label2.setFont(new java.awt.Font("Dialog", 1, 24)); // NOI18N
-        label2.setName(""); // NOI18N
-        label2.setPreferredSize(new java.awt.Dimension(50, 20));
-        label2.setText("Patient Management Menu");
+        titlePanel.setLayout(new java.awt.BorderLayout());
 
-        Button1.setLabel("Patient Registration ");
+        titleLabel.setFont(new java.awt.Font("Corbel", 1, 36)); // NOI18N
+        titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        titleLabel.setText("Patient Management Menu");
+        titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
-        button2.setLabel("Patient Queue");
-        button2.addActionListener(new java.awt.event.ActionListener() {
+        buttonWrapperPanel.setLayout(new java.awt.BorderLayout());
+
+        buttonPanel.setLayout(new java.awt.GridLayout(3, 2, 50, 50));
+
+        jButton1.setText("Patient Registration ");
+        jButton1.setPreferredSize(new java.awt.Dimension(200, 50));
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                button2ActionPerformed(evt);
+                jButton1ActionPerformed(evt);
             }
         });
+        buttonPanel.add(jButton1);
 
-        button3.setLabel("Patient Records");
-
-        button4.setLabel("Reports");
-        button4.setName(""); // NOI18N
-        button4.addActionListener(new java.awt.event.ActionListener() {
+        jButton2.setText("Patient Record");
+        jButton2.setPreferredSize(new java.awt.Dimension(200, 50));
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                button4ActionPerformed(evt);
+                jButton2ActionPerformed(evt);
             }
         });
+        buttonPanel.add(jButton2);
 
-        button5.setLabel("Exit");
-        button5.addActionListener(new java.awt.event.ActionListener() {
+        jButton3.setText("Patient Queue");
+        jButton3.setPreferredSize(new java.awt.Dimension(200, 50));
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                button5ActionPerformed(evt);
+                jButton3ActionPerformed(evt);
             }
         });
+        buttonPanel.add(jButton3);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(84, 84, 84)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Button1, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(button2, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 107, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(button4, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(button3, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(94, 94, 94))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(button5, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(239, 239, 239))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(110, 110, 110)
-                .addComponent(label2, javax.swing.GroupLayout.PREFERRED_SIZE, 458, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(label2, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(31, 31, 31)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Button1, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(button3, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(61, 61, 61)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(button2, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(button4, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(48, 48, 48)
-                .addComponent(button5, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(133, Short.MAX_VALUE))
-        );
+        jButton4.setText("Reports");
+        jButton4.setPreferredSize(new java.awt.Dimension(200, 50));
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+        buttonPanel.add(jButton4);
+
+        jButton5.setText("Exit");
+        jButton5.setPreferredSize(new java.awt.Dimension(200, 50));
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+        buttonPanel.add(jButton5);
+
+        buttonWrapper.add(buttonPanel);
+
+        buttonWrapperPanel.add(buttonWrapper, java.awt.BorderLayout.CENTER);
+
+        titlePanel.add(buttonWrapperPanel, java.awt.BorderLayout.CENTER);
+
+        add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void button4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button4ActionPerformed
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        mainFrame.showPanel("patientRegistration");
+    }//GEN-LAST:event_jButton1ActionPerformed
 
-        // TODO add your handling code here:
-    }//GEN-LAST:event_button4ActionPerformed
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        mainFrame.showPanel("patientRecords");
+    }//GEN-LAST:event_jButton2ActionPerformed
 
-    private void button5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button5ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_button5ActionPerformed
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        mainFrame.showPanel("patientQueue");
+    }//GEN-LAST:event_jButton3ActionPerformed
 
-    private void button2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_button2ActionPerformed
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        mainFrame.showPanel("reports");
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+                mainFrame.dispose();
+    }//GEN-LAST:event_jButton5ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private java.awt.Button Button1;
-    private java.awt.Button button2;
-    private java.awt.Button button3;
-    private java.awt.Button button4;
-    private java.awt.Button button5;
-    private java.awt.Checkbox checkbox1;
-    private java.awt.Label label2;
+    private javax.swing.JPanel buttonPanel;
+    private javax.swing.JPanel buttonWrapper;
+    private javax.swing.JPanel buttonWrapperPanel;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
+    private javax.swing.JLabel logoLabel;
+    private javax.swing.JLabel titleLabel;
+    private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables
 }
