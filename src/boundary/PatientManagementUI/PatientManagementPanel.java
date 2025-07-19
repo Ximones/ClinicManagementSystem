@@ -1,24 +1,26 @@
-package boundary;
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
+ */
+package boundary.PatientManagementUI;
 
+import boundary.MainFrame;
 import utility.ImageUtils;
 
 /**
  *
- * @author Chok Chun Fai
+ * @author szepi
  */
-public class ClinicMenuPanel extends javax.swing.JPanel {
+public class PatientManagementPanel extends javax.swing.JPanel {
 
-    private MainFrame mainFrame; // Variable to hold the main window
-
+    private MainFrame mainFrame;
+    
     /**
-     * Creates new form ClinicMenuUI
-     *
-     * @param mainFrame
+     * Creates new form PatientManagementPanel
      */
-    public ClinicMenuPanel(MainFrame mainFrame) {
+    public PatientManagementPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         initComponents();
-
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
     }
 
@@ -35,13 +37,13 @@ public class ClinicMenuPanel extends javax.swing.JPanel {
         titlePanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
         buttonWrapperPanel = new javax.swing.JPanel();
+        buttonWrapper = new javax.swing.JPanel();
         buttonPanel = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
         jButton5 = new javax.swing.JButton();
-        jButton6 = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
         add(logoLabel, java.awt.BorderLayout.PAGE_START);
@@ -50,14 +52,15 @@ public class ClinicMenuPanel extends javax.swing.JPanel {
 
         titleLabel.setFont(new java.awt.Font("Corbel", 1, 36)); // NOI18N
         titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        titleLabel.setText("On-Campus Clinic Menu");
+        titleLabel.setText("Patient Management Menu");
         titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
-        buttonPanel.setMinimumSize(new java.awt.Dimension(1000, 800));
+        buttonWrapperPanel.setLayout(new java.awt.BorderLayout());
+
         buttonPanel.setLayout(new java.awt.GridLayout(3, 2, 50, 50));
 
-        jButton1.setText("Patient Management");
+        jButton1.setText("Patient Registration ");
         jButton1.setPreferredSize(new java.awt.Dimension(200, 50));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -66,7 +69,7 @@ public class ClinicMenuPanel extends javax.swing.JPanel {
         });
         buttonPanel.add(jButton1);
 
-        jButton2.setText("Doctor Management");
+        jButton2.setText("Patient Records");
         jButton2.setPreferredSize(new java.awt.Dimension(200, 50));
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -75,7 +78,7 @@ public class ClinicMenuPanel extends javax.swing.JPanel {
         });
         buttonPanel.add(jButton2);
 
-        jButton3.setText("Consultation Management");
+        jButton3.setText("Patient Queue");
         jButton3.setPreferredSize(new java.awt.Dimension(200, 50));
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -84,7 +87,7 @@ public class ClinicMenuPanel extends javax.swing.JPanel {
         });
         buttonPanel.add(jButton3);
 
-        jButton4.setText("Medical Treatment Management");
+        jButton4.setText("Reports");
         jButton4.setPreferredSize(new java.awt.Dimension(200, 50));
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -93,7 +96,7 @@ public class ClinicMenuPanel extends javax.swing.JPanel {
         });
         buttonPanel.add(jButton4);
 
-        jButton5.setText("Pharmacy Management");
+        jButton5.setText("Exit");
         jButton5.setPreferredSize(new java.awt.Dimension(200, 50));
         jButton5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -102,62 +105,45 @@ public class ClinicMenuPanel extends javax.swing.JPanel {
         });
         buttonPanel.add(jButton5);
 
-        jButton6.setText("Exit");
-        jButton6.setPreferredSize(new java.awt.Dimension(200, 50));
-        jButton6.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton6ActionPerformed(evt);
-            }
-        });
-        buttonPanel.add(jButton6);
+        buttonWrapper.add(buttonPanel);
 
-        buttonWrapperPanel.add(buttonPanel);
+        buttonWrapperPanel.add(buttonWrapper, java.awt.BorderLayout.CENTER);
 
         titlePanel.add(buttonWrapperPanel, java.awt.BorderLayout.CENTER);
 
         add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
-    // Button 1 to switch Patient Management window
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        mainFrame.showPanel("patientManagement");
+        mainFrame.showPanel("patientRegistration");
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    // Button 2 to switch Doctor Management window
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        mainFrame.showPanel("doctorManagement");
+        mainFrame.showPanel("patientRecords");
     }//GEN-LAST:event_jButton2ActionPerformed
 
-    // Button 3 - to switch Consultation Management window
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
+        mainFrame.showPanel("patientQueue");
     }//GEN-LAST:event_jButton3ActionPerformed
 
-    // Button 4 - to switch Medical Treatment Management window
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        // TODO add your handling code here:
+        mainFrame.showPanel("records");
     }//GEN-LAST:event_jButton4ActionPerformed
 
-    // Button 5 - to switch Pharmacy Management window
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        mainFrame.showPanel("pharmacyManagement");
+       mainFrame.dispose();
     }//GEN-LAST:event_jButton5ActionPerformed
-
-    // Button 6 - to exit program
-    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        mainFrame.dispose();
-    }//GEN-LAST:event_jButton6ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttonPanel;
+    private javax.swing.JPanel buttonWrapper;
     private javax.swing.JPanel buttonWrapperPanel;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;
