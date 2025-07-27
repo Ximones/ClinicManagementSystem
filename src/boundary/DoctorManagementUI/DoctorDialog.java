@@ -76,7 +76,7 @@ public class DoctorDialog extends javax.swing.JDialog {
         formPhoneLabel = new javax.swing.JLabel();
         formPhoneInput = new javax.swing.JTextField();
         formPositionLabel = new javax.swing.JLabel();
-        formPositionBox = new javax.swing.JComboBox<>();
+        formPositionBox = new javax.swing.JComboBox<String>();
         buttonPanel = new javax.swing.JPanel();
         saveButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();

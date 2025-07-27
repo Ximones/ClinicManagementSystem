@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="svg" />
+        <module name="io" />
+        <module name="kernel" />
+        <module name="styled-xml-parser" />
+        <module name="sign" />
+        <module name="barcodes" />
+        <module name="jfreechart" />
+        <module name="layout" />
+        <module name="pdftest" />
+        <module name="hyph" />
+        <module name="pdfa" />
+        <module name="font-asian" />
+        <module name="forms" />
+      </profile>
+    </annotationProcessing>
+  </component>
+</project>
