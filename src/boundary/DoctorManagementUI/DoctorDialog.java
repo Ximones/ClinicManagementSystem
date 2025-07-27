@@ -76,7 +76,7 @@ public class DoctorDialog extends javax.swing.JDialog {
         formPhoneLabel = new javax.swing.JLabel();
         formPhoneInput = new javax.swing.JTextField();
         formPositionLabel = new javax.swing.JLabel();
-        formPositionBox = new javax.swing.JComboBox<String>();
+        formPositionBox = new javax.swing.JComboBox<>();
         buttonPanel = new javax.swing.JPanel();
         saveButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
@@ -84,6 +84,7 @@ public class DoctorDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(600, 500));
         setPreferredSize(new java.awt.Dimension(600, 500));
+        getContentPane().setLayout(new java.awt.BorderLayout());
 
         logoPanel.setLayout(new java.awt.BorderLayout());
         logoPanel.add(logoLabel, java.awt.BorderLayout.CENTER);
@@ -96,7 +97,7 @@ public class DoctorDialog extends javax.swing.JDialog {
         titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
-        formGridPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder(""), "Doctor Information :", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Corbel", 1, 14))); // NOI18N
+        formGridPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder(null), null, null, null, new java.awt.Font("Corbel", 1, 14))); // NOI18N
         formGridPanel.setMinimumSize(new java.awt.Dimension(350, 228));
         formGridPanel.setPreferredSize(new java.awt.Dimension(300, 228));
         formGridPanel.setLayout(new java.awt.GridLayout(5, 2, 5, 15));
