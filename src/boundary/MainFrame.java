@@ -5,6 +5,7 @@ import boundary.DoctorManagementUI.DoctorManagementPanel;
 import boundary.DoctorManagementUI.DoctorSchedulePanel;
 import boundary.PharmacyManagementUI.PharmacyManagementPanel;
 import boundary.PatientManagementUI.PatientManagementPanel;
+import boundary.PharmacyManagementUI.MedicineInformationPanel;
 import java.awt.CardLayout;
 
 /**
@@ -28,6 +29,7 @@ public class MainFrame extends javax.swing.JFrame {
         DoctorSchedulePanel docSchedulePanel = new DoctorSchedulePanel(this);
 
         PharmacyManagementPanel pharPanel = new PharmacyManagementPanel(this);
+        MedicineInformationPanel medInfoPanel = new MedicineInformationPanel(this);
         
         PatientManagementPanel patientPanel = new PatientManagementPanel(this);
 
@@ -39,6 +41,7 @@ public class MainFrame extends javax.swing.JFrame {
         cardPanel.add(docSchedulePanel, "doctorSchedule");
 
         cardPanel.add(pharPanel, "pharmacyManagement");
+        cardPanel.add(medInfoPanel, "medicineInformation");
         
         cardPanel.add(patientPanel, "patientManagement");
 
