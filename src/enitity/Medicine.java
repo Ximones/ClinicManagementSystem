@@ -1,30 +1,37 @@
 package enitity;
 
-import java.time.LocalDate;
+import java.io.Serializable;
 
-/**
- *
- * @author Lee Wan Ching
- */
+public class Medicine implements Serializable {
 
-public class Medicine {
+    private static final long serialVersionUID = 1L;
 
     private String medicineId;
     private String name;
     private String type;
     private int quantity;
     private double price;
-    private LocalDate expiryDate;
 
-    public Medicine(String medicineId, String name, String type, int quantity, double price, LocalDate expiryDate) {
+    // Add this static field
+    private static int medicineIndex = 0;
+
+    public Medicine(String medicineId, String name, String type, int quantity, double price) {
         this.medicineId = medicineId;
         this.name = name;
         this.type = type;
         this.quantity = quantity;
         this.price = price;
-        this.expiryDate = expiryDate;
     }
-    
+
+    // Add these methods for the counter
+    public static int getMedicineIndex() {
+        return medicineIndex;
+    }
+
+    public static void setMedicineIndex(int index) {
+        medicineIndex = index;
+    }
+
     public String getMedicineId() {
         return medicineId;
     }
@@ -65,21 +72,14 @@ public class Medicine {
         this.price = price;
     }
 
-    public LocalDate getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(LocalDate expiryDate) {
-        this.expiryDate = expiryDate;
-    }
-
     @Override
     public String toString() {
-        return "Medicine ID: " + medicineId +
-               "\nName: " + name +
-               "\nType: " + type +
-               "\nQuantity: " + quantity +
-               "\nPrice: RM " + price +
-               "\nExpiry Date: " + expiryDate;
+        return "Medicine{" +
+               "medicineId='" + medicineId + '\'' +
+               ", name='" + name + '\'' +
+               ", type='" + type + '\'' +
+               ", quantity=" + quantity +
+               ", price=" + price +
+               '}';
     }
 }
