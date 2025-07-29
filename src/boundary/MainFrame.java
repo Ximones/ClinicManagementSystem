@@ -6,6 +6,7 @@ import boundary.DoctorManagementUI.DoctorSchedulePanel;
 import boundary.PharmacyManagementUI.PharmacyManagementPanel;
 import boundary.PatientManagementUI.PatientManagementPanel;
 import boundary.PharmacyManagementUI.MedicineInformationPanel;
+import boundary.PatientManagementUI.PatientRegistrationPanel;
 import java.awt.CardLayout;
 
 /**
@@ -32,7 +33,8 @@ public class MainFrame extends javax.swing.JFrame {
         MedicineInformationPanel medInfoPanel = new MedicineInformationPanel(this);
         
         PatientManagementPanel patientPanel = new PatientManagementPanel(this);
-
+           PatientRegistrationPanel patRegPanel = new PatientRegistrationPanel(this);
+           
 
         // Add the panels to the cardPanel with unique names
         cardPanel.add(clinicPanel, "clinicMenu");
@@ -44,6 +46,7 @@ public class MainFrame extends javax.swing.JFrame {
         cardPanel.add(medInfoPanel, "medicineInformation");
         
         cardPanel.add(patientPanel, "patientManagement");
+         cardPanel.add(patRegPanel, "patientRegistration");
 
         // Set frame properties
         this.setTitle("Clinic Management System");
