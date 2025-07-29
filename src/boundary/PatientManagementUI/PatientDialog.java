@@ -7,6 +7,8 @@ package boundary.PatientManagementUI;
 import enitity.Patient;
 import adt.Pair;
 import javax.swing.*;
+import java.time.LocalDate;
+
 
 
 /**
@@ -29,7 +31,7 @@ public class PatientDialog extends javax.swing.JDialog {
       
         
           // Initialize the JComboBox with appropriate gender options
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Male", "Female", "Other" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Male", "Female" }));
         jComboBox1.setSelectedIndex(0); // Set default selection
         
         // Clear default text in text fields
@@ -38,7 +40,10 @@ public class PatientDialog extends javax.swing.JDialog {
         formContactInput.setText("");
         formEmailInput.setText("");
         formAddressInput.setText("");
-        formDateOfRegInput.setText("");
+        formDateOfRegInput.setText(LocalDate.now().toString());
+        formDateOfRegInput.setEditable(false);
+
+
         
         setTitle("Register New Patient");
     }
