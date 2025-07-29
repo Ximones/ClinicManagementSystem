@@ -10,8 +10,10 @@ import enitity.Patient;
 import adt.DoublyLinkedList;
 import adt.Pair; // Assuming Pair is in adt package
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
-import java.io.*; // Import for file I/O
+
 /**
  *
  * @author szepi
@@ -35,133 +37,175 @@ public class PatientRegistrationPanel extends javax.swing.JPanel {
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
         setupTable();
         loadAndDisplayPatients();
+        filterField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                // Called when a character is inserted
+                filterPatients();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                // Called when a character is removed
+                filterPatients();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                // Not typically used for plain text fields, but good to include
+                filterPatients();
+            }
+        });
         jButton1.addActionListener(e -> addPatient());
+        jButton2.addActionListener(e -> {
+        savePatientData();
+        JOptionPane.showMessageDialog(this, "Patient data saved.");
+    });
+
             
     }
     
     
     private void setupTable() {
-        // Initialize DefaultTableModel with column headers, including "Status"
-        tableModel = new DefaultTableModel(
-                new Object[]{"Patient ID", "Name", "Age", "IC", "Gender", "Contact", "Email", "Address", "Date of Reg", "Status"}, 0);
-        patientTable.setModel(tableModel);
-    }
+    tableModel = new DefaultTableModel(
+        new Object[]{"Patient ID", "Name", "Age", "IC", "Gender", "Contact", "Email", "Address", "Date of Reg"}, 0); // Removed "Status"
+    patientTable.setModel(tableModel);
+    tableModel.addTableModelListener(e -> {
+        savePatientData();
+    });
+}
     
     
     private void loadAndDisplayPatients() {
-        int maxId = 0; // To track the highest patient index for auto-generation
+    int maxId = 0;
 
-        // Clear existing table data and in-memory list before loading
-        tableModel.setRowCount(0);
-        patientList.clear(); // Important: Clear the ADT list to avoid duplicates on reload
+    // Clear the table and patient list
+    tableModel.setRowCount(0);
+    patientList = new DoublyLinkedList<>();
 
-        File file = new File(DATA_FILE_NAME);
+    // Read from file
+    DoublyLinkedList<Patient> loadedList =
+        (DoublyLinkedList<Patient>) utility.FileUtils.readDataFromFile("patients");
 
-        // Check if the file exists and is not empty before attempting to load
-        if (file.exists() && file.length() > 0) {
-            try (FileInputStream fis = new FileInputStream(DATA_FILE_NAME);
-                 ObjectInputStream ois = new ObjectInputStream(fis)) {
+    if (loadedList != null) {
+        patientList = loadedList;
+        for (Patient p : patientList) {
+            tableModel.addRow(new Object[]{
+                p.getPatientID(),
+                p.getPatientName(),
+                p.getPatientAge(),
+                p.getPatientIC(),
+                p.getGender(),
+                p.getContact(),
+                p.getEmail(),
+                p.getAddress(),
+                p.getDateOfRegistration()
+            });
 
-                Object obj = ois.readObject();
-                if (obj instanceof DoublyLinkedList) {
-                    patientList = (DoublyLinkedList<Patient>) obj;
-                    System.out.println("Patient data loaded from " + DATA_FILE_NAME);
-
-                    // Re-populate the table and find the max ID
-                    for (Patient p : patientList) { // Corrected for-each loop syntax
-                        tableModel.addRow(new Object[]{
-                            p.getPatientID(),
-                            p.getPatientName(),
-                            p.getPatientAge(),
-                            p.getPatientIC(),
-                            p.getGender(),
-                            p.getContact(),
-                            p.getEmail(),
-                            p.getAddress(),
-                            p.getDateOfRegistration(),
-                            p.getStatus()
-                        });
-
-                        // Update patientIndex based on loaded IDs
-                        try {
-                            String idNumStr = p.getPatientID().substring(1); // "001"
-                            int currentIdNum = Integer.parseInt(idNumStr); // 1
-                            if (currentIdNum > maxId) {
-                                maxId = currentIdNum;
-                            }
-                        } catch (NumberFormatException | StringIndexOutOfBoundsException ex) {
-                            System.err.println("Warning: Could not parse patient ID for index tracking during load: " + p.getPatientID());
-                        }
-                    }
-                    // Set the patientIndex in the Patient class to ensure new IDs continue correctly
-                    Patient.setPatientIndex(maxId);
-
-                } else {
-                    System.err.println("Loaded object is not a DoublyLinkedList of Patients. Starting with a new list.");
-                    // Fallback to empty list if type mismatch or corrupted data
-                    patientList = new DoublyLinkedList<>();
+            try {
+                String idNumStr = p.getPatientID().substring(1);
+                int currentIdNum = Integer.parseInt(idNumStr);
+                if (currentIdNum > maxId) {
+                    maxId = currentIdNum;
                 }
-            } catch (IOException | ClassNotFoundException e) {
-                System.err.println("Error loading patient data: " + e.getMessage());
-                e.printStackTrace();
-                // If an error occurs during load, initialize with an empty list
-                patientList = new DoublyLinkedList<>();
+            } catch (NumberFormatException | StringIndexOutOfBoundsException ex) {
+                System.err.println("Warning: Could not parse patient ID: " + p.getPatientID());
             }
-        } else {
-            System.out.println("Patient data file not found or is empty. Starting with a new list.");
-            // If file doesn't exist or is empty, patientList is already initialized as empty
         }
+        Patient.setPatientIndex(maxId);
+    } else {
+        System.out.println("No patient data found or unable to read file. Starting with empty list.");
     }
-    
-    
-     public void savePatientData() {
-        try (FileOutputStream fos = new FileOutputStream(DATA_FILE_NAME);
-             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
-            oos.writeObject(patientList); // Write the entire DoublyLinkedList object
-            System.out.println("Patient data saved to " + DATA_FILE_NAME);
-        } catch (IOException e) {
-            System.err.println("Error saving patient data: " + e.getMessage());
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error saving patient data: " + e.getMessage(), "Save Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
+}
+
      
-    
+    private void savePatientData() {
+    utility.FileUtils.writeDataToFile("patients", patientList);
+}
+
     
     private void addPatient() {
-        // Create an instance of PatientDialog, passing the parent frame and setting it as modal
-        PatientDialog dialog = new PatientDialog(mainFrame, true); // Use mainFrame as parent for proper centering
-        dialog.setVisible(true);
+    PatientDialog dialog = new PatientDialog(mainFrame, true);
+    dialog.setVisible(true);
 
-        // Retrieve the result after the dialog closes
-        Pair<String, Patient> patientResult = dialog.getResult();
+    Pair<String, Patient> patientResult = dialog.getResult();
 
-        // Check if the dialog was saved (not cancelled)
-        if (patientResult != null) {
-            Patient newPatient = patientResult.getValue(); // Get the Patient object from the Pair
-            
-            // Add the new patient to the in-memory list
-            // Note: loadAndDisplayPatients() will clear and re-add all, so direct insert here might be redundant
-            // if loadAndDisplayPatients() is called immediately after.
-            // However, inserting here maintains list integrity before a full reload.
-            patientList.insertLast(newPatient); 
-            
-            // After adding, save the updated list to the file
-            savePatientData();
-            
-            // After adding and saving, reload and display all patients to reflect changes
-            loadAndDisplayPatients();
+    if (patientResult != null) {
+        Patient newPatient = patientResult.getValue();
+        patientList.insertLast(newPatient);
+        
+        tableModel.addRow(new Object[]{
+            newPatient.getPatientID(),
+            newPatient.getPatientName(),
+            newPatient.getPatientAge(),
+            newPatient.getPatientIC(),
+            newPatient.getGender(),
+            newPatient.getContact(),
+            newPatient.getEmail(),
+            newPatient.getAddress(),
+            newPatient.getDateOfRegistration()
+        });
 
-            JOptionPane.showMessageDialog(this, "Patient " + newPatient.getPatientName() + " (ID: " + newPatient.getPatientID() + ") added successfully!");
-        } else {
-            // User cancelled the dialog
-            JOptionPane.showMessageDialog(this, "Patient registration cancelled.");
+        savePatientData();
+
+        JOptionPane.showMessageDialog(this, "Patient " + newPatient.getPatientName() + " (ID: " + newPatient.getPatientID() + ") added successfully!");
+    } else {
+        JOptionPane.showMessageDialog(this, "Patient registration cancelled.");
+    }
+}
+    
+    private void filterPatients() {
+    String selectedFilter = (String) filterBox.getSelectedItem();
+    String keyword = filterField.getText().trim().toLowerCase();
+
+    tableModel.setRowCount(0);
+
+    for (Patient p : patientList) {
+        String valueToCheck = "";
+        switch (selectedFilter) {
+            case "Patient ID":
+                valueToCheck = p.getPatientID();
+                break;
+            case "Name":
+                valueToCheck = p.getPatientName();
+                break;
+            case "Age":
+                valueToCheck = String.valueOf(p.getPatientAge());
+                break;
+            case "IC":
+                valueToCheck = p.getPatientIC();
+                break;
+            case "Gender":
+                valueToCheck = p.getGender();
+                break;
+            case "Date of Reg":
+                valueToCheck = p.getDateOfRegistration();
+                break;
+        }
+
+        if (valueToCheck.toLowerCase().contains(keyword)) {
+            tableModel.addRow(new Object[]{
+                p.getPatientID(),
+                p.getPatientName(),
+                p.getPatientAge(),
+                p.getPatientIC(),
+                p.getGender(),
+                p.getContact(),
+                p.getEmail(),
+                p.getAddress(),
+                p.getDateOfRegistration()
+            });
         }
     }
+}
 
+    
+    
+    
+    
 
-
-
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -178,13 +222,12 @@ public class PatientRegistrationPanel extends javax.swing.JPanel {
         searchPanel = new javax.swing.JPanel();
         filterLabel = new javax.swing.JLabel();
         filterBox = new javax.swing.JComboBox<>();
-        filterField = new java.awt.TextField();
+        filterField = new javax.swing.JTextField();
         patientTablePanel = new javax.swing.JScrollPane();
         patientTable = new javax.swing.JTable();
         ButtonPanel = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
         add(logoLabel, java.awt.BorderLayout.PAGE_START);
@@ -202,13 +245,10 @@ public class PatientRegistrationPanel extends javax.swing.JPanel {
         filterLabel.setText("Filter By :");
         searchPanel.add(filterLabel);
 
-        filterBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        filterBox.setSelectedIndex(-1);
+        filterBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Patient ID", "Name", "Age", "IC", "Gender", "Date of Reg" }));
         searchPanel.add(filterBox);
 
         filterField.setColumns(15);
-        filterField.setFont(new java.awt.Font("Segoe UI", 0, 12)); // NOI18N
-        filterField.setText("                                     ");
         filterField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterFieldActionPerformed(evt);
@@ -220,18 +260,13 @@ public class PatientRegistrationPanel extends javax.swing.JPanel {
 
         patientTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+
             }
         ));
-        patientTable.setMaximumSize(new java.awt.Dimension(0, 0));
-        patientTable.setMinimumSize(new java.awt.Dimension(0, 0));
-        patientTable.setPreferredSize(new java.awt.Dimension(0, 0));
+        patientTable.getTableHeader().setReorderingAllowed(false);
         patientTablePanel.setViewportView(patientTable);
 
         searchWrapperPanel.add(patientTablePanel, java.awt.BorderLayout.CENTER);
@@ -241,9 +276,6 @@ public class PatientRegistrationPanel extends javax.swing.JPanel {
 
         jButton2.setText("Done");
         ButtonPanel.add(jButton2);
-
-        jButton3.setText("jButton3");
-        ButtonPanel.add(jButton3);
 
         searchWrapperPanel.add(ButtonPanel, java.awt.BorderLayout.PAGE_END);
 
@@ -256,15 +288,13 @@ public class PatientRegistrationPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_filterFieldActionPerformed
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ButtonPanel;
     private javax.swing.JComboBox<String> filterBox;
-    private java.awt.TextField filterField;
+    private javax.swing.JTextField filterField;
     private javax.swing.JLabel filterLabel;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JTable patientTable;
     private javax.swing.JScrollPane patientTablePanel;

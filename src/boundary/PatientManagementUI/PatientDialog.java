@@ -16,7 +16,6 @@ import javax.swing.*;
 public class PatientDialog extends javax.swing.JDialog {
 
       private Pair<String, Patient> result;
-      private javax.swing.JTextField formICInput; 
       
     /**
      * Creates new form PatientDialog
@@ -58,7 +57,7 @@ public class PatientDialog extends javax.swing.JDialog {
         // 1. Get trimmed text from all input fields
         String name = formNameInput.getText().trim();
         String ageStr = formAgeInput.getText().trim();
-        String ic = formICInput.getText().trim(); // Get text from the IC input field
+        String ic = formICNoInput.getText().trim(); // Get text from the IC input field
         String gender = (String) jComboBox1.getSelectedItem();
         String contact = formContactInput.getText().trim();
         String email = formEmailInput.getText().trim();
@@ -126,6 +125,8 @@ public class PatientDialog extends javax.swing.JDialog {
         formGridPanel = new javax.swing.JPanel();
         formNameLabel = new javax.swing.JLabel();
         formNameInput = new javax.swing.JTextField();
+        formICNoLabel = new javax.swing.JLabel();
+        formICNoInput = new javax.swing.JTextField();
         formAgeLabel = new javax.swing.JLabel();
         formAgeInput = new javax.swing.JTextField();
         formGenderLabel = new javax.swing.JLabel();
@@ -169,6 +170,16 @@ public class PatientDialog extends javax.swing.JDialog {
             }
         });
         formGridPanel.add(formNameInput);
+
+        formICNoLabel.setText("Patient IC No :");
+        formGridPanel.add(formICNoLabel);
+
+        formICNoInput.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                formICNoInputActionPerformed(evt);
+            }
+        });
+        formGridPanel.add(formICNoInput);
 
         formAgeLabel.setText("Patient Age :");
         formGridPanel.add(formAgeLabel);
@@ -317,6 +328,10 @@ public class PatientDialog extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
+    private void formICNoInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formICNoInputActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_formICNoInputActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -374,6 +389,8 @@ public class PatientDialog extends javax.swing.JDialog {
     private javax.swing.JLabel formEmailLabel;
     private javax.swing.JLabel formGenderLabel;
     private javax.swing.JPanel formGridPanel;
+    private javax.swing.JTextField formICNoInput;
+    private javax.swing.JLabel formICNoLabel;
     private javax.swing.JTextField formNameInput;
     private javax.swing.JLabel formNameLabel;
     private javax.swing.JPanel formWrapperPanel;

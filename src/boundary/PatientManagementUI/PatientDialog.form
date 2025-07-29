@@ -103,6 +103,16 @@
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="formNameInputActionPerformed"/>
                       </Events>
                     </Component>
+                    <Component class="javax.swing.JLabel" name="formICNoLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Patient IC No :"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="formICNoInput">
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="formICNoInputActionPerformed"/>
+                      </Events>
+                    </Component>
                     <Component class="javax.swing.JLabel" name="formAgeLabel">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Patient Age :"/>
