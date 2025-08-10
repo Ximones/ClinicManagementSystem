@@ -138,6 +138,14 @@
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addMedicineButtonActionPerformed"/>
                       </Events>
                     </Component>
+                    <Component class="javax.swing.JButton" name="generateLowStockReportButton">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Generate Low Stock Report"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="generateLowStockReportButtonActionPerformed"/>
+                      </Events>
+                    </Component>
                     <Component class="javax.swing.JButton" name="doneButton">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Done"/>

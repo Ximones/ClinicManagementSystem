@@ -11,8 +11,6 @@ public class Medicine implements Serializable {
     private String type;
     private int quantity;
     private double price;
-
-    // Add this static field
     private static int medicineIndex = 0;
 
     public Medicine(String medicineId, String name, String type, int quantity, double price) {
@@ -74,12 +72,12 @@ public class Medicine implements Serializable {
 
     @Override
     public String toString() {
-        return "Medicine{" +
-               "medicineId='" + medicineId + '\'' +
-               ", name='" + name + '\'' +
-               ", type='" + type + '\'' +
-               ", quantity=" + quantity +
-               ", price=" + price +
-               '}';
+        return "Medicine{"
+                + "medicineId='" + medicineId + '\''
+                + ", name='" + name + '\''
+                + ", type='" + type + '\''
+                + ", quantity=" + quantity
+                + ", price=" + price
+                + '}';
     }
 }

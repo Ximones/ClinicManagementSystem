@@ -4,21 +4,23 @@ import adt.DoublyLinkedList;
 import adt.Pair;
 import boundary.MainFrame;
 import enitity.Medicine;
+import java.text.DecimalFormat;
 import utility.FileUtils;
 import utility.ImageUtils;
+import utility.ReportGenerator;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author Lee Wan Ching
  */
-
 public class MedicineInformationPanel extends javax.swing.JPanel {
-    
+
     private MainFrame mainFrame;
     private DoublyLinkedList<Pair<String, Medicine>> masterMedicineList;
 
@@ -31,9 +33,20 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         populateMedicineTable(masterMedicineList);
 
         filterField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override public void insertUpdate(DocumentEvent e) { filterTable(); }
-            @Override public void removeUpdate(DocumentEvent e) { filterTable(); }
-            @Override public void changedUpdate(DocumentEvent e) { filterTable(); }
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filterTable();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filterTable();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                filterTable();
+            }
         });
 
         medicineTable.getModel().addTableModelListener(e -> {
@@ -48,13 +61,19 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
                     Object newValue = medicineTable.getValueAt(row, column);
 
                     try {
-                        if (column == 3) {
+                        if (column == 1) {
+                            medicine.setName(newValue.toString());
+                        } else if (column == 3) {
                             int quantity = Integer.parseInt(newValue.toString());
-                            if (quantity < 0) throw new NumberFormatException();
+                            if (quantity < 0) {
+                                throw new NumberFormatException();
+                            }
                             medicine.setQuantity(quantity);
                         } else if (column == 4) {
                             double price = Double.parseDouble(newValue.toString());
-                            if (price < 0) throw new NumberFormatException();
+                            if (price < 0) {
+                                throw new NumberFormatException();
+                            }
                             medicine.setPrice(price);
                         }
                     } catch (NumberFormatException ex) {
@@ -85,9 +104,22 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         DefaultTableModel model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column >= 3; // Quantity and Price only editable
+                return column == 1 || column >= 3;
+            }
+
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                switch (columnIndex) {
+                    case 3:
+                        return Integer.class;
+                    case 4:
+                        return Double.class;
+                    default:
+                        return String.class;
+                }
             }
         };
+
         model.addColumn("ID");
         model.addColumn("Name");
         model.addColumn("Type");
@@ -95,11 +127,28 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         model.addColumn("Price (RM)");
 
         medicineTable.setModel(model);
+        medicineTable.setAutoCreateRowSorter(true);
+
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
+        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer() {
+            @Override
+            protected void setValue(Object value) {
+                if (value instanceof Double) {
+                    setText(decimalFormat.format(value));
+                } else {
+                    super.setValue(value);
+                }
+            }
+        };
+
+        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+
+        medicineTable.getColumnModel().getColumn(4).setCellRenderer(rightRenderer);
     }
 
     private void loadInitialData() {
-        DoublyLinkedList<Pair<String, Medicine>> medicineList =
-                (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
+        DoublyLinkedList<Pair<String, Medicine>> medicineList
+                = (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
 
         if (!medicineList.isEmpty()) {
             Medicine.setMedicineIndex(medicineList.getSize());
@@ -115,15 +164,15 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         for (Pair<String, Medicine> pair : list) {
             Medicine med = pair.getValue();
             model.addRow(new Object[]{
-                    pair.getKey(),
-                    med.getName(),
-                    med.getType(),
-                    med.getQuantity(),
-                    String.format("%.2f", med.getPrice())
+                pair.getKey(),
+                med.getName(),
+                med.getType(),
+                med.getQuantity(),
+                med.getPrice()
             });
         }
     }
-    
+
     private void filterTable() {
         String selectedCriterion = (String) filterBox.getSelectedItem();
         String searchText = filterField.getText().trim().toLowerCase();
@@ -165,17 +214,21 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
 
         populateMedicineTable(searchResults);
     }
-    
+
     private Pair<String, Medicine> findMedicinePairById(String id) {
-        if (id == null || masterMedicineList == null) return null;
+        if (id == null || masterMedicineList == null) {
+            return null;
+        }
 
         for (Pair<String, Medicine> pair : masterMedicineList) {
-            if (id.equals(pair.getKey())) return pair;
+            if (id.equals(pair.getKey())) {
+                return pair;
+            }
         }
 
         return null;
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -198,6 +251,7 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         medicineTable = new javax.swing.JTable();
         ButtonPanel = new javax.swing.JPanel();
         addMedicineButton = new javax.swing.JButton();
+        generateLowStockReportButton = new javax.swing.JButton();
         doneButton = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
@@ -256,6 +310,14 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         });
         ButtonPanel.add(addMedicineButton);
 
+        generateLowStockReportButton.setText("Generate Low Stock Report");
+        generateLowStockReportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                generateLowStockReportButtonActionPerformed(evt);
+            }
+        });
+        ButtonPanel.add(generateLowStockReportButton);
+
         doneButton.setText("Done");
         doneButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -287,8 +349,25 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
 
         Pair<String, Medicine> newMedicinePair = dialog.getResult();
         if (newMedicinePair != null) {
-            masterMedicineList.insertLast(newMedicinePair);
-            populateMedicineTable(masterMedicineList);
+            String newMedicineName = newMedicinePair.getValue().getName();
+            boolean nameExists = false;
+
+            for (Pair<String, Medicine> pair : masterMedicineList) {
+                if (pair.getValue().getName().equalsIgnoreCase(newMedicineName)) {
+                    nameExists = true;
+                    break;
+                }
+            }
+
+            if (nameExists) {
+                JOptionPane.showMessageDialog(this,
+                        "A medicine with this name already exists.",
+                        "Duplicate Medicine Name",
+                        JOptionPane.ERROR_MESSAGE);
+            } else {
+                masterMedicineList.insertLast(newMedicinePair);
+                populateMedicineTable(masterMedicineList);
+            }
         }
     }//GEN-LAST:event_addMedicineButtonActionPerformed
 
@@ -297,6 +376,11 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         mainFrame.showPanel("pharmacyManagement");
     }//GEN-LAST:event_doneButtonActionPerformed
 
+    private void generateLowStockReportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateLowStockReportButtonActionPerformed
+        ReportGenerator.generateLowStockReport(masterMedicineList, 50);
+        JOptionPane.showMessageDialog(this, "Low Stock Report generated successfully!");
+    }//GEN-LAST:event_generateLowStockReportButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ButtonPanel;
     private javax.swing.JButton addMedicineButton;
@@ -304,6 +388,7 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox<String> filterBox;
     private javax.swing.JTextField filterField;
     private javax.swing.JLabel filterLabel;
+    private javax.swing.JButton generateLowStockReportButton;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JPanel logoPanel;
     private javax.swing.JTable medicineTable;

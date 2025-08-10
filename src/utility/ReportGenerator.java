@@ -18,10 +18,14 @@ import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.UnitValue;
 import enitity.DutySlot;
+import enitity.Medicine;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
@@ -219,4 +223,76 @@ public class ReportGenerator {
         }
         return null;
     }
+
+    public static void generateLowStockReport(
+            DoublyLinkedList<Pair<String, Medicine>> medicineList,
+            int threshold) {
+
+        try {
+            String fileName = "Low_Stock_Alert_Report.pdf";
+            PdfWriter writer = new PdfWriter(fileName);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            document.add(new Paragraph("Low-Stock Alert Report").setFontSize(18));
+            document.add(new Paragraph("Threshold: " + threshold));
+            document.add(new Paragraph(" "));
+
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+            DoublyLinkedList<Medicine> lowStockMedicines = new DoublyLinkedList<>();
+
+            for (Pair<String, Medicine> pair : medicineList) {
+                Medicine med = pair.getValue();
+                if (med.getQuantity() <= threshold) {
+                    dataset.addValue(med.getQuantity(), med.getName(), med.getType());
+                    lowStockMedicines.insertLast(med);
+                }
+            }
+
+            JFreeChart barChart = ChartFactory.createBarChart(
+                    "Low Stock Medicines",
+                    "Medicine Type",
+                    "Quantity",
+                    dataset,
+                    PlotOrientation.VERTICAL,
+                    true,
+                    true,
+                    false
+            );
+
+            CategoryPlot plot = barChart.getCategoryPlot();
+            BarRenderer renderer = (BarRenderer) plot.getRenderer();
+            renderer.setItemMargin(0.0);
+
+            File chartFile = new File("low_stock_chart.png");
+            ChartUtils.saveChartAsPNG(chartFile, barChart, 600, 400);
+            Image chartImage = new Image(ImageDataFactory.create("low_stock_chart.png"));
+            document.add(chartImage);
+            document.add(new Paragraph(" "));
+
+            // Add a table for detailed information
+            Table table = new Table(UnitValue.createPercentArray(new float[]{4, 2, 2}))
+                    .setWidth(UnitValue.createPercentValue(100));
+
+            table.addHeaderCell(new Cell().add(new Paragraph("Medicine Name")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Type")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Remaining Stock")));
+
+            for (Medicine med : lowStockMedicines) {
+                table.addCell(new Cell().add(new Paragraph(med.getName())));
+                table.addCell(new Cell().add(new Paragraph(med.getType())));
+                table.addCell(new Cell().add(new Paragraph(String.valueOf(med.getQuantity()))));
+            }
+
+            document.add(table);
+            document.close();
+            chartFile.delete();
+
+            System.out.println("Low Stock Alert Report generated: " + fileName);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
