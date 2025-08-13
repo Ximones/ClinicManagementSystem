@@ -28,17 +28,33 @@ public class QueueDialog extends javax.swing.JDialog {
         ICNoInput.setText("");
     }
     
-    private void savePatientAction(java.awt.event.ActionEvent evt) {
+private void savePatientAction(java.awt.event.ActionEvent evt) {
     String icNumber = ICNoInput.getText().trim();
+
+    // Collect error messages
+    StringBuilder errors = new StringBuilder();
+
+    // 1. Check empty field
     if (icNumber.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Please enter IC Number");
+        errors.append("• Please enter IC Number.\n");
+    }
+
+    // 2. Check IC format: ######-##-####
+    if (!icNumber.matches("^\\d{6}-\\d{2}-\\d{4}$")) {
+        errors.append("• IC must be in format XXXXXX-XX-XXXX with only digits.\n");
+    }
+
+    // Show all errors if any
+    if (errors.length() > 0) {
+        JOptionPane.showMessageDialog(this, errors.toString(), "Input Error", JOptionPane.WARNING_MESSAGE);
         return;
     }
 
+    // 3. Read patients from file
     DoublyLinkedList<Patient> patients =
         (DoublyLinkedList<Patient>) utility.FileUtils.readDataFromFile("patients");
-    Patient foundPatient = null;
 
+    Patient foundPatient = null;
     for (Patient p : patients) {
         if (p.getPatientIC().equalsIgnoreCase(icNumber)) {
             foundPatient = p;
@@ -46,12 +62,14 @@ public class QueueDialog extends javax.swing.JDialog {
         }
     }
 
+    // 4. Show result
     if (foundPatient != null) {
-        this.result = foundPatient; // store the whole patient
-        this.dispose(); // close dialog
+        this.result = foundPatient;
+        this.dispose();
     } else {
-        JOptionPane.showMessageDialog(this, "No patient found with IC: " + icNumber,
-                                      "Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, 
+            "No patient found with IC: " + icNumber,
+            "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
 

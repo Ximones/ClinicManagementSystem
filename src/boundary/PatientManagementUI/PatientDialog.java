@@ -58,58 +58,81 @@ public class PatientDialog extends javax.swing.JDialog {
     }
       
     
-    private void savePatientAction(java.awt.event.ActionEvent evt) {
-        // 1. Get trimmed text from all input fields
-        String name = formNameInput.getText().trim();
-        String ageStr = formAgeInput.getText().trim();
-        String ic = formICNoInput.getText().trim(); // Get text from the IC input field
-        String gender = (String) jComboBox1.getSelectedItem();
-        String contact = formContactInput.getText().trim();
-        String email = formEmailInput.getText().trim();
-        String address = formAddressInput.getText().trim();
-        String date = formDateOfRegInput.getText().trim();
+   private void savePatientAction(java.awt.event.ActionEvent evt) {
+    // 1. Get trimmed text from all input fields
+    String name = formNameInput.getText().trim();
+    String ageStr = formAgeInput.getText().trim();
+    String ic = formICNoInput.getText().trim();
+    String gender = (String) jComboBox1.getSelectedItem();
+    String contact = formContactInput.getText().trim();
+    String email = formEmailInput.getText().trim();
+    String address = formAddressInput.getText().trim();
+    String date = formDateOfRegInput.getText().trim();
 
-        // 2. Perform **Validation**
-        if ( name.isEmpty() || ageStr.isEmpty() || ic.isEmpty() ||
-            gender == null || gender.isEmpty() || contact.isEmpty() || email.isEmpty() ||
-            address.isEmpty() || date.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please fill in all fields.", "Input Error", JOptionPane.WARNING_MESSAGE);
-            return; // Stop execution if validation fails
-        }
+    // StringBuilder to collect all error messages
+    StringBuilder errors = new StringBuilder();
 
-        int age;
-        try {
-            age = Integer.parseInt(ageStr);
-            if (age <= 0) {
-                JOptionPane.showMessageDialog(this, "Age must be a positive number.", "Input Error", JOptionPane.WARNING_MESSAGE);
-                return; // Stop execution if validation fails
-            }
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Age must be a valid number.", "Input Error", JOptionPane.ERROR_MESSAGE);
-            return; // Stop execution if validation fails
-        }
-
-        // 3. If validation passes, create Patient object
-        // Ensure the constructor matches your Patient entity class:
-          try {
-            // Use the Patient() constructor that auto-generates the ID
-            Patient newPatient = new Patient();
-            newPatient.setPatientName(name);
-            newPatient.setPatientAge(age);
-            newPatient.setPatientIC(ic);
-            newPatient.setGender(gender);
-            newPatient.setContact(contact);
-            newPatient.setEmail(email);
-            newPatient.setAddress(address);
-            newPatient.setDateOfRegistration(date);
-            // Status is "Active" by default from Patient constructor
-
-            this.result = new Pair<>(newPatient.getPatientID(), newPatient); // Use the auto-generated ID
-            dispose(); // Close dialog after successful save
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error creating patient data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
+    // 1. Check for empty fields
+    if (name.isEmpty() || ageStr.isEmpty() || ic.isEmpty() ||
+        gender == null || gender.isEmpty() || contact.isEmpty() ||
+        email.isEmpty() || address.isEmpty() || date.isEmpty()) {
+        errors.append("• Please fill in all fields.\n");
     }
+
+    // 2. Name validation
+    if (!name.matches("^[A-Za-z ]+$")) {
+        errors.append("• Name must contain only alphabets and spaces.\n");
+    }
+
+    // 3. IC format validation
+    if (!ic.matches("^\\d{6}-\\d{2}-\\d{4}$")) {
+        errors.append("• IC must be in format XXXXXX-XX-XXXX with only digits.\n");
+    }
+
+    // 4. Age validation
+    try {
+        int age = Integer.parseInt(ageStr);
+        if (age <= 0) {
+            errors.append("• Age must be greater than 0.\n");
+        }
+    } catch (NumberFormatException ex) {
+        errors.append("• Age must be a valid number.\n");
+    }
+
+    // 5. Phone validation
+    if (!contact.matches("^\\d+$")) {
+        errors.append("• Phone number must contain only digits.\n");
+    }
+
+    // 6. Email validation
+    if (!email.matches("^[A-Za-z0-9._%+-]+@gmail\\.com$")) {
+        errors.append("• Email must be a valid Gmail address ending with @gmail.com.\n");
+    }
+
+    // Show all collected errors if any
+    if (errors.length() > 0) {
+        JOptionPane.showMessageDialog(this, errors.toString(), "Input Errors", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+
+    // 7. If validation passes → create Patient
+    try {
+        Patient newPatient = new Patient();
+        newPatient.setPatientName(name);
+        newPatient.setPatientAge(Integer.parseInt(ageStr));
+        newPatient.setPatientIC(ic);
+        newPatient.setGender(gender);
+        newPatient.setContact(contact);
+        newPatient.setEmail(email);
+        newPatient.setAddress(address);
+        newPatient.setDateOfRegistration(date);
+
+        this.result = new Pair<>(newPatient.getPatientID(), newPatient);
+        dispose();
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, "Error creating patient data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
 
 
    
