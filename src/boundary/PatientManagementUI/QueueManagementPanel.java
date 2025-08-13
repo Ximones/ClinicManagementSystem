@@ -8,6 +8,7 @@ import adt.DoublyLinkedList;
 import boundary.MainFrame;
 import enitity.Patient;
 import enitity.QueueEntry;
+import javax.swing.table.DefaultTableModel;
 import utility.ImageUtils;
 
 /**
@@ -25,7 +26,8 @@ public class QueueManagementPanel extends javax.swing.JPanel {
          this.mainFrame = mainFrame;
         initComponents();
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
-    
+        loadQueueData();
+        displayQueueData();
     }
 
     private int lastNumber = 1000; // starting number
@@ -41,13 +43,43 @@ public class QueueManagementPanel extends javax.swing.JPanel {
 
     if (savedQueue != null) {
         queueList = savedQueue;
+    } else {
+        queueList = new DoublyLinkedList<>();
     }
 }
+
 
     
     private void saveQueueData() {
     utility.FileUtils.writeDataToFile("queue", queueList);
 }
+    
+    private void displayQueueData() {
+        DefaultTableModel model = (DefaultTableModel) queueTable.getModel();
+        
+        // Clear existing table data
+        model.setRowCount(0);
+
+        // Set column identifiers if not already set
+        if (model.getColumnCount() == 0) {
+            model.setColumnIdentifiers(new String[] {
+                "Patient ID", "Patient Name", "IC No", "Queue No", "Status"
+            });
+        }
+        
+        // Loop through queueList and add rows to the table
+        for (QueueEntry entry : queueList) {
+            Patient patient = entry.getPatient();
+            model.addRow(new Object[] {
+                patient.getPatientID(),
+                patient.getPatientName(),
+                patient.getPatientIC(),
+                entry.getQueueNumber(),
+                entry.getStatus()
+            });
+        }
+    }
+
 
 
     /**
@@ -185,6 +217,7 @@ if (selectedPatient != null) {
     }//GEN-LAST:event_filterBoxActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        saveQueueData();
         mainFrame.showPanel("patientManagement");
     }//GEN-LAST:event_jButton2ActionPerformed
 
