@@ -24,7 +24,6 @@ public class PatientRegistrationPanel extends javax.swing.JPanel {
      private DoublyLinkedList<Patient> patientList = new DoublyLinkedList<>();
      private DefaultTableModel tableModel;
      
-      private static final String DATA_FILE_NAME = "patients.ser"; // Using .ser for serialized objects
      
     /**
      * Creates new form PatientRegistrationPanel
@@ -272,9 +271,19 @@ public class PatientRegistrationPanel extends javax.swing.JPanel {
         searchWrapperPanel.add(patientTablePanel, java.awt.BorderLayout.CENTER);
 
         jButton1.setText("Add Patient");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
         ButtonPanel.add(jButton1);
 
         jButton2.setText("Done");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
         ButtonPanel.add(jButton2);
 
         searchWrapperPanel.add(ButtonPanel, java.awt.BorderLayout.PAGE_END);
@@ -287,6 +296,14 @@ public class PatientRegistrationPanel extends javax.swing.JPanel {
     private void filterFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterFieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_filterFieldActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+         mainFrame.showPanel("patientManagement");
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ButtonPanel;

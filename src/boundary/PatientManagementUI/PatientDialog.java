@@ -279,7 +279,7 @@ public class PatientDialog extends javax.swing.JDialog {
                 .addComponent(saveButton)
                 .addGap(45, 45, 45)
                 .addComponent(cancelButton)
-                .addContainerGap(187, Short.MAX_VALUE))
+                .addContainerGap(284, Short.MAX_VALUE))
         );
         buttonPanelLayout.setVerticalGroup(
             buttonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
