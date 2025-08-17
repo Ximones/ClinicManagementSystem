@@ -19,6 +19,10 @@ import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.UnitValue;
 import enitity.DutySlot;
 import enitity.Medicine;
+import enitity.Patient;
+import enitity.QueueEntry;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
@@ -28,6 +32,9 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
+
+
+
 
 public class ReportGenerator {
 
@@ -294,5 +301,79 @@ public class ReportGenerator {
             e.printStackTrace();
         }
     }
+    
+
+
+public static void generateQueueStatisticsReport(DoublyLinkedList<QueueEntry> queueList) {
+    try {
+        String fileName = "Queue_Statistics_Report.pdf";
+        long totalWaitingTime = 0;
+        long longestWaitingTime = 0;
+        int count = 0;
+
+        for (QueueEntry entry : queueList) {
+            if (entry.getStartConsultTime() > 0) { // consultation started
+                long waitingTime = (entry.getStartConsultTime() - entry.getEnqueueTime()) / 1000; // seconds
+                totalWaitingTime += waitingTime;
+                if (waitingTime > longestWaitingTime) {
+                    longestWaitingTime = waitingTime;
+                }
+                count++;
+            }
+        }
+
+        double averageWaitingTime = (count > 0) ? (double) totalWaitingTime / count : 0;
+
+        // --- chart and pdf code (same as yours) ---
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        dataset.addValue(averageWaitingTime, "Waiting Times", "Average");
+        dataset.addValue(longestWaitingTime, "Waiting Times", "Longest");
+
+        JFreeChart barChart = ChartFactory.createBarChart(
+                "Queue Waiting Times",
+                "Type",
+                "Seconds",
+                dataset,
+                PlotOrientation.VERTICAL,
+                true, true, false
+        );
+
+        File chartFile = new File("queue_statistics_chart.png");
+        ChartUtils.saveChartAsPNG(chartFile, barChart, 500, 350);
+
+        PdfWriter writer = new PdfWriter(fileName);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        document.add(new Paragraph("Queue Statistics Report").setFontSize(18));
+        document.add(new Paragraph("Average and longest waiting times in the queue:"));
+        document.add(new Paragraph(" "));
+
+        Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
+        document.add(chartImage);
+
+        Table table = new Table(UnitValue.createPercentArray(new float[]{2, 2}))
+                .setWidth(UnitValue.createPercentValue(100));
+        table.addHeaderCell(new Cell().add(new Paragraph("Metric")));
+        table.addHeaderCell(new Cell().add(new Paragraph("Value (seconds)")));
+        table.addCell("Average Waiting Time");
+        table.addCell(String.format("%.2f", averageWaitingTime));
+        table.addCell("Longest Waiting Time");
+        table.addCell(String.valueOf(longestWaitingTime));
+
+        document.add(new Paragraph(" "));
+        document.add(table);
+        document.close();
+        chartFile.delete();
+
+        System.out.println("Queue Statistics Report generated: " + fileName);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
+
+
+    
 
 }

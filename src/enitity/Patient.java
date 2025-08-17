@@ -5,6 +5,7 @@
 package enitity;
 
 import java.io.Serializable; 
+import java.time.LocalDateTime;
 
 /**
  *
@@ -14,6 +15,8 @@ public class Patient implements Serializable {
     
     private static final long serialVersionUID = 1L;
     private static int patientIndex = 0;
+    private LocalDateTime enqueueTime;
+    private LocalDateTime startTime;
     String patientID;
     String patientName;
     int patientAge;
@@ -45,6 +48,12 @@ public class Patient implements Serializable {
         this.status = "Active";
     }
    
+   public LocalDateTime getEnqueueTime() { return enqueueTime; }
+   public void setEnqueueTime(LocalDateTime enqueueTime) { this.enqueueTime = enqueueTime; }
+
+   public LocalDateTime getStartTime() { return startTime; }
+   public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
+   
      private static String generatePatientID() {
         patientIndex++;
         return String.format("P%03d", patientIndex); // e.g., P001, P002
@@ -54,6 +63,11 @@ public class Patient implements Serializable {
     public static int getPatientIndex() {
         return patientIndex;
     }
+    
+    public void setPatientID(String patientID) {
+    this.patientID = patientID;
+}
+
 
     public static void setPatientIndex(int index) {
         patientIndex = index;

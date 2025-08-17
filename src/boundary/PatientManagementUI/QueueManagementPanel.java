@@ -5,11 +5,14 @@
 package boundary.PatientManagementUI;
 
 import adt.DoublyLinkedList;
+import adt.Node;
 import boundary.MainFrame;
 import enitity.Patient;
 import enitity.QueueEntry;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import utility.ImageUtils;
+import utility.ReportGenerator;
 
 /**
  *
@@ -25,6 +28,7 @@ public class QueueManagementPanel extends javax.swing.JPanel {
     public QueueManagementPanel(MainFrame mainFrame) {
          this.mainFrame = mainFrame;
         initComponents();
+        
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
         loadQueueData();
         displayQueueData();
@@ -54,31 +58,38 @@ public class QueueManagementPanel extends javax.swing.JPanel {
     utility.FileUtils.writeDataToFile("queue", queueList);
 }
     
-    private void displayQueueData() {
-        DefaultTableModel model = (DefaultTableModel) queueTable.getModel();
-        
-        // Clear existing table data
-        model.setRowCount(0);
+private void displayQueueData() {
+    DefaultTableModel model = (DefaultTableModel) queueTable.getModel();
 
-        // Set column identifiers if not already set
-        if (model.getColumnCount() == 0) {
-            model.setColumnIdentifiers(new String[] {
-                "Patient ID", "Patient Name", "IC No", "Queue No", "Status"
-            });
-        }
-        
-        // Loop through queueList and add rows to the table
-        for (QueueEntry entry : queueList) {
-            Patient patient = entry.getPatient();
-            model.addRow(new Object[] {
-                patient.getPatientID(),
-                patient.getPatientName(),
-                patient.getPatientIC(),
-                entry.getQueueNumber(),
-                entry.getStatus()
-            });
-        }
+    // Clear existing table data
+    model.setRowCount(0);
+
+    // Set column identifiers if not already set
+    if (model.getColumnCount() == 0) {
+        model.setColumnIdentifiers(new String[] {
+            "Patient ID", "Patient Name", "IC No", 
+            "Queue No", "Status", 
+            "Enqueue Time", "Start Time",
+            "Waiting Time"
+        });
     }
+
+    // Loop through queueList and add rows to the table
+    for (QueueEntry entry : queueList) {
+        Patient patient = entry.getPatient();
+        model.addRow(new Object[] {
+            patient.getPatientID(),
+            patient.getPatientName(),
+            patient.getPatientIC(),
+            entry.getQueueNumber(),
+            entry.getStatus(),
+            entry.getFormattedEnqueueTime(),
+            entry.getFormattedStartTime(),
+            entry.getFormattedWaitingTime()
+        });
+    }
+}
+
 
 
 
@@ -103,6 +114,7 @@ public class QueueManagementPanel extends javax.swing.JPanel {
         queueTable = new javax.swing.JTable();
         ButtonPanel = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
@@ -158,6 +170,14 @@ public class QueueManagementPanel extends javax.swing.JPanel {
             }
         });
         ButtonPanel.add(jButton1);
+
+        jButton3.setText("Generate Report");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+        ButtonPanel.add(jButton3);
 
         jButton2.setText("Done");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
@@ -221,6 +241,11 @@ if (selectedPatient != null) {
         mainFrame.showPanel("patientManagement");
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        ReportGenerator.generateQueueStatisticsReport(queueList);
+         JOptionPane.showMessageDialog(this, "Queue Statistics Report generated successfully!");
+    }//GEN-LAST:event_jButton3ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ButtonPanel;
@@ -229,6 +254,7 @@ if (selectedPatient != null) {
     private javax.swing.JLabel filterLabel;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JTable queueTable;
     private javax.swing.JScrollPane queueTablePanel;

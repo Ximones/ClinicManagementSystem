@@ -41,7 +41,6 @@ public class PatientManagementPanel extends javax.swing.JPanel {
         buttonPanel = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton5 = new javax.swing.JButton();
 
@@ -78,15 +77,6 @@ public class PatientManagementPanel extends javax.swing.JPanel {
         });
         buttonPanel.add(jButton3);
 
-        jButton4.setText("Reports");
-        jButton4.setPreferredSize(new java.awt.Dimension(200, 50));
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
-            }
-        });
-        buttonPanel.add(jButton4);
-
         jButton2.setText("Main Menu");
         jButton2.setPreferredSize(new java.awt.Dimension(200, 50));
         jButton2.addActionListener(new java.awt.event.ActionListener() {
@@ -122,10 +112,6 @@ public class PatientManagementPanel extends javax.swing.JPanel {
         mainFrame.showPanel("queueManagement");
     }//GEN-LAST:event_jButton3ActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        mainFrame.showPanel("records");
-    }//GEN-LAST:event_jButton4ActionPerformed
-
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
        mainFrame.dispose();
     }//GEN-LAST:event_jButton5ActionPerformed
@@ -142,7 +128,6 @@ public class PatientManagementPanel extends javax.swing.JPanel {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JLabel titleLabel;
