@@ -21,8 +21,11 @@ import enitity.DutySlot;
 import enitity.Medicine;
 import enitity.Patient;
 import enitity.QueueEntry;
+import java.awt.Color;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
@@ -32,9 +35,6 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
-
-
-
 
 public class ReportGenerator {
 
@@ -245,20 +245,22 @@ public class ReportGenerator {
             document.add(new Paragraph("Threshold: " + threshold));
             document.add(new Paragraph(" "));
 
+            // Create dataset for stacked bar chart
             DefaultCategoryDataset dataset = new DefaultCategoryDataset();
             DoublyLinkedList<Medicine> lowStockMedicines = new DoublyLinkedList<>();
 
             for (Pair<String, Medicine> pair : medicineList) {
                 Medicine med = pair.getValue();
                 if (med.getQuantity() <= threshold) {
-                    dataset.addValue(med.getQuantity(), med.getName(), med.getType());
+                    dataset.addValue(med.getQuantity(), med.getName(), med.getCategory());
                     lowStockMedicines.insertLast(med);
                 }
             }
 
-            JFreeChart barChart = ChartFactory.createBarChart(
-                    "Low Stock Medicines",
-                    "Medicine Type",
+            // Create stacked vertical bar chart
+            JFreeChart stackedBarChart = ChartFactory.createStackedBarChart(
+                    "Low Stock Medicines by Category",
+                    "Category",
                     "Quantity",
                     dataset,
                     PlotOrientation.VERTICAL,
@@ -267,27 +269,46 @@ public class ReportGenerator {
                     false
             );
 
-            CategoryPlot plot = barChart.getCategoryPlot();
+            // Customize colors
+            CategoryPlot plot = stackedBarChart.getCategoryPlot();
             BarRenderer renderer = (BarRenderer) plot.getRenderer();
-            renderer.setItemMargin(0.0);
 
-            File chartFile = new File("low_stock_chart.png");
-            ChartUtils.saveChartAsPNG(chartFile, barChart, 600, 400);
-            Image chartImage = new Image(ImageDataFactory.create("low_stock_chart.png"));
+            // Generate unique colors for each medicine
+            Map<String, Color> medicineColors = new HashMap<>();
+            int colorIndex = 0;
+            Color[] colors = new Color[]{
+                Color.decode("#1f77b4"), Color.decode("#ff7f0e"), Color.decode("#2ca02c"),
+                Color.decode("#d62728"), Color.decode("#9467bd"), Color.decode("#8c564b"),
+                Color.decode("#e377c2"), Color.decode("#7f7f7f"), Color.decode("#bcbd22"),
+                Color.decode("#17becf")
+            };
+
+            for (int i = 0; i < dataset.getRowCount(); i++) {
+                String medicineName = (String) dataset.getRowKey(i);
+                Color color = colors[colorIndex % colors.length];
+                medicineColors.put(medicineName, color);
+                renderer.setSeriesPaint(i, color);
+                colorIndex++;
+            }
+
+            File chartFile = new File("low_stock_stacked_chart.png");
+            ChartUtils.saveChartAsPNG(chartFile, stackedBarChart, 700, 450);
+
+            Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
             document.add(chartImage);
             document.add(new Paragraph(" "));
 
-            // Add a table for detailed information
+            // Table for detailed information
             Table table = new Table(UnitValue.createPercentArray(new float[]{4, 2, 2}))
                     .setWidth(UnitValue.createPercentValue(100));
 
             table.addHeaderCell(new Cell().add(new Paragraph("Medicine Name")));
-            table.addHeaderCell(new Cell().add(new Paragraph("Type")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Category")));
             table.addHeaderCell(new Cell().add(new Paragraph("Remaining Stock")));
 
             for (Medicine med : lowStockMedicines) {
                 table.addCell(new Cell().add(new Paragraph(med.getName())));
-                table.addCell(new Cell().add(new Paragraph(med.getType())));
+                table.addCell(new Cell().add(new Paragraph(med.getCategory())));
                 table.addCell(new Cell().add(new Paragraph(String.valueOf(med.getQuantity()))));
             }
 
@@ -301,79 +322,73 @@ public class ReportGenerator {
             e.printStackTrace();
         }
     }
-    
 
+    public static void generateQueueStatisticsReport(DoublyLinkedList<QueueEntry> queueList) {
+        try {
+            String fileName = "Queue_Statistics_Report.pdf";
+            long totalWaitingTime = 0;
+            long longestWaitingTime = 0;
+            int count = 0;
 
-public static void generateQueueStatisticsReport(DoublyLinkedList<QueueEntry> queueList) {
-    try {
-        String fileName = "Queue_Statistics_Report.pdf";
-        long totalWaitingTime = 0;
-        long longestWaitingTime = 0;
-        int count = 0;
-
-        for (QueueEntry entry : queueList) {
-            if (entry.getStartConsultTime() > 0) { // consultation started
-                long waitingTime = (entry.getStartConsultTime() - entry.getEnqueueTime()) / 1000; // seconds
-                totalWaitingTime += waitingTime;
-                if (waitingTime > longestWaitingTime) {
-                    longestWaitingTime = waitingTime;
+            for (QueueEntry entry : queueList) {
+                if (entry.getStartConsultTime() > 0) { // consultation started
+                    long waitingTime = (entry.getStartConsultTime() - entry.getEnqueueTime()) / 1000; // seconds
+                    totalWaitingTime += waitingTime;
+                    if (waitingTime > longestWaitingTime) {
+                        longestWaitingTime = waitingTime;
+                    }
+                    count++;
                 }
-                count++;
             }
+
+            double averageWaitingTime = (count > 0) ? (double) totalWaitingTime / count : 0;
+
+            // --- chart and pdf code (same as yours) ---
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+            dataset.addValue(averageWaitingTime, "Waiting Times", "Average");
+            dataset.addValue(longestWaitingTime, "Waiting Times", "Longest");
+
+            JFreeChart barChart = ChartFactory.createBarChart(
+                    "Queue Waiting Times",
+                    "Type",
+                    "Seconds",
+                    dataset,
+                    PlotOrientation.VERTICAL,
+                    true, true, false
+            );
+
+            File chartFile = new File("queue_statistics_chart.png");
+            ChartUtils.saveChartAsPNG(chartFile, barChart, 500, 350);
+
+            PdfWriter writer = new PdfWriter(fileName);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            document.add(new Paragraph("Queue Statistics Report").setFontSize(18));
+            document.add(new Paragraph("Average and longest waiting times in the queue:"));
+            document.add(new Paragraph(" "));
+
+            Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
+            document.add(chartImage);
+
+            Table table = new Table(UnitValue.createPercentArray(new float[]{2, 2}))
+                    .setWidth(UnitValue.createPercentValue(100));
+            table.addHeaderCell(new Cell().add(new Paragraph("Metric")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Value (seconds)")));
+            table.addCell("Average Waiting Time");
+            table.addCell(String.format("%.2f", averageWaitingTime));
+            table.addCell("Longest Waiting Time");
+            table.addCell(String.valueOf(longestWaitingTime));
+
+            document.add(new Paragraph(" "));
+            document.add(table);
+            document.close();
+            chartFile.delete();
+
+            System.out.println("Queue Statistics Report generated: " + fileName);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        double averageWaitingTime = (count > 0) ? (double) totalWaitingTime / count : 0;
-
-        // --- chart and pdf code (same as yours) ---
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        dataset.addValue(averageWaitingTime, "Waiting Times", "Average");
-        dataset.addValue(longestWaitingTime, "Waiting Times", "Longest");
-
-        JFreeChart barChart = ChartFactory.createBarChart(
-                "Queue Waiting Times",
-                "Type",
-                "Seconds",
-                dataset,
-                PlotOrientation.VERTICAL,
-                true, true, false
-        );
-
-        File chartFile = new File("queue_statistics_chart.png");
-        ChartUtils.saveChartAsPNG(chartFile, barChart, 500, 350);
-
-        PdfWriter writer = new PdfWriter(fileName);
-        PdfDocument pdf = new PdfDocument(writer);
-        Document document = new Document(pdf);
-
-        document.add(new Paragraph("Queue Statistics Report").setFontSize(18));
-        document.add(new Paragraph("Average and longest waiting times in the queue:"));
-        document.add(new Paragraph(" "));
-
-        Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
-        document.add(chartImage);
-
-        Table table = new Table(UnitValue.createPercentArray(new float[]{2, 2}))
-                .setWidth(UnitValue.createPercentValue(100));
-        table.addHeaderCell(new Cell().add(new Paragraph("Metric")));
-        table.addHeaderCell(new Cell().add(new Paragraph("Value (seconds)")));
-        table.addCell("Average Waiting Time");
-        table.addCell(String.format("%.2f", averageWaitingTime));
-        table.addCell("Longest Waiting Time");
-        table.addCell(String.valueOf(longestWaitingTime));
-
-        document.add(new Paragraph(" "));
-        document.add(table);
-        document.close();
-        chartFile.delete();
-
-        System.out.println("Queue Statistics Report generated: " + fileName);
-    } catch (Exception e) {
-        e.printStackTrace();
     }
-}
-
-
-
-    
 
 }

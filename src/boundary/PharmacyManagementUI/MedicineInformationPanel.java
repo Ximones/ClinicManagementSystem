@@ -61,20 +61,39 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
                     Object newValue = medicineTable.getValueAt(row, column);
 
                     try {
-                        if (column == 1) {
-                            medicine.setName(newValue.toString());
-                        } else if (column == 3) {
-                            int quantity = Integer.parseInt(newValue.toString());
-                            if (quantity < 0) {
-                                throw new NumberFormatException();
-                            }
-                            medicine.setQuantity(quantity);
-                        } else if (column == 4) {
-                            double price = Double.parseDouble(newValue.toString());
-                            if (price < 0) {
-                                throw new NumberFormatException();
-                            }
-                            medicine.setPrice(price);
+                        switch (column) {
+                            case 0:
+                                medicine.setMedicineId(newValue.toString());
+                                break;
+                            case 1:
+                                medicine.setName(newValue.toString());
+                                break;
+                            case 2:
+                                medicine.setBrandName(newValue.toString());
+                                break;
+                            case 3:
+                                medicine.setCategory(newValue.toString());
+                                break;
+                            case 4:
+                                medicine.setFormulation(newValue.toString());
+                                break;
+                            case 5:
+                                medicine.setDosageForm(newValue.toString());
+                                break;
+                            case 6:
+                                int quantity = Integer.parseInt(newValue.toString());
+                                if (quantity < 0) {
+                                    throw new NumberFormatException();
+                                }
+                                medicine.setQuantity(quantity);
+                                break;
+                            case 7:
+                                double price = Double.parseDouble(newValue.toString());
+                                if (price < 0) {
+                                    throw new NumberFormatException();
+                                }
+                                medicine.setPrice(price);
+                                break;
                         }
                     } catch (NumberFormatException ex) {
                         JOptionPane.showMessageDialog(this,
@@ -93,7 +112,10 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         DoublyLinkedList<String> filterCriteria = new DoublyLinkedList<>();
         filterCriteria.insertLast("ID");
         filterCriteria.insertLast("Name");
-        filterCriteria.insertLast("Type");
+        filterCriteria.insertLast("Brand Name");
+        filterCriteria.insertLast("Category");
+        filterCriteria.insertLast("Formulation");
+        filterCriteria.insertLast("Dosage");
         filterCriteria.insertLast("Quantity");
         filterCriteria.insertLast("Price");
 
@@ -104,16 +126,16 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         DefaultTableModel model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 1 || column >= 3;
+                return column != 0;
             }
 
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 switch (columnIndex) {
-                    case 3:
-                        return Integer.class;
-                    case 4:
-                        return Double.class;
+                    case 6:
+                        return Integer.class; // quantity
+                    case 7:
+                        return Double.class;  // price
                     default:
                         return String.class;
                 }
@@ -122,8 +144,11 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
 
         model.addColumn("ID");
         model.addColumn("Name");
-        model.addColumn("Type");
-        model.addColumn("Remaining Quantity");
+        model.addColumn("Brand Name");
+        model.addColumn("Category");
+        model.addColumn("Formulation");
+        model.addColumn("Dosage");
+        model.addColumn("Quantity");
         model.addColumn("Price (RM)");
 
         medicineTable.setModel(model);
@@ -140,10 +165,26 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
                 }
             }
         };
-
         rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        medicineTable.getColumnModel().getColumn(7).setCellRenderer(rightRenderer);
 
-        medicineTable.getColumnModel().getColumn(4).setCellRenderer(rightRenderer);
+        // Category ComboBox editor
+        String[] categories = {
+            "Antibiotic", "Analgesic", "Antipyretic", "Antihistamine", "Antiviral",
+            "Antifungal", "Antidepressant", "Cardiovascular", "Respiratory",
+            "Gastrointestinal", "Dermatological", "Vitamin / Supplement", "Other"
+        };
+        JComboBox<String> categoryComboBox = new JComboBox<>(categories);
+        medicineTable.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(categoryComboBox));
+
+        // Formulation ComboBox editor
+        String[] formulations = {
+            "Tablet", "Capsule", "Liquid", "Syrup", "Ointment", "Cream", "Gel",
+            "Injection", "Inhaler", "Drops", "Suppository", "Powder", "Patch", "Spray"
+        };
+        JComboBox<String> formulationComboBox = new JComboBox<>(formulations);
+        medicineTable.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(formulationComboBox));
+
     }
 
     private void loadInitialData() {
@@ -166,11 +207,15 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
             model.addRow(new Object[]{
                 pair.getKey(),
                 med.getName(),
-                med.getType(),
+                med.getBrandName(),
+                med.getCategory(),
+                med.getFormulation(),
+                med.getDosageForm(),
                 med.getQuantity(),
                 med.getPrice()
             });
         }
+
     }
 
     private void filterTable() {
@@ -196,8 +241,17 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
                 case "Name":
                     match = med.getName().toLowerCase().contains(searchText);
                     break;
-                case "Type":
-                    match = med.getType().toLowerCase().contains(searchText);
+                case "Brand Name":
+                    match = med.getBrandName().toLowerCase().contains(searchText);
+                    break;
+                case "Category":
+                    match = med.getCategory().toLowerCase().contains(searchText);
+                    break;
+                case "Formulation":
+                    match = med.getFormulation().toLowerCase().contains(searchText);
+                    break;
+                case "Dosage Form":
+                    match = med.getDosageForm().toLowerCase().contains(searchText);
                     break;
                 case "Quantity":
                     match = Integer.toString(med.getQuantity()).contains(searchText);

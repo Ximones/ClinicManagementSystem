@@ -8,20 +8,28 @@ public class Medicine implements Serializable {
 
     private String medicineId;
     private String name;
-    private String type;
+    private String brandName;
+    private String category;
+    private String formulation;
+    private String dosageForm;
     private int quantity;
     private double price;
+
     private static int medicineIndex = 0;
 
-    public Medicine(String medicineId, String name, String type, int quantity, double price) {
+    public Medicine(String medicineId, String name, String brandName, String category,
+            String formulation, String dosageForm,
+            int quantity, double price) {
         this.medicineId = medicineId;
         this.name = name;
-        this.type = type;
+        this.brandName = brandName;
+        this.category = category;
+        this.formulation = formulation;
+        this.dosageForm = dosageForm;
         this.quantity = quantity;
         this.price = price;
     }
 
-    // Add these methods for the counter
     public static int getMedicineIndex() {
         return medicineIndex;
     }
@@ -46,12 +54,36 @@ public class Medicine implements Serializable {
         this.name = name;
     }
 
-    public String getType() {
-        return type;
+    public String getBrandName() {
+        return brandName;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getFormulation() {
+        return formulation;
+    }
+
+    public void setFormulation(String formulation) {
+        this.formulation = formulation;
+    }
+
+    public String getDosageForm() {
+        return dosageForm;
+    }
+
+    public void setDosageForm(String dosageForm) {
+        this.dosageForm = dosageForm;
     }
 
     public int getQuantity() {
@@ -75,7 +107,10 @@ public class Medicine implements Serializable {
         return "Medicine{"
                 + "medicineId='" + medicineId + '\''
                 + ", name='" + name + '\''
-                + ", type='" + type + '\''
+                + ", brandName='" + brandName + '\''
+                + ", category='" + category + '\''
+                + ", formulation='" + formulation + '\''
+                + ", dosageForm='" + dosageForm + '\''
                 + ", quantity=" + quantity
                 + ", price=" + price
                 + '}';
