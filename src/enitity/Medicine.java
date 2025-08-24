@@ -118,13 +118,20 @@ public class Medicine implements Comparable<Medicine>, Serializable {
 
     @Override
     public int compareTo(Medicine other) {
-//        // First, compare by day of the week
-//        int dayCompare = this.dayOfWeek.compareTo(other.dayOfWeek);
-//        if (dayCompare != 0) {
-//            return dayCompare;
-//        }
-//        // If days are the same, then compare by shift
-//        return this.shift.compareTo(other.shift);
-    return 0;
+        // First compare by category
+        int categoryCompare = this.category.compareToIgnoreCase(other.category);
+        if (categoryCompare != 0) {
+            return categoryCompare;
+        }
+
+        // If category is the same, then compare by name
+        int nameCompare = this.name.compareToIgnoreCase(other.name);
+        if (nameCompare != 0) {
+            return nameCompare;
+        }
+
+        // If name also the same, then compare by price
+        return Double.compare(this.price, other.price);
     }
+
 }
