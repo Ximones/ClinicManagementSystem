@@ -9,7 +9,8 @@ import java.io.File;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
-
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
+import org.jfree.chart.plot.PiePlot;
 // Classes for adding elements like text and images for iText 7
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
@@ -44,63 +45,81 @@ public class ReportGenerator {
      * @param doctorList The master list of all doctors.
      */
     public static void generateSpecializationReport(DoublyLinkedList<Pair<String, Doctor>> doctorList) {
-        try {
-            // --- Step 1: Count the data using your helper method ---
-            DoublyLinkedList<Pair<String, Integer>> specializationCounts = countOccurrences(doctorList, "position");
+    try {
+        // --- Step 1: Count the data (No change here) ---
+        DoublyLinkedList<Pair<String, Integer>> specializationCounts = countOccurrences(doctorList, "position");
 
-            // --- Step 2: Create the Pie Chart using JFreeChart ---
-            DefaultPieDataset pieDataset = new DefaultPieDataset();
-
-            // Loop through DoublyLinkedList of pairs
-            for (Pair<String, Integer> entry : specializationCounts) {
-                pieDataset.setValue(entry.getKey(), entry.getValue());
-            }
-            JFreeChart pieChart = ChartFactory.createPieChart("Doctor Specialization Distribution", pieDataset, true, true, false);
-            File chartFile = new File("specialization_chart.png");
-            ChartUtils.saveChartAsPNG(chartFile, pieChart, 450, 400);
-
-            // --- Step 3: Create the PDF using iText 7 ---
-            PdfWriter writer = new PdfWriter("Doctor_Specialization_Report.pdf");
-            PdfDocument pdf = new PdfDocument(writer);
-            Document document = new Document(pdf);
-
-            document.add(new Paragraph("Doctor Specialization Report"));
-            document.add(new Paragraph(" "));
-
-            Image chartImage = new Image(ImageDataFactory.create("specialization_chart.png"));
-            document.add(chartImage);
-
-            document.close();
-            chartFile.delete();
-
-            System.out.println("Specialization Report generated successfully.");
-        } catch (Exception e) {
-            e.printStackTrace();
+        // --- Step 2: Create the Pie Chart (No change here) ---
+        DefaultPieDataset pieDataset = new DefaultPieDataset();
+        for (Pair<String, Integer> entry : specializationCounts) {
+            pieDataset.setValue(entry.getKey(), entry.getValue());
         }
+        JFreeChart pieChart = ChartFactory.createPieChart("Doctor Specialization Distribution", pieDataset, true, true, false);
+
+        // --- ADD THESE LINES TO CUSTOMIZE THE LABELS ---
+        PiePlot plot = (PiePlot) pieChart.getPlot();
+        StandardPieSectionLabelGenerator labelGenerator = new StandardPieSectionLabelGenerator(
+                "{0}: {1} ({2})"); // {0}=Key, {1}=Value, {2}=Percentage
+        plot.setLabelGenerator(labelGenerator);
+        // --- END OF NEW CODE ---
+
+        File chartFile = new File("specialization_chart.png");
+        ChartUtils.saveChartAsPNG(chartFile, pieChart, 450, 400);
+
+        // --- Step 3: Create the PDF (No change here) ---
+        PdfWriter writer = new PdfWriter("Doctor_Specialization_Report.pdf");
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        document.add(new Paragraph("Doctor Specialization Report"));
+        document.add(new Paragraph(" "));
+        Image chartImage = new Image(ImageDataFactory.create("specialization_chart.png"));
+        document.add(chartImage);
+
+        document.close();
+        chartFile.delete();
+
+        System.out.println("Specialization Report generated successfully.");
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+}
 
     /**
-     * Report : Generates a PDF with a Bar Chart of Doctor Availability Status.
+     * Report : Generates a PDF with a Pie Chart of Doctor Availability Status.
      *
      * @param doctorList The master list of all doctors.
      */
     public static void generateAvailabilityReport(DoublyLinkedList<Pair<String, Doctor>> doctorList) {
         try {
-            // --- Step 1: Count the data using your helper method ---
+            // --- Step 1: Count the data (This part is the same) ---
             DoublyLinkedList<Pair<String, Integer>> statusCounts = countOccurrences(doctorList, "status");
 
-            // --- Step 2: Create the Bar Chart using JFreeChart ---
-            DefaultCategoryDataset barDataset = new DefaultCategoryDataset();
-
-            // Loop through  DoublyLinkedList of pairs
+            // --- Step 2: Create the Pie Chart using JFreeChart (This part is changed) ---
+            
+            // Use DefaultPieDataset instead of DefaultCategoryDataset
+            DefaultPieDataset pieDataset = new DefaultPieDataset();
             for (Pair<String, Integer> entry : statusCounts) {
-                barDataset.addValue(entry.getValue(), "Doctors", entry.getKey());
+                // Use .setValue(key, value) for pie charts
+                pieDataset.setValue(entry.getKey(), entry.getValue());
             }
-            JFreeChart barChart = ChartFactory.createBarChart("Doctor Availability Status", "Status", "Number of Doctors", barDataset);
-            File chartFile = new File("status_chart.png");
-            ChartUtils.saveChartAsPNG(chartFile, barChart, 500, 350);
 
-            // --- Step 3: Create the PDF using iText 7 ---
+            // Use ChartFactory.createPieChart
+            JFreeChart pieChart = ChartFactory.createPieChart(
+                    "Doctor Availability Status", // Chart Title
+                    pieDataset,                   // Dataset
+                    true, true, false);
+
+            // Optional but recommended: Customize labels to show count and percentage
+            PiePlot plot = (PiePlot) pieChart.getPlot();
+            StandardPieSectionLabelGenerator labelGenerator = new StandardPieSectionLabelGenerator(
+                    "{0}: {1} ({2})"); // Format: Status: Count (Percentage)
+            plot.setLabelGenerator(labelGenerator);
+
+            File chartFile = new File("status_chart.png");
+            ChartUtils.saveChartAsPNG(chartFile, pieChart, 500, 350);
+
+            // --- Step 3: Create the PDF (This part is the same) ---
             PdfWriter writer = new PdfWriter("Doctor_Availability_Report.pdf");
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf);

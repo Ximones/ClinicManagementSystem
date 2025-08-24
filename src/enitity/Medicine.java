@@ -2,7 +2,7 @@ package enitity;
 
 import java.io.Serializable;
 
-public class Medicine implements Serializable {
+public class Medicine implements Comparable<Medicine>, Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -115,4 +115,23 @@ public class Medicine implements Serializable {
                 + ", price=" + price
                 + '}';
     }
+
+    @Override
+    public int compareTo(Medicine other) {
+        // First compare by category
+        int categoryCompare = this.category.compareToIgnoreCase(other.category);
+        if (categoryCompare != 0) {
+            return categoryCompare;
+        }
+
+        // If category is the same, then compare by name
+        int nameCompare = this.name.compareToIgnoreCase(other.name);
+        if (nameCompare != 0) {
+            return nameCompare;
+        }
+
+        // If name also the same, then compare by price
+        return Double.compare(this.price, other.price);
+    }
+
 }

@@ -109,13 +109,6 @@ public interface ListInterface<T> {
     public int indexOf(T anEntry);
 
     /**
-     * Retrieves all entries in the list in the form of an array.
-     *
-     * @return An array of objects containing all entries in the list.
-     */
-    public Object[] toArray();
-
-    /**
      * Replaces the entry at a given position with a new entry.
      *
      * @param position The 1-based position of the entry to replace.

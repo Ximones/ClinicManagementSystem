@@ -3,12 +3,13 @@ package adt;
 import java.io.Serializable;
 
 /**
- * A simple, generic class to hold a key-value pair.
- * This is a helper class used to simulate Map-like behavior in a List.
+ * A simple, generic class to hold a key-value pair. This is a helper class used
+ * to simulate Map-like behavior in a List.
+ *
  * @param <K> The type of the key.
  * @param <V> The type of the value.
  */
-public class Pair<K, V> implements Serializable{
+public class Pair<K extends Comparable<K>, V> implements Comparable<Pair<K, V>>, Serializable {
 
     K key;
     V value;
@@ -37,5 +38,11 @@ public class Pair<K, V> implements Serializable{
 
     public void setValue(V value) {
         this.value = value;
+    }
+
+    @Override
+    public int compareTo(Pair<K, V> other) {
+        // Compare pairs based on their keys
+        return this.key.compareTo(other.key);
     }
 }

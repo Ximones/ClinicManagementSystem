@@ -7,6 +7,7 @@ package boundary.DoctorManagementUI;
 import adt.DoublyLinkedList;
 import adt.Pair;
 import enitity.Doctor;
+import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import utility.ImageUtils;
 
@@ -14,7 +15,7 @@ import utility.ImageUtils;
  *
  * @author Chok Chun Fai
  */
-public class DoctorDialog extends javax.swing.JDialog {
+public class DoctorAddDialog extends javax.swing.JDialog {
 
     // This variable will hold the new doctor if "Save" is clicked.
     private Pair<String, Doctor> result = null;
@@ -27,7 +28,7 @@ public class DoctorDialog extends javax.swing.JDialog {
      * @param parent
      * @param modal
      */
-    public DoctorDialog(java.awt.Frame parent, boolean modal) {
+    public DoctorAddDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
@@ -83,8 +84,6 @@ public class DoctorDialog extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(600, 500));
-        setPreferredSize(new java.awt.Dimension(600, 500));
-        getContentPane().setLayout(new java.awt.BorderLayout());
 
         logoPanel.setLayout(new java.awt.BorderLayout());
         logoPanel.add(logoLabel, java.awt.BorderLayout.CENTER);
@@ -97,7 +96,7 @@ public class DoctorDialog extends javax.swing.JDialog {
         titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
-        formGridPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder(null), null, null, null, new java.awt.Font("Corbel", 1, 14))); // NOI18N
+        formGridPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder(""), "Doctor Information :", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Corbel", 1, 14))); // NOI18N
         formGridPanel.setMinimumSize(new java.awt.Dimension(350, 228));
         formGridPanel.setPreferredSize(new java.awt.Dimension(300, 228));
         formGridPanel.setLayout(new java.awt.GridLayout(5, 2, 5, 15));
@@ -168,11 +167,6 @@ public class DoctorDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        // Basic validation
-        if (formNameInput.getText().trim().isEmpty() || formAgeInput.getText().trim().isEmpty() || formPhoneInput.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Field cannot be empty.", "Validation Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
 
         try {
 
@@ -181,6 +175,23 @@ public class DoctorDialog extends javax.swing.JDialog {
             int age = Integer.parseInt(formAgeInput.getText());
             String phone = formPhoneInput.getText().trim();
             String position = (String) formPositionBox.getSelectedItem();
+
+            // Basic validation
+            if (formNameInput.getText().trim().isEmpty() || formAgeInput.getText().trim().isEmpty() || formPhoneInput.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Field cannot be empty.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            String phoneRegex = "^(\\+?6?01)[0-9]{7,9}$";
+            if (!Pattern.matches(phoneRegex, formPhoneInput.getText().trim())) {
+                JOptionPane.showMessageDialog(this, "Please enter a valid Malaysian mobile number (e.g., 0123456789).", "Invalid Phone Number", JOptionPane.ERROR_MESSAGE);
+                return; // Stop the save process
+            }
+
+            if (age < 23 || age > 80) {
+                JOptionPane.showMessageDialog(this, "Please enter a realistic age for a doctor (23-80).", "Invalid Age", JOptionPane.ERROR_MESSAGE);
+                return; // Stop the save process
+            }
 
             // 2. Create the new objects
             newDoctor.setName(name);
@@ -191,10 +202,11 @@ public class DoctorDialog extends javax.swing.JDialog {
 
             // 3. Store the result and close the dialog
             this.result = new Pair<>(newDoctor.getDoctorID(), newDoctor);
+            JOptionPane.showMessageDialog(this, "Doctor information updated successfully.");
             this.dispose();
 
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Please check your input values.", "Input Error", JOptionPane.ERROR_MESSAGE);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid number for age.");
         }
     }//GEN-LAST:event_saveButtonActionPerformed
 
@@ -221,20 +233,21 @@ public class DoctorDialog extends javax.swing.JDialog {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(DoctorDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(DoctorAddDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(DoctorDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(DoctorAddDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(DoctorDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(DoctorAddDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(DoctorDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(DoctorAddDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                DoctorDialog dialog = new DoctorDialog(new javax.swing.JFrame(), true);
+                DoctorAddDialog dialog = new DoctorAddDialog(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {

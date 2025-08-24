@@ -4,12 +4,15 @@
  */
 package boundary.MedicalTreatmentManagementUI;
 
+import boundary.MainFrame;
+
 /**
  *
  * @author User
  */
 public class MedicalTreatmentManagementPanel extends javax.swing.JPanel {
 
+    MainFrame mainFrame;
     /**
      * Creates new form MedicalTreatmentManagementPanel
      */

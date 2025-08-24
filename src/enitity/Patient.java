@@ -4,15 +4,15 @@
  */
 package enitity;
 
-import java.io.Serializable; 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  *
  * @author szepi
  */
-public class Patient implements Serializable {
-    
+public class Patient implements Comparable<Patient>, Serializable {
+
     private static final long serialVersionUID = 1L;
     private static int patientIndex = 0;
     private LocalDateTime enqueueTime;
@@ -27,15 +27,15 @@ public class Patient implements Serializable {
     String address;
     String dateOfRegistration;
     String status;
-    
-     public Patient() {
+
+    public Patient() {
         this.patientID = generatePatientID();
         // Default status or other initializations if needed
         this.status = "Active"; // Example
     }
 
-   public Patient(String id, String patientName, int patientAge, String patientIC, String gender, String contact,
-                   String email, String address, String dateOfRegistration) {
+    public Patient(String id, String patientName, int patientAge, String patientIC, String gender, String contact,
+            String email, String address, String dateOfRegistration) {
         this.patientID = id;
         this.patientName = patientName;
         this.patientAge = patientAge;
@@ -47,14 +47,24 @@ public class Patient implements Serializable {
         this.dateOfRegistration = dateOfRegistration;
         this.status = "Active";
     }
-   
-   public LocalDateTime getEnqueueTime() { return enqueueTime; }
-   public void setEnqueueTime(LocalDateTime enqueueTime) { this.enqueueTime = enqueueTime; }
 
-   public LocalDateTime getStartTime() { return startTime; }
-   public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
-   
-     private static String generatePatientID() {
+    public LocalDateTime getEnqueueTime() {
+        return enqueueTime;
+    }
+
+    public void setEnqueueTime(LocalDateTime enqueueTime) {
+        this.enqueueTime = enqueueTime;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    private static String generatePatientID() {
         patientIndex++;
         return String.format("P%03d", patientIndex); // e.g., P001, P002
     }
@@ -63,20 +73,18 @@ public class Patient implements Serializable {
     public static int getPatientIndex() {
         return patientIndex;
     }
-    
-    public void setPatientID(String patientID) {
-    this.patientID = patientID;
-}
 
+    public void setPatientID(String patientID) {
+        this.patientID = patientID;
+    }
 
     public static void setPatientIndex(int index) {
         patientIndex = index;
     }
-    
-     public String getPatientID() {
+
+    public String getPatientID() {
         return patientID;
     }
-
 
     public String getPatientName() {
         return patientName;
@@ -141,8 +149,8 @@ public class Patient implements Serializable {
     public void setDateOfRegistration(String dateOfRegistration) {
         this.dateOfRegistration = dateOfRegistration;
     }
-    
-       public String getStatus() { // Getter for status
+
+    public String getStatus() { // Getter for status
         return status;
     }
 
@@ -150,19 +158,33 @@ public class Patient implements Serializable {
         this.status = status;
     }
 
-     @Override
+    @Override
     public String toString() {
-        return "Patient{" +
-                "Patient ID='" + patientID + '\'' + // Added Patient ID to toString
-                ", Name='" + patientName + '\'' +
-                ", Age=" + patientAge +
-                ", IC='" + patientIC + '\'' +
-                ", Gender='" + gender + '\'' +
-                ", Contact='" + contact + '\'' +
-                ", Email='" + email + '\'' +
-                ", Address='" + address + '\'' +
-                ", Date of Registration='" + dateOfRegistration + '\'' +
-                ", Status='" + status + '\'' + // Added Status to toString
+        return "Patient{"
+                + "Patient ID='" + patientID + '\''
+                + // Added Patient ID to toString
+                ", Name='" + patientName + '\''
+                + ", Age=" + patientAge
+                + ", IC='" + patientIC + '\''
+                + ", Gender='" + gender + '\''
+                + ", Contact='" + contact + '\''
+                + ", Email='" + email + '\''
+                + ", Address='" + address + '\''
+                + ", Date of Registration='" + dateOfRegistration + '\''
+                + ", Status='" + status + '\''
+                + // Added Status to toString
                 '}';
+    }
+
+    @Override
+    public int compareTo(Patient other) {
+//        // First, compare by day of the week
+//        int dayCompare = this.dayOfWeek.compareTo(other.dayOfWeek);
+//        if (dayCompare != 0) {
+//            return dayCompare;
+//        }
+//        // If days are the same, then compare by shift
+//        return this.shift.compareTo(other.shift);
+        return 0;
     }
 }
