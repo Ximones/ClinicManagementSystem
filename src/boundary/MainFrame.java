@@ -8,6 +8,12 @@ import boundary.PatientManagementUI.PatientManagementPanel;
 import boundary.PharmacyManagementUI.MedicineInformationPanel;
 import boundary.PatientManagementUI.PatientRegistrationPanel;
 import boundary.PatientManagementUI.QueueManagementPanel;
+import boundary.ConsultationManagementUI.ConsultationManagementPanel;
+import boundary.ConsultationManagementUI.ConsultationPanel;
+import boundary.ConsultationManagementUI.AppointmentPanel;
+import boundary.ConsultationManagementUI.PrescriptionPanel;
+import boundary.ConsultationManagementUI.QueuePanel;
+import boundary.ConsultationManagementUI.ConsultationReportsPanel;
 import java.awt.CardLayout;
 
 /**
@@ -36,6 +42,14 @@ public class MainFrame extends javax.swing.JFrame {
         PatientManagementPanel patientPanel = new PatientManagementPanel(this);
         PatientRegistrationPanel patRegPanel = new PatientRegistrationPanel(this);
         QueueManagementPanel queManagementPanel = new QueueManagementPanel(this);
+        
+        // Consultation Management Panels
+        ConsultationManagementPanel consultationManagementPanel = new ConsultationManagementPanel(this);
+        ConsultationPanel consultationPanel = new ConsultationPanel(this);
+        AppointmentPanel appointmentPanel = new AppointmentPanel(this);
+        PrescriptionPanel prescriptionPanel = new PrescriptionPanel(this);
+        QueuePanel queuePanel = new QueuePanel(this);
+        ConsultationReportsPanel consultationReportsPanel = new ConsultationReportsPanel(this);
            
 
         // Add the panels to the cardPanel with unique names
@@ -50,6 +64,14 @@ public class MainFrame extends javax.swing.JFrame {
         cardPanel.add(patientPanel, "patientManagement");
          cardPanel.add(patRegPanel, "patientRegistration");
          cardPanel.add(queManagementPanel, "queueManagement");
+         
+        // Add consultation management panels
+        cardPanel.add(consultationManagementPanel, "consultationManagement");
+        cardPanel.add(consultationPanel, "consultationPanel");
+        cardPanel.add(appointmentPanel, "appointmentPanel");
+        cardPanel.add(prescriptionPanel, "prescriptionPanel");
+        cardPanel.add(queuePanel, "queuePanel");
+        cardPanel.add(consultationReportsPanel, "consultationReports");
 
         // Set frame properties
         this.setTitle("Clinic Management System");
