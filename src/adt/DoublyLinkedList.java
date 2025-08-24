@@ -419,4 +419,33 @@ public class DoublyLinkedList<T extends Comparable<T>> implements Iterable<T>, L
             head = temp.prev;
         }
     }
+
+    public T binarySearch(T keyToFind) {
+        int low = 0;
+        int high = getSize() - 1;
+
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+
+            // This line is inefficient in a linked list as it has to
+            // travel from the start each time.
+            Node<T> midNode = getElement(mid + 1); // +1 because getElement is 1-based
+
+            if (midNode == null) {
+                break; // Should not happen in a correct implementation
+            }
+
+            T midEntry = midNode.getEntry();
+            int comparison = midEntry.compareTo(keyToFind);
+
+            if (comparison == 0) {
+                return midEntry; // Found the item
+            } else if (comparison < 0) {
+                low = mid + 1; // Item is in the right half
+            } else {
+                high = mid - 1; // Item is in the left half
+            }
+        }
+        return null; // Item not found
+    }
 }

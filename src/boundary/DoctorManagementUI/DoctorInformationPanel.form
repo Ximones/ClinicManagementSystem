@@ -146,6 +146,14 @@
 
                   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
                   <SubComponents>
+                    <Component class="javax.swing.JButton" name="editDoctorButton">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Edit Doctor"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editDoctorButtonActionPerformed"/>
+                      </Events>
+                    </Component>
                     <Component class="javax.swing.JButton" name="addDoctorButton">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Add Doctor"/>
