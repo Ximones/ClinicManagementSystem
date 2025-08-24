@@ -6,7 +6,8 @@ import java.io.Serializable;
  *
  * @author Chok Chun Fai
  */
-public class DutySlot implements Serializable {
+public class DutySlot implements Comparable<DutySlot>, Serializable {
+
     private String dayOfWeek; // e.g., "Monday"
     private String shift;     // e.g., "Morning (8am-4pm)"
     private Doctor assignedDoctor; // The doctor assigned to this slot
@@ -22,7 +23,7 @@ public class DutySlot implements Serializable {
         this.shift = shift;
         this.assignedDoctor = assignedDoctor;
     }
-    
+
     public String getDayOfWeek() {
         return dayOfWeek;
     }
@@ -51,6 +52,15 @@ public class DutySlot implements Serializable {
     public String toString() {
         return "Schedule{" + "dayOfWeek=" + dayOfWeek + ", shift=" + shift + ", assignedDoctor=" + assignedDoctor + '}';
     }
-    
-    
+
+    @Override
+    public int compareTo(DutySlot other) {
+        // First, compare by day of the week
+        int dayCompare = this.dayOfWeek.compareTo(other.dayOfWeek);
+        if (dayCompare != 0) {
+            return dayCompare;
+        }
+        // If days are the same, then compare by shift
+        return this.shift.compareTo(other.shift);
+    }
 }

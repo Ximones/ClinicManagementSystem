@@ -115,6 +115,13 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
 
         // Set up for combobox
+        DoublyLinkedList<String> sortCriteria = new DoublyLinkedList<>();
+        sortCriteria.insertLast("ASC");
+        sortCriteria.insertLast("DESC");
+        for (String i : sortCriteria) {
+            sortBox.addItem(i);
+        }
+
         DoublyLinkedList<String> filterCriteria = new DoublyLinkedList<>();
         filterCriteria.insertLast("ID");
         filterCriteria.insertLast("Name");
@@ -296,6 +303,8 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         titleLabel = new javax.swing.JLabel();
         searchWrapperPanel = new javax.swing.JPanel();
         searchPanel = new javax.swing.JPanel();
+        sortLabel = new javax.swing.JLabel();
+        sortBox = new javax.swing.JComboBox<>();
         filterLabel = new javax.swing.JLabel();
         filterBox = new javax.swing.JComboBox<>();
         filterField = new javax.swing.JTextField();
@@ -320,6 +329,16 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
         searchWrapperPanel.setLayout(new java.awt.BorderLayout());
+
+        sortLabel.setText("Sort ID By:");
+        searchPanel.add(sortLabel);
+
+        sortBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sortBoxActionPerformed(evt);
+            }
+        });
+        searchPanel.add(sortBox);
 
         filterLabel.setText("Filter By :");
         searchPanel.add(filterLabel);
@@ -428,6 +447,25 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         JOptionPane.showMessageDialog(this, "Reports generated successfully!");
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void sortBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortBoxActionPerformed
+        String selectedSort = (String) sortBox.getSelectedItem();
+
+        if (masterDoctorList == null) {
+            return;
+        }
+
+        // 1. Always sort in ascending order first
+        masterDoctorList.sort();
+
+        // 2. If "DESC" is selected, reverse the sorted list
+        if ("DESC".equals(selectedSort)) {
+            masterDoctorList.reverse();
+        }
+
+        // 3. Refresh the table with the sorted data
+        populateDoctorTable(masterDoctorList);
+    }//GEN-LAST:event_sortBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ButtonPanel;
@@ -443,6 +481,8 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
     private javax.swing.JPanel logoPanel;
     private javax.swing.JPanel searchPanel;
     private javax.swing.JPanel searchWrapperPanel;
+    private javax.swing.JComboBox<String> sortBox;
+    private javax.swing.JLabel sortLabel;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables

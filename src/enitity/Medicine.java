@@ -2,7 +2,7 @@ package enitity;
 
 import java.io.Serializable;
 
-public class Medicine implements Serializable {
+public class Medicine implements Comparable<Medicine>, Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -114,5 +114,17 @@ public class Medicine implements Serializable {
                 + ", quantity=" + quantity
                 + ", price=" + price
                 + '}';
+    }
+
+    @Override
+    public int compareTo(Medicine other) {
+//        // First, compare by day of the week
+//        int dayCompare = this.dayOfWeek.compareTo(other.dayOfWeek);
+//        if (dayCompare != 0) {
+//            return dayCompare;
+//        }
+//        // If days are the same, then compare by shift
+//        return this.shift.compareTo(other.shift);
+    return 0;
     }
 }

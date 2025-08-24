@@ -10,10 +10,11 @@ import java.util.Date;
 
 /**
  * Represents a queue entry for a patient, including timing info.
- * 
+ *
  * @author szepi
  */
-public class QueueEntry implements Serializable {
+public class QueueEntry implements Comparable<QueueEntry>, Serializable {
+
     private Patient patient;
     private String queueNumber;
     private String status;
@@ -29,23 +30,43 @@ public class QueueEntry implements Serializable {
     }
 
     // --- Getters ---
-    public Patient getPatient() { return patient; }
-    public String getQueueNumber() { return queueNumber; }
-    public String getStatus() { return status; }
-    public long getEnqueueTime() { return enqueueTime; }
-    public long getStartConsultTime() { return startConsultTime; }
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public String getQueueNumber() {
+        return queueNumber;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public long getEnqueueTime() {
+        return enqueueTime;
+    }
+
+    public long getStartConsultTime() {
+        return startConsultTime;
+    }
 
     // --- Setters ---
-    public void setStatus(String status) { this.status = status; }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-    /** Marks the start of consultation, sets status to "In Progress". */
+    /**
+     * Marks the start of consultation, sets status to "In Progress".
+     */
     public void markStartConsult() {
         this.status = "In Progress";
         this.startConsultTime = System.currentTimeMillis();
     }
 
     // --- Waiting Time ---
-    /** Returns waiting time in ms (enqueue → start consult OR enqueue → now). */
+    /**
+     * Returns waiting time in ms (enqueue → start consult OR enqueue → now).
+     */
     public long getWaitingTimeMillis() {
         if (startConsultTime > 0) {
             return startConsultTime - enqueueTime; // already started
@@ -55,14 +76,23 @@ public class QueueEntry implements Serializable {
 
     // --- Utility methods for display ---
     private String formatTime(long timeMillis) {
-        if (timeMillis <= 0) return "-"; // not set yet
+        if (timeMillis <= 0) {
+            return "-"; // not set yet
+        }
         return new SimpleDateFormat("HH:mm:ss").format(new Date(timeMillis));
     }
 
-    public String getFormattedEnqueueTime() { return formatTime(enqueueTime); }
-    public String getFormattedStartTime() { return formatTime(startConsultTime); }
+    public String getFormattedEnqueueTime() {
+        return formatTime(enqueueTime);
+    }
 
-    /** Returns formatted waiting time (e.g. "2m 34s" or "45s"). */
+    public String getFormattedStartTime() {
+        return formatTime(startConsultTime);
+    }
+
+    /**
+     * Returns formatted waiting time (e.g. "2m 34s" or "45s").
+     */
     public String getFormattedWaitingTime() {
         long ms = getWaitingTimeMillis();
         long totalSeconds = ms / 1000;
@@ -78,13 +108,25 @@ public class QueueEntry implements Serializable {
 
     @Override
     public String toString() {
-        return "QueueEntry{" +
-                "queueNumber='" + queueNumber + '\'' +
-                ", patient=" + (patient != null ? patient.getPatientID() : "null") +
-                ", status='" + status + '\'' +
-                ", enqueue=" + getFormattedEnqueueTime() +
-                ", start=" + getFormattedStartTime() +
-                ", waiting=" + getFormattedWaitingTime() +
-                '}';
+        return "QueueEntry{"
+                + "queueNumber='" + queueNumber + '\''
+                + ", patient=" + (patient != null ? patient.getPatientID() : "null")
+                + ", status='" + status + '\''
+                + ", enqueue=" + getFormattedEnqueueTime()
+                + ", start=" + getFormattedStartTime()
+                + ", waiting=" + getFormattedWaitingTime()
+                + '}';
+    }
+
+    @Override
+    public int compareTo(QueueEntry other) {
+//        // First, compare by day of the week
+//        int dayCompare = this.dayOfWeek.compareTo(other.dayOfWeek);
+//        if (dayCompare != 0) {
+//            return dayCompare;
+//        }
+//        // If days are the same, then compare by shift
+//        return this.shift.compareTo(other.shift);
+        return 0;
     }
 }

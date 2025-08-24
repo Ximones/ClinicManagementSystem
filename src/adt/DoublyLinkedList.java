@@ -10,7 +10,7 @@ import java.util.Iterator;
  *
  * @param <T> The type of data stored in the list.
  */
-public class DoublyLinkedList<T> implements Iterable<T>, ListInterface<T>,Serializable {
+public class DoublyLinkedList<T extends Comparable<T>> implements Iterable<T>, ListInterface<T>, Serializable {
 
     // A reference to the first node in the list.
     private Node<T> head;
@@ -281,23 +281,6 @@ public class DoublyLinkedList<T> implements Iterable<T>, ListInterface<T>,Serial
     }
 
     /**
-     * Converts the list into an array.
-     *
-     * @return An array containing all elements of the list in order.
-     */
-    @Override
-    public Object[] toArray() {
-        Object[] array = new Object[getSize()];
-        Node<T> current = head;
-        int i = 0;
-        while (current != null) {
-            array[i++] = current.entry;
-            current = current.next;
-        }
-        return array;
-    }
-
-    /**
      * Replaces the element at a specified position with a new element.
      *
      * @param position The 1-based position of the element to replace.
@@ -392,5 +375,48 @@ public class DoublyLinkedList<T> implements Iterable<T>, ListInterface<T>,Serial
             currentNode = currentNode.getNext();
         }
         return null; // Return null if key is not found
+    }
+
+    public void sort() {
+        if (getSize() < 2) {
+            return; // No need to sort
+        }
+        boolean wasChanged;
+        do {
+            wasChanged = false;
+            Node<T> current = head;
+            while (current != null && current.next != null) {
+                // Use the compareTo method from the Pair object
+                if (current.entry.compareTo(current.next.entry) > 0) {
+                    // Swap the entries if they are in the wrong order
+                    T temp = current.entry;
+                    current.entry = current.next.entry;
+                    current.next.entry = temp;
+                    wasChanged = true;
+                }
+                current = current.next;
+            }
+        } while (wasChanged);
+    }
+
+    public void reverse() {
+        if (head == null || head.next == null) {
+            return; // Nothing to reverse
+        }
+        Node<T> current = head;
+        Node<T> temp = null;
+        tail = head; // The old head becomes the new tail
+        while (current != null) {
+            // Swap the prev and next pointers
+            temp = current.prev;
+            current.prev = current.next;
+            current.next = temp;
+            // Move to the next node (which is now in current.prev)
+            current = current.prev;
+        }
+        // The new head is the last node we processed
+        if (temp != null) {
+            head = temp.prev;
+        }
     }
 }
