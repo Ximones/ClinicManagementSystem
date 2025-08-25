@@ -15,9 +15,6 @@ import enitity.Medicine;
  */
 public class InitializeDataUtils {
 
-    private DoublyLinkedList<Pair<String, Doctor>> masterDoctorList;
-    private DoublyLinkedList<Pair<String, Medicine>> masterMedList;
-
     public static void initializeData() {
 
         DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
