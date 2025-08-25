@@ -188,6 +188,8 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
     }
 
     private void loadInitialData() {
+//        InsertMedicineData();
+                
         DoublyLinkedList<Pair<String, Medicine>> medicineList
                 = (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
 

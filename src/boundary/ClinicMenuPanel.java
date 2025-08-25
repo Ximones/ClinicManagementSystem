@@ -1,6 +1,7 @@
 package boundary;
 
 import utility.ImageUtils;
+import utility.InitializeDataUtils;
 
 /**
  *
@@ -9,7 +10,7 @@ import utility.ImageUtils;
 public class ClinicMenuPanel extends javax.swing.JPanel {
 
     private MainFrame mainFrame; // Variable to hold the main window
-
+    
     /**
      * Creates new form ClinicMenuUI
      *
@@ -20,6 +21,8 @@ public class ClinicMenuPanel extends javax.swing.JPanel {
         initComponents();
 
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
+        
+        InitializeDataUtils.initializeData();
     }
 
     /**

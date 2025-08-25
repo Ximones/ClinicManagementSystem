@@ -183,23 +183,6 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
 
     private void loadInitialData() {
 
-//        DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
-//        Doctor doc1 = new Doctor("Simon", 20, "01118566866", "Doctor", "Present");
-//        Doctor doc2 = new Doctor("ZB", 21, "01118566866", "Doctor", "Absent");
-//        Doctor doc3 = new Doctor("JY", 30, "01118566866", "Consultant", "Resigned");
-//        Doctor doc4 = new Doctor("Desmond", 32, "01118566866", "Internship", "Present");
-//
-//        Pair<String, Doctor> doctorPair1 = new Pair<>(doc1.getDoctorID(), doc1);
-//        Pair<String, Doctor> doctorPair2 = new Pair<>(doc2.getDoctorID(), doc2);
-//        Pair<String, Doctor> doctorPair3 = new Pair<>(doc3.getDoctorID(), doc3);
-//        Pair<String, Doctor> doctorPair4 = new Pair<>(doc4.getDoctorID(), doc4);
-//
-//        doctorList.insertFirst(doctorPair1);
-//        doctorList.insertLast(doctorPair2);
-//        doctorList.insertLast(doctorPair3);
-//        doctorList.insertLast(doctorPair4);
-//        masterDoctorList = doctorList;
-//        populateDoctorTable(masterDoctorList);
         DoublyLinkedList<Pair<String, Doctor>> doctorList = (DoublyLinkedList<Pair<String, Doctor>>) FileUtils.readDataFromFile("doctors");
 
         if (!doctorList.isEmpty()) {
