@@ -15,14 +15,14 @@ import enitity.Medicine;
 import enitity.Prescription;
 import enitity.PrescriptionItem;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Calendar;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.text.SimpleDateFormat;
 import utility.FileUtils;
+import enitity.QueueEntry;
+import utility.ImageUtils;
 
 /**
  * Prescription Management Panel for Consultation Module
@@ -55,38 +55,13 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         setupDateTimeSpinners();
 
         initComponents();
-        setupUI();
         initializeData();
+        setupTables();
         loadPrescriptions();
     }
 
-    private void setupUI() {
-        setPreferredSize(new Dimension(800, 600));
-        setBackground(new Color(240, 248, 255));
-
-        // Style title
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        titleLabel.setForeground(new Color(25, 25, 112));
-
-        // Style buttons
-        styleButton(addButton, "Add Prescription", new Color(70, 130, 180));
-        styleButton(addItemButton, "Add Medicine", new Color(60, 179, 113));
-        styleButton(removeItemButton, "Remove Medicine", new Color(220, 20, 60));
-        styleButton(backButton, "Back", new Color(128, 128, 128));
-
-        // Setup tables
-        setupTables();
-    }
-
-    private void styleButton(JButton button, String text, Color backgroundColor) {
-        button.setText(text);
-        button.setFont(new Font("Arial", Font.BOLD, 12));
-        button.setForeground(Color.WHITE);
-        button.setBackground(backgroundColor);
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-    }
+    
+    
 
     private void setupTables() {
         // Setup prescription table
@@ -398,6 +373,8 @@ public class PrescriptionPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        logoLabel = new javax.swing.JLabel();
+        titlePanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -434,9 +411,16 @@ public class PrescriptionPanel extends javax.swing.JPanel {
 
         setPreferredSize(new java.awt.Dimension(800, 600));
 
-        titleLabel.setFont(new java.awt.Font("Arial", 1, 20)); // NOI18N
+        setLayout(new java.awt.BorderLayout());
+        // set header logo image
+        logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
+        add(logoLabel, java.awt.BorderLayout.PAGE_START);
+
+        titlePanel.setLayout(new java.awt.BorderLayout());
+        titleLabel.setFont(new java.awt.Font("Corbel", 1, 36)); // NOI18N
         titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        titleLabel.setText("Prescription Management");
+        titleLabel.setText(" Prescription Management");
+        titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
         prescriptionTable.setModel(new javax.swing.table.DefaultTableModel(
                 new Object[][]{
@@ -626,51 +610,52 @@ public class PrescriptionPanel extends javax.swing.JPanel {
                                 .addGap(10, 10, 10))
         );
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
+        javax.swing.JPanel contentPanel = new javax.swing.JPanel();
+        contentPanel.setLayout(new javax.swing.GroupLayout(contentPanel));
+        javax.swing.GroupLayout layout = (javax.swing.GroupLayout) contentPanel.getLayout();
         layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addGap(20, 20, 20)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(titleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 760, Short.MAX_VALUE)
-                                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addGroup(layout.createSequentialGroup()
-                                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(10, 10, 10)
-                                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGroup(layout.createSequentialGroup()
-                                                .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(10, 10, 10)
-                                                .addComponent(addItemButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(10, 10, 10)
-                                                .addComponent(removeItemButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(10, 10, 10)
-                                                .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGap(20, 20, 20))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(addItemButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(removeItemButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(20, 20, 20))
         );
         layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addGap(20, 20, 20)
-                                .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(10, 10, 10)
-                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(10, 10, 10)
-                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(10, 10, 10)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(10, 10, 10)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(addItemButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(removeItemButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(20, 20, 20))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(10, 10, 10)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(10, 10, 10)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(10, 10, 10)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addItemButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(removeItemButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20))
         );
+
+        titlePanel.add(contentPanel, java.awt.BorderLayout.CENTER);
+        add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
@@ -713,11 +698,68 @@ public class PrescriptionPanel extends javax.swing.JPanel {
                         item.getFrequency(), item.getDuration());
             }
 
+            // Mark consultation completed once prescription saved
+            try {
+                consultationControl.updateConsultationStatus(consultation.getConsultationID(), "Completed");
+            } catch (Exception ignore) {}
+
             JOptionPane.showMessageDialog(this, "Prescription created successfully!\nID: " + prescription.getPrescriptionID(),
                     "Success", JOptionPane.INFORMATION_MESSAGE);
 
+            // Remove patient from shared queue (completed path)
+            try {
+                boolean updated = false;
+                // Preferred: queue stored as Pair<String, QueueEntry>
+                DoublyLinkedList<Pair<String, QueueEntry>> pairQueue
+                    = (DoublyLinkedList<Pair<String, QueueEntry>>) utility.FileUtils.readDataFromFile("queue");
+                if (pairQueue != null && !pairQueue.isEmpty()) {
+                    String patientId = patient.getPatientID();
+                    for (int i = 1; i <= pairQueue.getSize(); i++) {
+                        adt.Node<Pair<String, QueueEntry>> node = pairQueue.getElement(i);
+                        if (node != null) {
+                            QueueEntry entry = node.getEntry().getValue();
+                            if (entry != null && entry.getPatient() != null && patientId.equals(entry.getPatient().getPatientID())) {
+                                // Either delete from queue or mark done; delete to remove from view
+                                pairQueue.deleteAtPosition(i);
+                                updated = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (updated) {
+                        utility.FileUtils.writeDataToFile("queue", pairQueue);
+                    }
+                }
+
+                if (!updated) {
+                    // Fallback: queue stored as raw QueueEntry list
+                    DoublyLinkedList<QueueEntry> rawQueue
+                        = (DoublyLinkedList<QueueEntry>) utility.FileUtils.readDataFromFile("queue");
+                    if (rawQueue != null && !rawQueue.isEmpty()) {
+                        String patientId = patient.getPatientID();
+                        for (int i = 1; i <= rawQueue.getSize(); i++) {
+                            adt.Node<QueueEntry> node = rawQueue.getElement(i);
+                            if (node != null) {
+                                QueueEntry entry = node.getEntry();
+                                if (entry != null && entry.getPatient() != null && patientId.equals(entry.getPatient().getPatientID())) {
+                                    rawQueue.deleteAtPosition(i);
+                                    updated = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (updated) {
+                            utility.FileUtils.writeDataToFile("queue", rawQueue);
+                        }
+                    }
+                }
+            } catch (Exception ignore) {}
+
             clearFields();
             loadPrescriptions();
+
+            // Optionally navigate back
+            // mainFrame.showPanel("consultationManagement");
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error creating prescription: " + e.getMessage(),
@@ -822,6 +864,17 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         loadPrescriptionItems();
     }
 
+    // Public method to reload all upstream data and refresh UI selections
+    public void reloadData() {
+        loadPatientData();
+        loadDoctorData();
+        loadConsultationData();
+        loadMedicineData();
+        populateComboBoxes();
+        loadPrescriptions();
+        loadPrescriptionItems();
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton addItemButton;
@@ -850,11 +903,13 @@ public class PrescriptionPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable itemsTable;
     private javax.swing.JTextField instructionsField;
+    private javax.swing.JLabel logoLabel;
     private javax.swing.JComboBox<String> medicineComboBox;
     private javax.swing.JComboBox<String> patientComboBox;
     private javax.swing.JTable prescriptionTable;
     private javax.swing.JTextField quantityField;
     private javax.swing.JButton removeItemButton;
     private javax.swing.JLabel titleLabel;
+    private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables
 }

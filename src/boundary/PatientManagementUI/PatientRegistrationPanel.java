@@ -14,7 +14,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import utility.FileUtils;
-import utility.ReportGenerator;
 
 /**
  *
@@ -67,6 +66,11 @@ public class PatientRegistrationPanel extends javax.swing.JPanel {
             
     }
     
+    // Public method to re-read from disk and refresh table when panel is shown
+    public void reloadData() {
+        loadAndDisplayPatients();
+    }
+
     private Patient findPatientById(String id) {
     for (Patient p : patientList) {
         if (id.equals(p.getPatientID())) {

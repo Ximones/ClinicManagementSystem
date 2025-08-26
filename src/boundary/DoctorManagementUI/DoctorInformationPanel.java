@@ -12,14 +12,10 @@ import utility.ImageUtils;
 import utility.FileUtils;
 import utility.ReportGenerator;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 
 /**
  *
@@ -190,6 +186,16 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         }
 
         masterDoctorList = doctorList;
+    }
+
+    // Public method to re-read from disk and refresh the table when panel is shown
+    public void reloadData() {
+        DoublyLinkedList<Pair<String, Doctor>> doctorList = (DoublyLinkedList<Pair<String, Doctor>>) FileUtils.readDataFromFile("doctors");
+        if (doctorList == null) {
+            doctorList = new DoublyLinkedList<>();
+        }
+        masterDoctorList = doctorList;
+        populateDoctorTable(masterDoctorList);
     }
 
     /**

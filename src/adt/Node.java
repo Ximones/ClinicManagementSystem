@@ -10,6 +10,8 @@ import java.io.Serializable;
  */
 public class Node<T> implements Serializable{
 
+    private static final long serialVersionUID = 1L;
+
     // The actual data element stored in the node.
     T entry;
     // A reference to the previous node in the list.

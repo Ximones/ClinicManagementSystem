@@ -9,19 +9,18 @@ import control.ConsultationControl;
 import enitity.Consultation;
 import enitity.Patient;
 import enitity.Doctor;
+import enitity.QueueEntry;
 import adt.DoublyLinkedList;
 import adt.Pair;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Date;
 import java.util.Calendar;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.text.SimpleDateFormat;
 import utility.FileUtils;
+import utility.ImageUtils;
 
 /**
  * Consultation Management Panel
@@ -36,19 +35,30 @@ public class ConsultationPanel extends javax.swing.JPanel {
     private DoublyLinkedList<Pair<String, Doctor>> doctorList;
     private JSpinner dateSpinner;
     private JSpinner timeSpinner;
+    private QueuePanel queuePanel; // Reference to queue panel for refreshing
     
     /**
      * Creates new form ConsultationPanel
      */
     public ConsultationPanel(MainFrame mainFrame) {
+        this(mainFrame, null);
+    }
+    
+    /**
+     * Creates new form ConsultationPanel with queue panel reference
+     */
+    public ConsultationPanel(MainFrame mainFrame, QueuePanel queuePanel) {
         this.mainFrame = mainFrame;
+        this.queuePanel = queuePanel;
         this.consultationControl = new ConsultationControl();
         
         // Initialize spinners before layout setup
         setupDateTimeSpinners();
         
         initComponents();
-        setupUI();
+        // set header logo image
+        logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
+        setupTable();
         initializeData();
         loadConsultations();
         
@@ -63,47 +73,22 @@ public class ConsultationPanel extends javax.swing.JPanel {
         testDataLoading();
     }
     
-    private void setupUI() {
-        setPreferredSize(new Dimension(700, 500));
-        setBackground(new Color(240, 248, 255));
-        
-        // Style title
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        titleLabel.setForeground(new Color(25, 25, 112));
-        
-        // Style buttons
-        styleButton(addButton, "Add Consultation", new Color(70, 130, 180));
-        styleButton(updateButton, "Update Consultation", new Color(60, 179, 113));
-        styleButton(deleteButton, "Delete Consultation", new Color(220, 20, 60));
-        styleButton(backButton, "Back", new Color(128, 128, 128));
-        
-        // Add a refresh button for debugging
-        JButton refreshButton = new JButton("Refresh Data");
-        refreshButton.addActionListener(e -> {
-            System.out.println("=== Refreshing Data ===");
-            initializeData();
-            loadConsultations();
-            System.out.println("After refresh - Patient combo box items: " + patientComboBox.getItemCount());
-            System.out.println("After refresh - Doctor combo box items: " + doctorComboBox.getItemCount());
-        });
-        styleButton(refreshButton, "Refresh Data", new Color(255, 165, 0));
-        
-        // Add refresh button to the panel (you can add it to the layout if needed)
-        // For now, we'll just keep it as a reference
-        
-        // Setup table
-        setupTable();
+    /**
+     * Refreshes the consultation panel display
+     */
+    public void refreshConsultationDisplay() {
+        loadConsultations();
+        updateCurrentConsultingPatient();
+    }
+
+    // Public method to re-read all required data and refresh UI when panel is shown
+    public void reloadData() {
+        initializeData();
+        loadConsultations();
+        updateCurrentConsultingPatient();
     }
     
-    private void styleButton(JButton button, String text, Color backgroundColor) {
-        button.setText(text);
-        button.setFont(new Font("Arial", Font.BOLD, 12));
-        button.setForeground(Color.WHITE);
-        button.setBackground(backgroundColor);
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-    }
+    
     
     private void setupTable() {
         String[] columnNames = {"ID", "Patient", "Doctor", "Date/Time", "Type", "Status", "Symptoms"};
@@ -197,7 +182,7 @@ public class ConsultationPanel extends javax.swing.JPanel {
         consultationTypeComboBox.addItem("Follow-up");
         consultationTypeComboBox.addItem("Emergency");
         
-        // Add statuses
+        // Add simplified statuses
         statusComboBox.addItem("Scheduled");
         statusComboBox.addItem("In Progress");
         statusComboBox.addItem("Completed");
@@ -286,6 +271,8 @@ public class ConsultationPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        logoLabel = new javax.swing.JLabel();
+        titlePanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         consultationTable = new javax.swing.JTable();
@@ -309,9 +296,14 @@ public class ConsultationPanel extends javax.swing.JPanel {
 
         setPreferredSize(new java.awt.Dimension(700, 500));
 
-        titleLabel.setFont(new java.awt.Font("Arial", 1, 20)); // NOI18N
+        setLayout(new java.awt.BorderLayout());
+        add(logoLabel, java.awt.BorderLayout.PAGE_START);
+
+        titlePanel.setLayout(new java.awt.BorderLayout());
+        titleLabel.setFont(new java.awt.Font("Corbel", 1, 36)); // NOI18N
         titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        titleLabel.setText("Consultation Management");
+        titleLabel.setText(" Consultation Management");
+        titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
         consultationTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -344,6 +336,14 @@ public class ConsultationPanel extends javax.swing.JPanel {
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteButtonActionPerformed(evt);
+            }
+        });
+
+        doneButton = new javax.swing.JButton();
+        doneButton.setText("Done");
+        doneButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                doneButtonActionPerformed(evt);
             }
         });
 
@@ -430,14 +430,14 @@ public class ConsultationPanel extends javax.swing.JPanel {
                 .addGap(10, 10, 10))
         );
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
+        javax.swing.JPanel contentPanel = new javax.swing.JPanel();
+        contentPanel.setLayout(new javax.swing.GroupLayout(contentPanel));
+        javax.swing.GroupLayout layout = (javax.swing.GroupLayout) contentPanel.getLayout();
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(titleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -445,6 +445,8 @@ public class ConsultationPanel extends javax.swing.JPanel {
                         .addComponent(updateButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(10, 10, 10)
                         .addComponent(deleteButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(doneButton, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(10, 10, 10)
                         .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -454,8 +456,6 @@ public class ConsultationPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(20, 20, 20)
-                .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(10, 10, 10)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(10, 10, 10)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -464,9 +464,13 @@ public class ConsultationPanel extends javax.swing.JPanel {
                     .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(updateButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(deleteButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(doneButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20))
         );
+
+        titlePanel.add(contentPanel, java.awt.BorderLayout.CENTER);
+        add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
@@ -503,12 +507,38 @@ public class ConsultationPanel extends javax.swing.JPanel {
             
             Consultation consultation = consultationControl.createConsultation(
                 patient, doctor, consultationDateTime, consultationType, symptoms);
+            // Start lifecycle: Immediately set to In Progress when starting consultation flow
+            consultationControl.updateConsultationStatus(consultation.getConsultationID(), "In Progress");
             
             JOptionPane.showMessageDialog(this, "Consultation created successfully!\nID: " + consultation.getConsultationID(), 
                                         "Success", JOptionPane.INFORMATION_MESSAGE);
             
+            // Set queue status to Prescriptioning for this patient and navigate to Prescription panel
+            try {
+                DoublyLinkedList<QueueEntry> queueList = (DoublyLinkedList<QueueEntry>) FileUtils.readDataFromFile("queue");
+                if (queueList != null) {
+                    for (int i = 1; i <= queueList.getSize(); i++) {
+                        adt.Node<QueueEntry> node = queueList.getElement(i);
+                        if (node != null && node.getEntry().getPatient() != null &&
+                            node.getEntry().getPatient().getPatientID().equals(patient.getPatientID())) {
+                            node.getEntry().markPrescriptioning();
+                            break;
+                        }
+                    }
+                    FileUtils.writeDataToFile("queue", queueList);
+                }
+            } catch (Exception ignore) {}
+            
             clearFields();
             loadConsultations();
+            
+            // Navigate to Prescription panel and preselect patient/consultation
+            PrescriptionPanel pp = mainFrame.getPrescriptionPanel();
+            if (pp != null) {
+                // best-effort: reload and navigate
+                pp.reloadPrescriptionData();
+            }
+            mainFrame.showPanel("prescriptionPanel");
             
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error creating consultation: " + e.getMessage(), 
@@ -551,6 +581,70 @@ public class ConsultationPanel extends javax.swing.JPanel {
                                         "Info", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_deleteButtonActionPerformed
+
+    private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
+        try {
+            // Load shared queue from patient management
+            DoublyLinkedList<QueueEntry> queueList = (DoublyLinkedList<QueueEntry>) FileUtils.readDataFromFile("queue");
+            if (queueList == null) queueList = new DoublyLinkedList<>();
+            
+            QueueEntry currentConsulting = null;
+            int consultingIndex = -1;
+            for (int i = 1; i <= queueList.getSize(); i++) {
+                adt.Node<QueueEntry> node = queueList.getElement(i);
+                if (node != null && "Consulting".equals(node.getEntry().getStatus())) {
+                    currentConsulting = node.getEntry();
+                    consultingIndex = i;
+                    break;
+                }
+            }
+            
+            if (currentConsulting == null) {
+                JOptionPane.showMessageDialog(this, "No patient is currently consulting.", "Info", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            
+            // Mark as done and remove from queue
+            currentConsulting.markConsultationDone();
+            if (consultingIndex > 0) {
+                queueList.deleteAtPosition(consultingIndex);
+            }
+            
+            // Promote next Waiting to Consulting, if any
+            for (int i = 1; i <= queueList.getSize(); i++) {
+                adt.Node<QueueEntry> node = queueList.getElement(i);
+                if (node != null && "Waiting".equals(node.getEntry().getStatus())) {
+                    node.getEntry().markConsulting();
+                    break;
+                }
+            }
+            
+            FileUtils.writeDataToFile("queue", queueList);
+            
+            Patient patient = currentConsulting.getPatient();
+            String message = "Consultation completed successfully!\n";
+            message += "Patient: " + (patient != null ? patient.getPatientName() : "N/A") + "\n";
+            message += "Queue Number: " + currentConsulting.getQueueNumber() + "\n";
+            message += "Status: Done";
+            
+            JOptionPane.showMessageDialog(this, message, "Consultation Completed", JOptionPane.INFORMATION_MESSAGE);
+            
+            // Refresh consultations
+            loadConsultations();
+            
+            // Update current consulting display
+            updateCurrentConsultingPatient();
+            
+            // Ask QueuePanel to refresh if available
+            if (queuePanel != null) {
+                queuePanel.refreshQueueDisplay();
+            }
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error completing consultation: " + e.getMessage(), 
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_doneButtonActionPerformed
 
     private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
         mainFrame.showPanel("consultationManagement");
@@ -627,6 +721,45 @@ public class ConsultationPanel extends javax.swing.JPanel {
         return LocalDateTime.ofInstant(combined.toInstant(), combined.getTimeZone().toZoneId());
     }
 
+    private void updateCurrentConsultingPatient() {
+        // Load shared queue and find current consulting
+        DoublyLinkedList<QueueEntry> queueList = (DoublyLinkedList<QueueEntry>) FileUtils.readDataFromFile("queue");
+        QueueEntry currentConsulting = null;
+        if (queueList != null) {
+            for (QueueEntry entry : queueList) {
+                if ("Consulting".equals(entry.getStatus())) {
+                    currentConsulting = entry;
+                    break;
+                }
+            }
+        }
+        if (currentConsulting != null) {
+            Patient patient = currentConsulting.getPatient();
+            String patientName = patient != null ? patient.getPatientName() : "Unknown";
+            jLabel7.setText("Current Consulting: " + patientName + " (Queue: " + currentConsulting.getQueueNumber() + ")");
+            jLabel7.setForeground(Color.GREEN); // Indicate current consulting
+            doneButton.setEnabled(true); // Enable done button
+        } else {
+            jLabel7.setText("Current Consulting: None - Please start consultation from queue");
+            jLabel7.setForeground(Color.BLACK); // Reset color
+            doneButton.setEnabled(false); // Disable when none
+        }
+    }
+
+    /**
+     * Selects a patient in the patient combo box by patient ID.
+     */
+    public void selectPatientById(String patientId) {
+        if (patientId == null || patientComboBox.getItemCount() == 0) return;
+        for (int i = 0; i < patientComboBox.getItemCount(); i++) {
+            String item = patientComboBox.getItemAt(i);
+            if (item != null && item.startsWith(patientId + " ")) {
+                patientComboBox.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton backButton;
@@ -649,5 +782,8 @@ public class ConsultationPanel extends javax.swing.JPanel {
     private javax.swing.JTextField symptomsField;
     private javax.swing.JButton updateButton;
     private javax.swing.JLabel titleLabel;
+    private javax.swing.JPanel titlePanel;
+    private javax.swing.JLabel logoLabel;
+    private javax.swing.JButton doneButton;
     // End of variables declaration//GEN-END:variables
 } 

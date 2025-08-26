@@ -12,6 +12,8 @@ import java.util.Iterator;
  */
 public class DoublyLinkedList<T extends Comparable<T>> implements Iterable<T>, ListInterface<T>, Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     // A reference to the first node in the list.
     private Node<T> head;
     // A reference to the last node in the list.

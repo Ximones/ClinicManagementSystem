@@ -136,6 +136,8 @@ public class ConsultationControl {
         Consultation consultation = getConsultation(consultationID);
         if (consultation != null) {
             consultation.setStatus(newStatus);
+            // Persist status change immediately
+            saveData();
             return true;
         }
         return false;
@@ -625,6 +627,58 @@ public class ConsultationControl {
             if (firstNode != null) {
                 QueueEntry entry = firstNode.getEntry().getValue();
                 entry.markStartConsult();
+                return entry;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Marks a patient as consulting (moved from queue to consultation)
+     *
+     * @param queueNumber The queue number of the patient
+     * @return true if marked successfully, false otherwise
+     */
+    public boolean markPatientConsulting(String queueNumber) {
+        for (Pair<String, QueueEntry> pair : queueList) {
+            QueueEntry entry = pair.getValue();
+            if (entry.getQueueNumber().equals(queueNumber)) {
+                entry.markConsulting();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Completes a consultation and removes patient from queue
+     *
+     * @param queueNumber The queue number of the patient
+     * @return true if completed successfully, false otherwise
+     */
+    public boolean completeConsultation(String queueNumber) {
+        for (int i = 1; i <= queueList.getSize(); i++) {
+            Node<Pair<String, QueueEntry>> node = queueList.getElement(i);
+            if (node != null && node.getEntry().getKey().equals(queueNumber)) {
+                // Mark as done before removing
+                node.getEntry().getValue().markConsultationDone();
+                // Remove from queue
+                queueList.deleteAtPosition(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Gets the current consulting patient (first patient with "Consulting" status)
+     *
+     * @return The consulting queue entry, or null if none
+     */
+    public QueueEntry getCurrentConsultingPatient() {
+        for (Pair<String, QueueEntry> pair : queueList) {
+            QueueEntry entry = pair.getValue();
+            if ("Consulting".equals(entry.getStatus())) {
                 return entry;
             }
         }

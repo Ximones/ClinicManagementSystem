@@ -23,6 +23,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import utility.FileUtils;
+import utility.ImageUtils;
 
 /**
  * Appointment Management Panel
@@ -50,50 +51,14 @@ public class AppointmentPanel extends javax.swing.JPanel {
         setupDateTimeSpinners();
         
         initComponents();
-        setupUI();
+        // set header logo image
+        logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
+        setupTable();
         initializeData();
         loadAppointments();
     }
     
-    private void setupUI() {
-        setPreferredSize(new Dimension(700, 500));
-        setBackground(new Color(240, 248, 255));
-        
-        // Style title
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        titleLabel.setForeground(new Color(25, 25, 112));
-        
-        // Style buttons
-        styleButton(addButton, "Add Appointment", new Color(70, 130, 180));
-        styleButton(updateButton, "Update Appointment", new Color(60, 179, 113));
-        styleButton(deleteButton, "Delete Appointment", new Color(220, 20, 60));
-        styleButton(backButton, "Back", new Color(128, 128, 128));
-        
-        // Add a refresh button for debugging
-        JButton refreshButton = new JButton("Refresh Data");
-        refreshButton.addActionListener(e -> {
-            System.out.println("=== Refreshing Appointment Data ===");
-            initializeData();
-            loadAppointments();
-            System.out.println("After refresh - Patient combo box items: " + patientComboBox.getItemCount());
-            System.out.println("After refresh - Doctor combo box items: " + doctorComboBox.getItemCount());
-            System.out.println("After refresh - Consultation combo box items: " + consultationComboBox.getItemCount());
-        });
-        styleButton(refreshButton, "Refresh Data", new Color(255, 165, 0));
-        
-        // Setup table
-        setupTable();
-    }
     
-    private void styleButton(JButton button, String text, Color backgroundColor) {
-        button.setText(text);
-        button.setFont(new Font("Arial", Font.BOLD, 12));
-        button.setForeground(Color.WHITE);
-        button.setBackground(backgroundColor);
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-    }
     
     private void setupTable() {
         String[] columnNames = {"ID", "Patient", "Doctor", "Date/Time", "Type", "Status", "Reason"};
@@ -281,6 +246,8 @@ public class AppointmentPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        logoLabel = new javax.swing.JLabel();
+        titlePanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         appointmentTable = new javax.swing.JTable();
@@ -306,9 +273,14 @@ public class AppointmentPanel extends javax.swing.JPanel {
 
         setPreferredSize(new java.awt.Dimension(700, 500));
 
-        titleLabel.setFont(new java.awt.Font("Arial", 1, 20)); // NOI18N
+        setLayout(new java.awt.BorderLayout());
+        add(logoLabel, java.awt.BorderLayout.PAGE_START);
+
+        titlePanel.setLayout(new java.awt.BorderLayout());
+        titleLabel.setFont(new java.awt.Font("Corbel", 1, 36)); // NOI18N
         titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        titleLabel.setText("Appointment Management");
+        titleLabel.setText(" Appointment Management");
+        titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
         appointmentTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -426,14 +398,14 @@ public class AppointmentPanel extends javax.swing.JPanel {
                 .addGap(10, 10, 10))
         );
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
+        javax.swing.JPanel contentPanel = new javax.swing.JPanel();
+        contentPanel.setLayout(new javax.swing.GroupLayout(contentPanel));
+        javax.swing.GroupLayout layout = (javax.swing.GroupLayout) contentPanel.getLayout();
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(titleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -450,8 +422,6 @@ public class AppointmentPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(20, 20, 20)
-                .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(10, 10, 10)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(10, 10, 10)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -463,6 +433,9 @@ public class AppointmentPanel extends javax.swing.JPanel {
                     .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20))
         );
+
+        titlePanel.add(contentPanel, java.awt.BorderLayout.CENTER);
+        add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
@@ -606,6 +579,7 @@ public class AppointmentPanel extends javax.swing.JPanel {
     private javax.swing.JTextField dateTimeField;
     private javax.swing.JButton deleteButton;
     private javax.swing.JComboBox<String> doctorComboBox;
+    private javax.swing.JLabel logoLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -620,5 +594,6 @@ public class AppointmentPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox<String> statusComboBox;
     private javax.swing.JButton updateButton;
     private javax.swing.JLabel titleLabel;
+    private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables
 } 

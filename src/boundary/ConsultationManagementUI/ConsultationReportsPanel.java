@@ -35,33 +35,10 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         this.mainFrame = mainFrame;
         this.consultationControl = new ConsultationControl();
         initComponents();
-        setupUI();
         setupTable();
     }
     
-    private void setupUI() {
-        setPreferredSize(new Dimension(700, 500));
-        setBackground(new Color(240, 248, 255));
-        
-        // Style title
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        titleLabel.setForeground(new Color(25, 25, 112));
-        
-        // Style buttons
-        styleButton(dailyAppointmentsButton, "Daily Appointments Report", new Color(70, 130, 180));
-        styleButton(consultationTypesButton, "Consultation Types Report", new Color(60, 179, 113));
-        styleButton(backButton, "Back", new Color(128, 128, 128));
-    }
     
-    private void styleButton(JButton button, String text, Color backgroundColor) {
-        button.setText(text);
-        button.setFont(new Font("Arial", Font.BOLD, 12));
-        button.setForeground(Color.WHITE);
-        button.setBackground(backgroundColor);
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-    }
     
     private void setupTable() {
         String[] columnNames = {"Report Type", "Generated Date", "Status"};
@@ -85,6 +62,8 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        logoLabel = new javax.swing.JLabel();
+        titlePanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
         dailyAppointmentsButton = new javax.swing.JButton();
         consultationTypesButton = new javax.swing.JButton();
@@ -97,9 +76,14 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
 
         setPreferredSize(new java.awt.Dimension(700, 500));
 
-        titleLabel.setFont(new java.awt.Font("Arial", 1, 20)); // NOI18N
+        setLayout(new java.awt.BorderLayout());
+        add(logoLabel, java.awt.BorderLayout.PAGE_START);
+
+        titlePanel.setLayout(new java.awt.BorderLayout());
+        titleLabel.setFont(new java.awt.Font("Corbel", 1, 36)); // NOI18N
         titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        titleLabel.setText("Consultation Reports");
+        titleLabel.setText(" Consultation Reports");
+        titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
         dailyAppointmentsButton.setText("Daily Appointments Report");
         dailyAppointmentsButton.addActionListener(new java.awt.event.ActionListener() {
@@ -163,14 +147,14 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
                 .addGap(10, 10, 10))
         );
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
+        javax.swing.JPanel contentPanel = new javax.swing.JPanel();
+        contentPanel.setLayout(new javax.swing.GroupLayout(contentPanel));
+        javax.swing.GroupLayout layout = (javax.swing.GroupLayout) contentPanel.getLayout();
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(titleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
@@ -185,8 +169,6 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(20, 20, 20)
-                .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(10, 10, 10)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(10, 10, 10)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -197,6 +179,9 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
                     .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20))
         );
+
+        titlePanel.add(contentPanel, java.awt.BorderLayout.CENTER);
+        add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     private void dailyAppointmentsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dailyAppointmentsButtonActionPerformed
@@ -306,11 +291,13 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
     private javax.swing.JButton backButton;
     private javax.swing.JButton consultationTypesButton;
     private javax.swing.JButton dailyAppointmentsButton;
+    private javax.swing.JLabel logoLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable reportTable;
     private javax.swing.JLabel titleLabel;
+    private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables
 } 

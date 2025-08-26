@@ -7,6 +7,7 @@ package boundary.ConsultationManagementUI;
 import adt.DoublyLinkedList;
 import adt.Pair;
 import boundary.MainFrame;
+import boundary.ConsultationManagementUI.ConsultationPanel;
 import control.ConsultationControl;
 import enitity.Patient;
 import enitity.QueueEntry;
@@ -19,6 +20,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import utility.FileUtils;
+import utility.ImageUtils;
 
 /**
  * Queue Management Panel for Consultation Module
@@ -27,54 +29,62 @@ import utility.FileUtils;
 public class QueuePanel extends javax.swing.JPanel {
 
     private MainFrame mainFrame;
-    private ConsultationControl consultationControl;
+    // private ConsultationControl consultationControl; // no longer the source of truth for queue
     private DoublyLinkedList<Pair<String, Patient>> patientList;
-    private DoublyLinkedList<Pair<String, QueueEntry>> queueList;
+    private DoublyLinkedList<QueueEntry> queueList;
     private DefaultTableModel queueTableModel;
     private Timer waitingTimeTimer;
     private int lastQueueNumber = 1000;
+    private ConsultationPanel consultationPanel; // Reference to consultation panel
 
     /**
      * Creates new form QueuePanel
      */
     public QueuePanel(MainFrame mainFrame) {
+        this(mainFrame, null);
+    }
+    
+    /**
+     * Creates new form QueuePanel with consultation panel reference
+     */
+    public QueuePanel(MainFrame mainFrame, ConsultationPanel consultationPanel) {
         this.mainFrame = mainFrame;
-        this.consultationControl = new ConsultationControl();
+        this.consultationPanel = consultationPanel;
+        // this.consultationControl = new ConsultationControl();
         
         initComponents();
-        setupUI();
+        // set header logo image
+        logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
+        setupTable();
         initializeData();
         loadQueueData();
         startWaitingTimeTimer();
     }
 
-    private void setupUI() {
-        setPreferredSize(new Dimension(800, 600));
-        setBackground(new Color(240, 248, 255));
-        
-        // Style title
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        titleLabel.setForeground(new Color(25, 25, 112));
-        
-        // Style buttons
-        styleButton(addToQueueButton, "Add to Queue", new Color(70, 130, 180));
-        styleButton(nextPatientButton, "Next Patient", new Color(60, 179, 113));
-        styleButton(removeFromQueueButton, "Remove from Queue", new Color(220, 20, 60));
-        styleButton(backButton, "Back", new Color(128, 128, 128));
-        
-        // Setup table
-        setupTable();
+    /**
+     * Refreshes the queue display - can be called when returning from other panels
+     */
+    public void refreshQueueDisplay() {
+        loadQueueData();
+        refreshQueueTable();
+        updateStatistics();
     }
     
-    private void styleButton(JButton button, String text, Color backgroundColor) {
-        button.setText(text);
-        button.setFont(new Font("Arial", Font.BOLD, 12));
-        button.setForeground(Color.WHITE);
-        button.setBackground(backgroundColor);
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    /**
+     * Sets the consultation panel reference
+     */
+    public void setConsultationPanel(ConsultationPanel consultationPanel) {
+        this.consultationPanel = consultationPanel;
     }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        // Ensure the queue reflects latest Patient Management queue when shown
+        refreshQueueDisplay();
+    }
+
+    
     
     private void setupTable() {
         String[] columnNames = {"Queue No.", "Patient ID", "Patient Name", "Status", "Waiting Time", "Queue Position"};
@@ -90,13 +100,13 @@ public class QueuePanel extends javax.swing.JPanel {
     }
     
     private void initializeData() {
-        // Load real patient data from file
+        // Load patients only if needed for display of names via patientList
         loadPatientData();
         
-        // Load queue data from file
+        // Load queue data from shared patient queue file
         loadQueueData();
         
-        // Populate combo boxes
+        // Populate combo boxes (kept for compatibility, but not used to add here)
         populateComboBoxes();
     }
     
@@ -121,34 +131,23 @@ public class QueuePanel extends javax.swing.JPanel {
     }
     
     private void loadQueueData() {
-        try {
-            // Get queue data from ConsultationControl instead of loading directly from file
-            queueList = consultationControl.getQueueList();
-            
-            if (queueList != null && !queueList.isEmpty()) {
-                System.out.println("Loading " + queueList.getSize() + " queue entries from ConsultationControl");
-                
-                // Verify data structure integrity
-                for (Pair<String, QueueEntry> pair : queueList) {
-                    if (pair == null || pair.getValue() == null) {
-                        throw new ClassCastException("Invalid queue data structure");
-                    }
-                }
-            } else {
-                System.out.println("No queue data found. Using empty list.");
-                queueList = new DoublyLinkedList<>();
-            }
-        } catch (ClassCastException e) {
-            System.err.println("Error: Queue data structure mismatch. Clearing queue and starting fresh.");
+        // Use shared queue from patient management module
+        DoublyLinkedList<QueueEntry> sharedQueue = (DoublyLinkedList<QueueEntry>) FileUtils.readDataFromFile("queue");
+        if (sharedQueue != null) {
+            queueList = sharedQueue;
+        } else {
             queueList = new DoublyLinkedList<>();
-            consultationControl.saveData();
         }
+    }
+    
+    private void saveQueueData() {
+        FileUtils.writeDataToFile("queue", queueList);
     }
     
     private void populateComboBoxes() {
         patientComboBox.removeAllItems();
         
-        // Add patients
+        // Add patients (not used for adding to queue here)
         System.out.println("Populating patients...");
         for (Pair<String, Patient> pair : patientList) {
             Patient patient = pair.getValue();
@@ -169,29 +168,19 @@ public class QueuePanel extends javax.swing.JPanel {
         }
         
         int position = 1;
-        try {
-            for (Pair<String, QueueEntry> pair : queueList) {
-                QueueEntry entry = pair.getValue();
-                Patient patient = entry.getPatient();
-                
-                // Calculate waiting time
-                String waitingTime = entry.getFormattedWaitingTime();
-                
-                Object[] row = {
-                    entry.getQueueNumber(),
-                    patient != null ? patient.getPatientID() : "N/A",
-                    patient != null ? patient.getPatientName() : "N/A",
-                    entry.getStatus(),
-                    waitingTime,
-                    position
-                };
-                queueTableModel.addRow(row);
-                position++;
-            }
-        } catch (ClassCastException e) {
-            System.err.println("Error: Queue data structure mismatch. Clearing queue and starting fresh.");
-            queueList = new DoublyLinkedList<>();
-            consultationControl.saveData();
+        for (QueueEntry entry : queueList) {
+            Patient patient = entry.getPatient();
+            String waitingTime = entry.getFormattedWaitingTime();
+            Object[] row = {
+                entry.getQueueNumber(),
+                patient != null ? patient.getPatientID() : "N/A",
+                patient != null ? patient.getPatientName() : "N/A",
+                entry.getStatus(),
+                waitingTime,
+                position
+            };
+            queueTableModel.addRow(row);
+            position++;
         }
     }
     
@@ -250,6 +239,8 @@ public class QueuePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        logoLabel = new javax.swing.JLabel();
+        titlePanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -270,9 +261,14 @@ public class QueuePanel extends javax.swing.JPanel {
 
         setPreferredSize(new java.awt.Dimension(800, 600));
 
-        titleLabel.setFont(new java.awt.Font("Arial", 1, 20)); // NOI18N
+        setLayout(new java.awt.BorderLayout());
+        add(logoLabel, java.awt.BorderLayout.PAGE_START);
+
+        titlePanel.setLayout(new java.awt.BorderLayout());
+        titleLabel.setFont(new java.awt.Font("Corbel", 1, 36)); // NOI18N
         titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        titleLabel.setText("Patient Queue Management");
+        titleLabel.setText(" Patient Queue Management");
+        titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
         queueTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -298,6 +294,14 @@ public class QueuePanel extends javax.swing.JPanel {
         nextPatientButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nextPatientButtonActionPerformed(evt);
+            }
+        });
+
+        startConsultationButton = new javax.swing.JButton();
+        startConsultationButton.setText("Start Consultation");
+        startConsultationButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startConsultationButtonActionPerformed(evt);
             }
         });
 
@@ -389,14 +393,14 @@ public class QueuePanel extends javax.swing.JPanel {
                 .addGap(10, 10, 10))
         );
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
+        javax.swing.JPanel contentPanel = new javax.swing.JPanel();
+        contentPanel.setLayout(new javax.swing.GroupLayout(contentPanel));
+        javax.swing.GroupLayout layout = (javax.swing.GroupLayout) contentPanel.getLayout();
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(titleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 760, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)
@@ -404,6 +408,8 @@ public class QueuePanel extends javax.swing.JPanel {
                         .addComponent(addToQueueButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(10, 10, 10)
                         .addComponent(nextPatientButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(startConsultationButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(10, 10, 10)
                         .addComponent(removeFromQueueButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(10, 10, 10)
@@ -414,8 +420,6 @@ public class QueuePanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(20, 20, 20)
-                .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(10, 10, 10)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(10, 10, 10)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -425,49 +429,19 @@ public class QueuePanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addToQueueButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(nextPatientButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(startConsultationButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(removeFromQueueButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20))
         );
+
+        titlePanel.add(contentPanel, java.awt.BorderLayout.CENTER);
+        add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     private void addToQueueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToQueueButtonActionPerformed
-        try {
-            Patient patient = getSelectedPatient();
-            
-            if (patient == null) {
-                JOptionPane.showMessageDialog(this, "Please select a patient.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            
-            // Check if patient is already in queue
-            for (Pair<String, QueueEntry> pair : queueList) {
-                QueueEntry entry = pair.getValue();
-                if (entry.getPatient() != null && entry.getPatient().getPatientID().equals(patient.getPatientID())) {
-                    JOptionPane.showMessageDialog(this, "Patient is already in the queue.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-            }
-            
-            // Add to queue with "Waiting" status
-            QueueEntry queueEntry = consultationControl.addToQueue(patient);
-            
-            if (queueEntry != null) {
-                JOptionPane.showMessageDialog(this, "Patient added to queue successfully!\nQueue Number: " + queueEntry.getQueueNumber(), 
-                                            "Success", JOptionPane.INFORMATION_MESSAGE);
-                
-                // Refresh queue list from ConsultationControl
-                queueList = consultationControl.getQueueList();
-                refreshQueueTable();
-                updateStatistics();
-            } else {
-                JOptionPane.showMessageDialog(this, "Failed to add patient to queue.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-            
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error adding patient to queue: " + e.getMessage(), 
-                                        "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        // Redirect to Patient Management's Queue screen for adding
+        mainFrame.showPanel("queueManagement");
     }//GEN-LAST:event_addToQueueButtonActionPerformed
 
     private void nextPatientButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextPatientButtonActionPerformed
@@ -476,32 +450,93 @@ public class QueuePanel extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Queue is empty.", "Info", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            
-            // Get next patient from queue
-            QueueEntry nextPatient = consultationControl.getNextPatient();
-            
-            if (nextPatient != null) {
-                Patient patient = nextPatient.getPatient();
-                String message = "Next patient called:\n";
-                message += "Queue Number: " + nextPatient.getQueueNumber() + "\n";
-                message += "Patient: " + (patient != null ? patient.getPatientName() : "N/A") + "\n";
-                message += "Status: " + nextPatient.getStatus();
-                
-                JOptionPane.showMessageDialog(this, message, "Next Patient", JOptionPane.INFORMATION_MESSAGE);
-                
-                // Refresh queue list from ConsultationControl
-                queueList = consultationControl.getQueueList();
-                refreshQueueTable();
-                updateStatistics();
-            } else {
-                JOptionPane.showMessageDialog(this, "No patients in queue.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            // End any current consulting
+            for (int i = 1; i <= queueList.getSize(); i++) {
+                adt.Node<QueueEntry> node = queueList.getElement(i);
+                if (node != null && "Consulting".equals(node.getEntry().getStatus())) {
+                    node.getEntry().markConsultationDone();
+                    // Optionally keep 'Done' entry for history or remove; we'll remove to advance queue
+                    queueList.deleteAtPosition(i);
+                    break;
+                }
             }
-            
+            // Promote first waiting to Consulting
+            for (int i = 1; i <= queueList.getSize(); i++) {
+                adt.Node<QueueEntry> node = queueList.getElement(i);
+                if (node != null && "Waiting".equals(node.getEntry().getStatus())) {
+                    node.getEntry().markConsulting();
+                    break;
+                }
+            }
+            saveQueueData();
+            refreshQueueTable();
+            updateStatistics();
+            if (consultationPanel != null) consultationPanel.refreshConsultationDisplay();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error calling next patient: " + e.getMessage(), 
                                         "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_nextPatientButtonActionPerformed
+
+    private void startConsultationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startConsultationButtonActionPerformed
+        int selectedRow = queueTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a patient from the queue to start consultation.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        try {
+            String queueNumber = (String) queueTable.getValueAt(selectedRow, 0);
+            String status = (String) queueTable.getValueAt(selectedRow, 3);
+            
+            // Check if patient is already consulting
+            if ("Consulting".equals(status)) {
+                JOptionPane.showMessageDialog(this, "This patient is already consulting.", "Info", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            
+            // Ensure only one consulting
+            for (QueueEntry entry : queueList) {
+                if ("Consulting".equals(entry.getStatus())) {
+                    JOptionPane.showMessageDialog(this, "Another patient is currently consulting. Please complete that consultation first.", "Info", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+            }
+            
+            // Mark selected as consulting
+            for (int i = 1; i <= queueList.getSize(); i++) {
+                adt.Node<QueueEntry> node = queueList.getElement(i);
+                if (node != null && queueNumber.equals(node.getEntry().getQueueNumber())) {
+                    node.getEntry().markConsulting();
+                    break;
+                }
+            }
+            saveQueueData();
+            refreshQueueTable();
+            updateStatistics();
+            if (consultationPanel != null) consultationPanel.refreshConsultationDisplay();
+            
+            // Navigate to consultation panel immediately with selected patient
+            if (consultationPanel != null) {
+                Patient selPatient = null;
+                for (int i = 1; i <= queueList.getSize(); i++) {
+                    adt.Node<QueueEntry> n = queueList.getElement(i);
+                    if (n != null && queueNumber.equals(n.getEntry().getQueueNumber())) {
+                        selPatient = n.getEntry().getPatient();
+                        break;
+                    }
+                }
+                if (selPatient != null) {
+                    consultationPanel.selectPatientById(selPatient.getPatientID());
+                }
+                mainFrame.showPanel("consultationPanel");
+            }
+            JOptionPane.showMessageDialog(this, "Patient marked as consulting. Proceeding to Consultation panel.", "Success", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error starting consultation: " + e.getMessage(), 
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_startConsultationButtonActionPerformed
 
     private void removeFromQueueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeFromQueueButtonActionPerformed
         int selectedRow = queueTable.getSelectedRow();
@@ -513,19 +548,17 @@ public class QueuePanel extends javax.swing.JPanel {
         try {
             String queueNumber = (String) queueTable.getValueAt(selectedRow, 0);
             
-            boolean removed = consultationControl.removeFromQueue(queueNumber);
-            
-            if (removed) {
-                JOptionPane.showMessageDialog(this, "Patient removed from queue successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                
-                // Refresh queue list from ConsultationControl
-                queueList = consultationControl.getQueueList();
-                refreshQueueTable();
-                updateStatistics();
-            } else {
-                JOptionPane.showMessageDialog(this, "Failed to remove patient from queue.", "Error", JOptionPane.ERROR_MESSAGE);
+            // Find and remove
+            for (int i = 1; i <= queueList.getSize(); i++) {
+                adt.Node<QueueEntry> node = queueList.getElement(i);
+                if (node != null && queueNumber.equals(node.getEntry().getQueueNumber())) {
+                    queueList.deleteAtPosition(i);
+                    break;
+                }
             }
-            
+            saveQueueData();
+            refreshQueueTable();
+            updateStatistics();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error removing patient from queue: " + e.getMessage(), 
                                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -551,8 +584,7 @@ public class QueuePanel extends javax.swing.JPanel {
                 long totalMillis = 0;
                 int count = 0;
                 
-                for (Pair<String, QueueEntry> pair : queueList) {
-                    QueueEntry entry = pair.getValue();
+                for (QueueEntry entry : queueList) {
                     totalMillis += entry.getWaitingTimeMillis();
                     count++;
                 }
@@ -574,12 +606,42 @@ public class QueuePanel extends javax.swing.JPanel {
             
             // Update current queue number
             currentQueueNumberLabel.setText("E" + (lastQueueNumber + 1));
+            
+            // Update button states
+            updateButtonStates();
         } catch (ClassCastException e) {
             System.err.println("Error: Queue data structure mismatch in statistics. Clearing queue and starting fresh.");
             queueList = new DoublyLinkedList<>();
-            consultationControl.saveData();
+            FileUtils.writeDataToFile("queue", queueList);
             totalPatientsLabel.setText("0");
             averageWaitingTimeLabel.setText("0m");
+        }
+    }
+    
+    private void updateButtonStates() {
+        // Check if there's a patient currently consulting
+        QueueEntry currentConsulting = null;
+        for (QueueEntry entry : queueList) {
+            if ("Consulting".equals(entry.getStatus())) {
+                currentConsulting = entry;
+                break;
+            }
+        }
+        
+        if (currentConsulting != null) {
+            startConsultationButton.setEnabled(false);
+            startConsultationButton.setToolTipText("Another patient is currently consulting");
+        } else {
+            startConsultationButton.setEnabled(true);
+            startConsultationButton.setToolTipText("Start consultation with selected patient");
+        }
+        
+        if (queueList == null || queueList.isEmpty()) {
+            nextPatientButton.setEnabled(false);
+            nextPatientButton.setToolTipText("No patients in queue");
+        } else {
+            nextPatientButton.setEnabled(true);
+            nextPatientButton.setToolTipText("Call next patient from queue");
         }
     }
 
@@ -588,6 +650,7 @@ public class QueuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel averageWaitingTimeLabel;
     private javax.swing.JButton backButton;
     private javax.swing.JLabel currentQueueNumberLabel;
+    private javax.swing.JLabel logoLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -598,8 +661,10 @@ public class QueuePanel extends javax.swing.JPanel {
     private javax.swing.JButton nextPatientButton;
     private javax.swing.JComboBox<String> patientComboBox;
     private javax.swing.JButton removeFromQueueButton;
+    private javax.swing.JButton startConsultationButton;
     private javax.swing.JTable queueTable;
     private javax.swing.JLabel titleLabel;
+    private javax.swing.JPanel titlePanel;
     private javax.swing.JLabel totalPatientsLabel;
     // End of variables declaration//GEN-END:variables
 } 
