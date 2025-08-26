@@ -8,6 +8,7 @@ import adt.DoublyLinkedList;
 import adt.Pair;
 import enitity.Doctor;
 import enitity.Medicine;
+import java.io.File;
 
 /**
  *
@@ -16,6 +17,11 @@ import enitity.Medicine;
 public class InitializeDataUtils {
 
     public static void initializeData() {
+
+        File file = new File("dao/medicine.bin");
+        if (file.exists()) {
+            return; // don't overwrite existing file
+        }
 
         DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
         DoublyLinkedList<Pair<String, Medicine>> medList = new DoublyLinkedList<>();

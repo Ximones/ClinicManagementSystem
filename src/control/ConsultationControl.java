@@ -23,58 +23,59 @@ import utility.FileUtils;
 
 /**
  * Control class for managing consultation operations
+ *
  * @author Zhen Bang
  */
 public class ConsultationControl {
-    
+
     private DoublyLinkedList<Pair<String, Consultation>> consultationList;
     private DoublyLinkedList<Pair<String, Appointment>> appointmentList;
     private DoublyLinkedList<Pair<String, Prescription>> prescriptionList;
     private DoublyLinkedList<Pair<String, QueueEntry>> queueList;
-    
+
     public ConsultationControl() {
         this.consultationList = new DoublyLinkedList<>();
         this.appointmentList = new DoublyLinkedList<>();
         this.prescriptionList = new DoublyLinkedList<>();
         this.queueList = new DoublyLinkedList<>();
-        
+
         // Load existing data from files
         loadData();
     }
-    
+
     /**
      * Loads all consultation data from files
      */
     private void loadData() {
         // Load consultations
-        DoublyLinkedList<Pair<String, Consultation>> loadedConsultations = 
-            (DoublyLinkedList<Pair<String, Consultation>>) FileUtils.readDataFromFile("consultations");
+        DoublyLinkedList<Pair<String, Consultation>> loadedConsultations
+                = (DoublyLinkedList<Pair<String, Consultation>>) FileUtils.readDataFromFile("consultations");
         if (loadedConsultations != null) {
             this.consultationList = loadedConsultations;
         }
-        
+
         // Load appointments
-        DoublyLinkedList<Pair<String, Appointment>> loadedAppointments = 
-            (DoublyLinkedList<Pair<String, Appointment>>) FileUtils.readDataFromFile("appointments");
+        DoublyLinkedList<Pair<String, Appointment>> loadedAppointments
+                = (DoublyLinkedList<Pair<String, Appointment>>) FileUtils.readDataFromFile("appointments");
         if (loadedAppointments != null) {
             this.appointmentList = loadedAppointments;
         }
-        
+
         // Load prescriptions
-        DoublyLinkedList<Pair<String, Prescription>> loadedPrescriptions = 
-            (DoublyLinkedList<Pair<String, Prescription>>) FileUtils.readDataFromFile("prescriptions");
+        DoublyLinkedList<Pair<String, Prescription>> loadedPrescriptions
+                = (DoublyLinkedList<Pair<String, Prescription>>) FileUtils.readDataFromFile("prescriptions");
         if (loadedPrescriptions != null) {
             this.prescriptionList = loadedPrescriptions;
         }
-        
+
         // Load queue
-        DoublyLinkedList<Pair<String, QueueEntry>> loadedQueue = 
-            (DoublyLinkedList<Pair<String, QueueEntry>>) FileUtils.readDataFromFile("queue");
+        DoublyLinkedList<Pair<String, QueueEntry>> loadedQueue
+                = (DoublyLinkedList<Pair<String, QueueEntry>>) FileUtils.readDataFromFile("queue");
         if (loadedQueue != null) {
             this.queueList = loadedQueue;
         }
     }
-    
+
     /**
      * Saves all consultation data to files
      */
@@ -84,11 +85,11 @@ public class ConsultationControl {
         FileUtils.writeDataToFile("prescriptions", prescriptionList);
         FileUtils.writeDataToFile("queue", queueList);
     }
-    
+
     // Consultation Management Methods
-    
     /**
      * Creates a new consultation
+     *
      * @param patient The patient for the consultation
      * @param doctor The doctor conducting the consultation
      * @param consultationDateTime The date and time of the consultation
@@ -96,22 +97,23 @@ public class ConsultationControl {
      * @param symptoms The patient's symptoms
      * @return The created consultation
      */
-    public Consultation createConsultation(Patient patient, Doctor doctor, 
-                                         LocalDateTime consultationDateTime, 
-                                         String consultationType, String symptoms) {
-        Consultation consultation = new Consultation(patient, doctor, consultationDateTime, 
-                                                   consultationType, symptoms);
+    public Consultation createConsultation(Patient patient, Doctor doctor,
+            LocalDateTime consultationDateTime,
+            String consultationType, String symptoms) {
+        Consultation consultation = new Consultation(patient, doctor, consultationDateTime,
+                consultationType, symptoms);
         Pair<String, Consultation> consultationPair = new Pair<>(consultation.getConsultationID(), consultation);
         consultationList.insertLast(consultationPair);
-        
+
         // Save data after creating consultation
         saveData();
-        
+
         return consultation;
     }
-    
+
     /**
      * Retrieves a consultation by ID
+     *
      * @param consultationID The consultation ID
      * @return The consultation if found, null otherwise
      */
@@ -122,9 +124,10 @@ public class ConsultationControl {
         }
         return null;
     }
-    
+
     /**
      * Updates consultation status
+     *
      * @param consultationID The consultation ID
      * @param newStatus The new status
      * @return true if updated successfully, false otherwise
@@ -137,9 +140,10 @@ public class ConsultationControl {
         }
         return false;
     }
-    
+
     /**
      * Updates consultation diagnosis and notes
+     *
      * @param consultationID The consultation ID
      * @param diagnosis The diagnosis
      * @param notes Additional notes
@@ -155,100 +159,105 @@ public class ConsultationControl {
         }
         return false;
     }
-    
+
     /**
      * Gets all consultations for a specific patient
+     *
      * @param patientID The patient ID
      * @return List of consultations for the patient
      */
     public List<Consultation> getConsultationsByPatient(String patientID) {
         List<Consultation> patientConsultations = new ArrayList<>();
-        
+
         for (Pair<String, Consultation> pair : consultationList) {
             Consultation consultation = pair.getValue();
-            if (consultation.getPatient() != null && 
-                consultation.getPatient().getPatientID().equals(patientID)) {
+            if (consultation.getPatient() != null
+                    && consultation.getPatient().getPatientID().equals(patientID)) {
                 patientConsultations.add(consultation);
             }
         }
-        
+
         return patientConsultations;
     }
-    
+
     /**
      * Gets all consultations for a specific doctor
+     *
      * @param doctorID The doctor ID
      * @return List of consultations for the doctor
      */
     public List<Consultation> getConsultationsByDoctor(String doctorID) {
         List<Consultation> doctorConsultations = new ArrayList<>();
-        
+
         for (Pair<String, Consultation> pair : consultationList) {
             Consultation consultation = pair.getValue();
-            if (consultation.getDoctor() != null && 
-                consultation.getDoctor().getDoctorID().equals(doctorID)) {
+            if (consultation.getDoctor() != null
+                    && consultation.getDoctor().getDoctorID().equals(doctorID)) {
                 doctorConsultations.add(consultation);
             }
         }
-        
+
         return doctorConsultations;
     }
-    
+
     /**
      * Gets consultations for a specific date
+     *
      * @param date The date to search for
      * @return List of consultations on the specified date
      */
     public List<Consultation> getConsultationsByDate(LocalDate date) {
         List<Consultation> dateConsultations = new ArrayList<>();
-        
+
         for (Pair<String, Consultation> pair : consultationList) {
             Consultation consultation = pair.getValue();
-            if (consultation.getConsultationDateTime() != null && 
-                consultation.getConsultationDateTime().toLocalDate().equals(date)) {
+            if (consultation.getConsultationDateTime() != null
+                    && consultation.getConsultationDateTime().toLocalDate().equals(date)) {
                 dateConsultations.add(consultation);
             }
         }
-        
+
         return dateConsultations;
     }
-    
+
     /**
      * Gets all consultations
+     *
      * @return List of all consultations
      */
     public List<Consultation> getAllConsultations() {
         List<Consultation> allConsultations = new ArrayList<>();
-        
+
         for (Pair<String, Consultation> pair : consultationList) {
             allConsultations.add(pair.getValue());
         }
-        
+
         return allConsultations;
     }
-    
+
     /**
      * Gets consultations by status
+     *
      * @param status The status to filter by
      * @return List of consultations with the specified status
      */
     public List<Consultation> getConsultationsByStatus(String status) {
         List<Consultation> statusConsultations = new ArrayList<>();
-        
+
         for (Pair<String, Consultation> pair : consultationList) {
             Consultation consultation = pair.getValue();
             if (consultation.getStatus().equals(status)) {
                 statusConsultations.add(consultation);
             }
         }
-        
+
         return statusConsultations;
     }
-    
+
     // Appointment Management Methods
-    
     /**
      * Creates a follow-up appointment
+     *
      * @param patient The patient for the appointment
      * @param doctor The doctor for the appointment
      * @param appointmentDateTime The date and time of the appointment
@@ -257,29 +266,30 @@ public class ConsultationControl {
      * @param originalConsultation The original consultation
      * @return The created appointment
      */
-    public Appointment createAppointment(Patient patient, Doctor doctor, 
-                                       LocalDateTime appointmentDateTime, 
-                                       String appointmentType, String reason, 
-                                       Consultation originalConsultation) {
-        Appointment appointment = new Appointment(patient, doctor, appointmentDateTime, 
-                                                appointmentType, reason, originalConsultation);
+    public Appointment createAppointment(Patient patient, Doctor doctor,
+            LocalDateTime appointmentDateTime,
+            String appointmentType, String reason,
+            Consultation originalConsultation) {
+        Appointment appointment = new Appointment(patient, doctor, appointmentDateTime,
+                appointmentType, reason, originalConsultation);
         Pair<String, Appointment> appointmentPair = new Pair<>(appointment.getAppointmentID(), appointment);
         appointmentList.insertLast(appointmentPair);
-        
+
         // Update the original consultation to indicate it requires follow-up
         if (originalConsultation != null) {
             originalConsultation.setRequiresFollowUp(true);
             originalConsultation.setFollowUpDateTime(appointmentDateTime);
         }
-        
+
         // Save data after creating appointment
         saveData();
-        
+
         return appointment;
     }
-    
+
     /**
      * Retrieves an appointment by ID
+     *
      * @param appointmentID The appointment ID
      * @return The appointment if found, null otherwise
      */
@@ -290,9 +300,10 @@ public class ConsultationControl {
         }
         return null;
     }
-    
+
     /**
      * Updates appointment status
+     *
      * @param appointmentID The appointment ID
      * @param newStatus The new status
      * @return true if updated successfully, false otherwise
@@ -305,106 +316,111 @@ public class ConsultationControl {
         }
         return false;
     }
-    
+
     /**
      * Gets all appointments for today
+     *
      * @return List of today's appointments
      */
     public List<Appointment> getTodayAppointments() {
         List<Appointment> todayAppointments = new ArrayList<>();
-        
+
         for (Pair<String, Appointment> pair : appointmentList) {
             Appointment appointment = pair.getValue();
             if (appointment.isToday()) {
                 todayAppointments.add(appointment);
             }
         }
-        
+
         return todayAppointments;
     }
-    
+
     /**
      * Gets upcoming appointments
+     *
      * @return List of upcoming appointments
      */
     public List<Appointment> getUpcomingAppointments() {
         List<Appointment> upcomingAppointments = new ArrayList<>();
-        
+
         for (Pair<String, Appointment> pair : appointmentList) {
             Appointment appointment = pair.getValue();
             if (appointment.isUpcoming()) {
                 upcomingAppointments.add(appointment);
             }
         }
-        
+
         return upcomingAppointments;
     }
-    
+
     /**
      * Gets appointments for a specific patient
+     *
      * @param patientID The patient ID
      * @return List of appointments for the patient
      */
     public List<Appointment> getAppointmentsByPatient(String patientID) {
         List<Appointment> patientAppointments = new ArrayList<>();
-        
+
         for (Pair<String, Appointment> pair : appointmentList) {
             Appointment appointment = pair.getValue();
-            if (appointment.getPatient() != null && 
-                appointment.getPatient().getPatientID().equals(patientID)) {
+            if (appointment.getPatient() != null
+                    && appointment.getPatient().getPatientID().equals(patientID)) {
                 patientAppointments.add(appointment);
             }
         }
-        
+
         return patientAppointments;
     }
-    
+
     /**
      * Gets appointments for a specific doctor
+     *
      * @param doctorID The doctor ID
      * @return List of appointments for the doctor
      */
     public List<Appointment> getAppointmentsByDoctor(String doctorID) {
         List<Appointment> doctorAppointments = new ArrayList<>();
-        
+
         for (Pair<String, Appointment> pair : appointmentList) {
             Appointment appointment = pair.getValue();
-            if (appointment.getDoctor() != null && 
-                appointment.getDoctor().getDoctorID().equals(doctorID)) {
+            if (appointment.getDoctor() != null
+                    && appointment.getDoctor().getDoctorID().equals(doctorID)) {
                 doctorAppointments.add(appointment);
             }
         }
-        
+
         return doctorAppointments;
     }
-    
+
     /**
      * Gets all appointments
+     *
      * @return List of all appointments
      */
     public List<Appointment> getAllAppointments() {
         List<Appointment> allAppointments = new ArrayList<>();
-        
+
         for (Pair<String, Appointment> pair : appointmentList) {
             allAppointments.add(pair.getValue());
         }
-        
+
         return allAppointments;
     }
-    
+
     // Statistics and Reporting Methods
-    
     /**
      * Gets consultation count by type
+     *
      * @return Map of consultation types and their counts
      */
     public DoublyLinkedList<Pair<String, Integer>> getConsultationTypeCounts() {
         DoublyLinkedList<Pair<String, Integer>> typeCounts = new DoublyLinkedList<>();
-        
+
         for (Pair<String, Consultation> pair : consultationList) {
             Consultation consultation = pair.getValue();
             String type = consultation.getConsultationType();
-            
+
             // Find existing count for this type
             Object existingCount = typeCounts.findByKey(type);
             if (existingCount != null) {
@@ -422,21 +438,22 @@ public class ConsultationControl {
                 typeCounts.insertLast(new Pair<>(type, 1));
             }
         }
-        
+
         return typeCounts;
     }
-    
+
     /**
      * Gets appointment count by type
+     *
      * @return Map of appointment types and their counts
      */
     public DoublyLinkedList<Pair<String, Integer>> getAppointmentTypeCounts() {
         DoublyLinkedList<Pair<String, Integer>> typeCounts = new DoublyLinkedList<>();
-        
+
         for (Pair<String, Appointment> pair : appointmentList) {
             Appointment appointment = pair.getValue();
             String type = appointment.getAppointmentType();
-            
+
             // Find existing count for this type
             Object existingCount = typeCounts.findByKey(type);
             if (existingCount != null) {
@@ -454,14 +471,14 @@ public class ConsultationControl {
                 typeCounts.insertLast(new Pair<>(type, 1));
             }
         }
-        
+
         return typeCounts;
     }
-    
+
     // Prescription Management Methods
-    
     /**
      * Creates a new prescription for a consultation
+     *
      * @param consultation The consultation for the prescription
      * @param diagnosis The diagnosis
      * @param instructions The prescription instructions
@@ -471,11 +488,13 @@ public class ConsultationControl {
         Prescription prescription = new Prescription(consultation, diagnosis, instructions);
         Pair<String, Prescription> prescriptionPair = new Pair<>(prescription.getPrescriptionID(), prescription);
         prescriptionList.insertLast(prescriptionPair);
+        saveData();
         return prescription;
     }
-    
+
     /**
      * Adds a prescription item to a prescription
+     *
      * @param prescriptionID The prescription ID
      * @param medicine The medicine to prescribe
      * @param quantity The quantity
@@ -484,19 +503,21 @@ public class ConsultationControl {
      * @param duration The duration
      * @return true if added successfully, false otherwise
      */
-    public boolean addPrescriptionItem(String prescriptionID, Medicine medicine, int quantity, 
-                                     String dosage, String frequency, String duration) {
+    public boolean addPrescriptionItem(String prescriptionID, Medicine medicine, int quantity,
+            String dosage, String frequency, String duration) {
         Prescription prescription = getPrescription(prescriptionID);
         if (prescription != null) {
             PrescriptionItem item = new PrescriptionItem(medicine, quantity, dosage, frequency, duration);
             prescription.addPrescriptionItem(item);
+            saveData();
             return true;
         }
         return false;
     }
-    
+
     /**
      * Retrieves a prescription by ID
+     *
      * @param prescriptionID The prescription ID
      * @return The prescription if found, null otherwise
      */
@@ -507,70 +528,81 @@ public class ConsultationControl {
         }
         return null;
     }
-    
+
     /**
      * Gets all prescriptions for a specific patient
+     *
      * @param patientID The patient ID
      * @return List of prescriptions for the patient
      */
     public List<Prescription> getPrescriptionsByPatient(String patientID) {
         List<Prescription> patientPrescriptions = new ArrayList<>();
-        
+
         for (Pair<String, Prescription> pair : prescriptionList) {
             Prescription prescription = pair.getValue();
-            if (prescription.getPatient() != null && 
-                prescription.getPatient().getPatientID().equals(patientID)) {
+            if (prescription.getPatient() != null
+                    && prescription.getPatient().getPatientID().equals(patientID)) {
                 patientPrescriptions.add(prescription);
             }
         }
-        
+
         return patientPrescriptions;
     }
-    
+
     /**
      * Gets all prescriptions for a specific consultation
+     *
      * @param consultationID The consultation ID
      * @return List of prescriptions for the consultation
      */
     public List<Prescription> getPrescriptionsByConsultation(String consultationID) {
         List<Prescription> consultationPrescriptions = new ArrayList<>();
-        
+
         for (Pair<String, Prescription> pair : prescriptionList) {
             Prescription prescription = pair.getValue();
-            if (prescription.getConsultation() != null && 
-                prescription.getConsultation().getConsultationID().equals(consultationID)) {
+            if (prescription.getConsultation() != null
+                    && prescription.getConsultation().getConsultationID().equals(consultationID)) {
                 consultationPrescriptions.add(prescription);
             }
         }
-        
+
         return consultationPrescriptions;
     }
-    
+
     /**
      * Gets all prescriptions
+     *
      * @return DoublyLinkedList of all prescriptions with their IDs
      */
     public DoublyLinkedList<Pair<String, Prescription>> getAllPrescriptions() {
         return prescriptionList;
     }
-    
+
+    public void reloadPrescriptions() {
+        DoublyLinkedList<Pair<String, Prescription>> loadedPrescriptions
+                = (DoublyLinkedList<Pair<String, Prescription>>) FileUtils.readDataFromFile("prescriptions");
+        if (loadedPrescriptions != null) {
+            this.prescriptionList = loadedPrescriptions;
+        }
+    }
+
     // Getters for the lists
     public DoublyLinkedList<Pair<String, Consultation>> getConsultationList() {
         return consultationList;
     }
-    
+
     public DoublyLinkedList<Pair<String, Appointment>> getAppointmentList() {
         return appointmentList;
     }
-    
+
     public DoublyLinkedList<Pair<String, Prescription>> getPrescriptionList() {
         return prescriptionList;
     }
-    
+
     // Queue Management Methods
-    
     /**
      * Adds a patient to the consultation queue
+     *
      * @param patient The patient to add to queue
      * @return The created queue entry
      */
@@ -581,9 +613,10 @@ public class ConsultationControl {
         queueList.insertLast(queuePair);
         return queueEntry;
     }
-    
+
     /**
      * Gets the next patient from the queue
+     *
      * @return The next queue entry, or null if queue is empty
      */
     public QueueEntry getNextPatient() {
@@ -597,9 +630,10 @@ public class ConsultationControl {
         }
         return null;
     }
-    
+
     /**
      * Removes a patient from the queue
+     *
      * @param queueNumber The queue number to remove
      * @return true if removed successfully, false otherwise
      */
@@ -614,23 +648,25 @@ public class ConsultationControl {
         }
         return false;
     }
-    
+
     /**
      * Gets all patients in the queue
+     *
      * @return List of all queue entries
      */
     public List<QueueEntry> getAllQueueEntries() {
         List<QueueEntry> allEntries = new ArrayList<>();
-        
+
         for (Pair<String, QueueEntry> pair : queueList) {
             allEntries.add(pair.getValue());
         }
-        
+
         return allEntries;
     }
-    
+
     /**
      * Gets the current queue position for a patient
+     *
      * @param patientID The patient ID
      * @return The queue position (1-based), or -1 if not found
      */
@@ -638,41 +674,42 @@ public class ConsultationControl {
         int position = 1;
         for (Pair<String, QueueEntry> pair : queueList) {
             QueueEntry entry = pair.getValue();
-            if (entry.getPatient() != null && 
-                entry.getPatient().getPatientID().equals(patientID)) {
+            if (entry.getPatient() != null
+                    && entry.getPatient().getPatientID().equals(patientID)) {
                 return position;
             }
             position++;
         }
         return -1;
     }
-    
+
     /**
      * Gets the average waiting time in the queue
+     *
      * @return Average waiting time in milliseconds
      */
     public long getAverageWaitingTime() {
         if (queueList.isEmpty()) {
             return 0;
         }
-        
+
         long totalWaitingTime = 0;
         int count = 0;
-        
+
         for (Pair<String, QueueEntry> pair : queueList) {
             QueueEntry entry = pair.getValue();
             totalWaitingTime += entry.getWaitingTimeMillis();
             count++;
         }
-        
+
         return count > 0 ? totalWaitingTime / count : 0;
     }
-    
+
     private String generateQueueNumber() {
         return "Q" + String.format("%03d", queueList.getSize() + 1);
     }
-    
+
     public DoublyLinkedList<Pair<String, QueueEntry>> getQueueList() {
         return queueList;
     }
-} 
+}

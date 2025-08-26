@@ -33,7 +33,7 @@ public class Prescription implements Serializable {
     public Prescription() {
         this.prescriptionID = generatePrescriptionID();
         this.prescriptionItems = new ArrayList<>();
-        this.status = "Active";
+        this.status = "Pending";
         this.prescriptionDate = LocalDateTime.now();
     }
     
@@ -45,7 +45,7 @@ public class Prescription implements Serializable {
         this.diagnosis = diagnosis;
         this.instructions = instructions;
         this.prescriptionItems = new ArrayList<>();
-        this.status = "Active";
+        this.status = "Pending";
         this.prescriptionDate = LocalDateTime.now();
         this.validUntil = LocalDateTime.now().plusDays(30); // Default 30 days validity
     }

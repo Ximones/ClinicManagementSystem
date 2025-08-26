@@ -18,6 +18,7 @@ import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.UnitValue;
+import enitity.DispenseRecord;
 import enitity.DutySlot;
 import enitity.Medicine;
 import enitity.Patient;
@@ -45,45 +46,45 @@ public class ReportGenerator {
      * @param doctorList The master list of all doctors.
      */
     public static void generateSpecializationReport(DoublyLinkedList<Pair<String, Doctor>> doctorList) {
-    try {
-        // --- Step 1: Count the data (No change here) ---
-        DoublyLinkedList<Pair<String, Integer>> specializationCounts = countOccurrences(doctorList, "position");
+        try {
+            // --- Step 1: Count the data (No change here) ---
+            DoublyLinkedList<Pair<String, Integer>> specializationCounts = countOccurrences(doctorList, "position");
 
-        // --- Step 2: Create the Pie Chart (No change here) ---
-        DefaultPieDataset pieDataset = new DefaultPieDataset();
-        for (Pair<String, Integer> entry : specializationCounts) {
-            pieDataset.setValue(entry.getKey(), entry.getValue());
+            // --- Step 2: Create the Pie Chart (No change here) ---
+            DefaultPieDataset pieDataset = new DefaultPieDataset();
+            for (Pair<String, Integer> entry : specializationCounts) {
+                pieDataset.setValue(entry.getKey(), entry.getValue());
+            }
+            JFreeChart pieChart = ChartFactory.createPieChart("Doctor Specialization Distribution", pieDataset, true, true, false);
+
+            // --- ADD THESE LINES TO CUSTOMIZE THE LABELS ---
+            PiePlot plot = (PiePlot) pieChart.getPlot();
+            StandardPieSectionLabelGenerator labelGenerator = new StandardPieSectionLabelGenerator(
+                    "{0}: {1} ({2})"); // {0}=Key, {1}=Value, {2}=Percentage
+            plot.setLabelGenerator(labelGenerator);
+            // --- END OF NEW CODE ---
+
+            File chartFile = new File("specialization_chart.png");
+            ChartUtils.saveChartAsPNG(chartFile, pieChart, 450, 400);
+
+            // --- Step 3: Create the PDF (No change here) ---
+            PdfWriter writer = new PdfWriter("Doctor_Specialization_Report.pdf");
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            document.add(new Paragraph("Doctor Specialization Report"));
+            document.add(new Paragraph(" "));
+            Image chartImage = new Image(ImageDataFactory.create("specialization_chart.png"));
+            document.add(chartImage);
+
+            document.close();
+            chartFile.delete();
+
+            System.out.println("Specialization Report generated successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        JFreeChart pieChart = ChartFactory.createPieChart("Doctor Specialization Distribution", pieDataset, true, true, false);
-
-        // --- ADD THESE LINES TO CUSTOMIZE THE LABELS ---
-        PiePlot plot = (PiePlot) pieChart.getPlot();
-        StandardPieSectionLabelGenerator labelGenerator = new StandardPieSectionLabelGenerator(
-                "{0}: {1} ({2})"); // {0}=Key, {1}=Value, {2}=Percentage
-        plot.setLabelGenerator(labelGenerator);
-        // --- END OF NEW CODE ---
-
-        File chartFile = new File("specialization_chart.png");
-        ChartUtils.saveChartAsPNG(chartFile, pieChart, 450, 400);
-
-        // --- Step 3: Create the PDF (No change here) ---
-        PdfWriter writer = new PdfWriter("Doctor_Specialization_Report.pdf");
-        PdfDocument pdf = new PdfDocument(writer);
-        Document document = new Document(pdf);
-
-        document.add(new Paragraph("Doctor Specialization Report"));
-        document.add(new Paragraph(" "));
-        Image chartImage = new Image(ImageDataFactory.create("specialization_chart.png"));
-        document.add(chartImage);
-
-        document.close();
-        chartFile.delete();
-
-        System.out.println("Specialization Report generated successfully.");
-    } catch (Exception e) {
-        e.printStackTrace();
     }
-}
 
     /**
      * Report : Generates a PDF with a Pie Chart of Doctor Availability Status.
@@ -96,7 +97,6 @@ public class ReportGenerator {
             DoublyLinkedList<Pair<String, Integer>> statusCounts = countOccurrences(doctorList, "status");
 
             // --- Step 2: Create the Pie Chart using JFreeChart (This part is changed) ---
-            
             // Use DefaultPieDataset instead of DefaultCategoryDataset
             DefaultPieDataset pieDataset = new DefaultPieDataset();
             for (Pair<String, Integer> entry : statusCounts) {
@@ -107,7 +107,7 @@ public class ReportGenerator {
             // Use ChartFactory.createPieChart
             JFreeChart pieChart = ChartFactory.createPieChart(
                     "Doctor Availability Status", // Chart Title
-                    pieDataset,                   // Dataset
+                    pieDataset, // Dataset
                     true, true, false);
 
             // Optional but recommended: Customize labels to show count and percentage
@@ -336,6 +336,100 @@ public class ReportGenerator {
             chartFile.delete();
 
             System.out.println("Low Stock Alert Report generated: " + fileName);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void generateDailyDispenseReport(DoublyLinkedList<DispenseRecord> dispenseRecords) {
+        try {
+            // 1) Filter today's records
+            LocalDate today = LocalDate.now();
+            DateTimeFormatter dtf = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+            DoublyLinkedList<DispenseRecord> todayRecords = new DoublyLinkedList<>();
+            for (DispenseRecord dr : dispenseRecords) {
+                LocalDate recordDate = LocalDate.parse(dr.getDateTime().substring(0, 10));
+                if (recordDate.equals(today)) {
+                    todayRecords.insertLast(dr);
+                }
+            }
+
+            if (todayRecords.isEmpty()) {
+                System.out.println("No dispensing records for today.");
+                return;
+            }
+
+            // 2) Aggregate quantities per medicine
+            Map<String, Integer> medicineQuantities = new HashMap<>();
+            for (DispenseRecord dr : todayRecords) {
+                medicineQuantities.put(dr.getMedicineName(),
+                        medicineQuantities.getOrDefault(dr.getMedicineName(), 0) + dr.getQuantity());
+            }
+
+            // 3) Create Bar Chart
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+            for (String med : medicineQuantities.keySet()) {
+                dataset.addValue(medicineQuantities.get(med), "Quantity", med);
+            }
+
+            JFreeChart chart = ChartFactory.createBarChart(
+                    "Daily Dispensing Chart",
+                    "Medicine",
+                    "Quantity",
+                    dataset,
+                    PlotOrientation.VERTICAL,
+                    false,
+                    true,
+                    false
+            );
+
+            CategoryPlot plot = chart.getCategoryPlot();
+            BarRenderer renderer = (BarRenderer) plot.getRenderer();
+            renderer.setDrawBarOutline(false);
+
+            File chartFile = new File("daily_dispense_chart.png");
+            ChartUtils.saveChartAsPNG(chartFile, chart, 700, 400);
+
+            // 4) Create PDF
+            PdfWriter writer = new PdfWriter("Daily_Dispense_Report.pdf");
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            document.add(new Paragraph("Daily Dispensing Report - " + today).setFontSize(18));
+            document.add(new Paragraph(" "));
+
+            // 5) Table of dispensed items
+            Table table = new Table(UnitValue.createPercentArray(new float[]{3, 3, 3, 2, 2, 2}))
+                    .setWidth(UnitValue.createPercentValue(100));
+            table.addHeaderCell(new Cell().add(new Paragraph("Prescription ID")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Patient")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Doctor")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Medicine")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Quantity")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Total (RM)")));
+
+            for (DispenseRecord dr : todayRecords) {
+                table.addCell(new Cell().add(new Paragraph(dr.getPrescriptionId())));
+                table.addCell(new Cell().add(new Paragraph(dr.getPatientName())));
+                table.addCell(new Cell().add(new Paragraph(dr.getDoctorName())));
+                table.addCell(new Cell().add(new Paragraph(dr.getMedicineName())));
+                table.addCell(new Cell().add(new Paragraph(String.valueOf(dr.getQuantity()))));
+                table.addCell(new Cell().add(new Paragraph(String.format("%.2f", dr.getLineTotal()))));
+            }
+
+            document.add(table);
+            document.add(new Paragraph(" "));
+
+            // 6) Add chart image
+            Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
+            document.add(chartImage);
+
+            document.close();
+            chartFile.delete();
+
+            System.out.println("Daily Dispense Report generated successfully!");
 
         } catch (Exception e) {
             e.printStackTrace();

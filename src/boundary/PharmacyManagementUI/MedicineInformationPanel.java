@@ -107,7 +107,7 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
     }
 
     private void loadInitialComponent() {
-        logoLabel = ImageUtils.getImageLabel("pharmacy_logo.png", logoLabel);
+        logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
 
         DoublyLinkedList<String> filterCriteria = new DoublyLinkedList<>();
         filterCriteria.insertLast("ID");
@@ -188,10 +188,12 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
     }
 
     private void loadInitialData() {
-//        InsertMedicineData();
-                
         DoublyLinkedList<Pair<String, Medicine>> medicineList
                 = (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
+
+        if (medicineList == null) {
+            medicineList = new DoublyLinkedList<>(); // initialize empty list if file is empty
+        }
 
         if (!medicineList.isEmpty()) {
             Medicine.setMedicineIndex(medicineList.getSize());
@@ -201,6 +203,9 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
     }
 
     private void populateMedicineTable(DoublyLinkedList<Pair<String, Medicine>> list) {
+        if (list == null) {
+            return;
+        }
         DefaultTableModel model = (DefaultTableModel) medicineTable.getModel();
         model.setRowCount(0);
 
@@ -218,6 +223,18 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
             });
         }
 
+    }
+
+    public void reloadMedicineTable() {
+        DoublyLinkedList<Pair<String, Medicine>> medicineList
+                = (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
+
+        if (medicineList == null) {
+            medicineList = new DoublyLinkedList<>();
+        }
+
+        masterMedicineList = medicineList;
+        populateMedicineTable(masterMedicineList);
     }
 
     private void filterTable() {
@@ -405,20 +422,26 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
 
         Pair<String, Medicine> newMedicinePair = dialog.getResult();
         if (newMedicinePair != null) {
-            String newMedicineName = newMedicinePair.getValue().getName();
-            boolean nameExists = false;
+            Medicine newMedicine = newMedicinePair.getValue();
+            boolean duplicateExists = false;
 
             for (Pair<String, Medicine> pair : masterMedicineList) {
-                if (pair.getValue().getName().equalsIgnoreCase(newMedicineName)) {
-                    nameExists = true;
+                Medicine existingMed = pair.getValue();
+                // Check if all five fields are the same
+                if (existingMed.getName().equalsIgnoreCase(newMedicine.getName())
+                        && existingMed.getBrandName().equalsIgnoreCase(newMedicine.getBrandName())
+                        && existingMed.getCategory().equalsIgnoreCase(newMedicine.getCategory())
+                        && existingMed.getFormulation().equalsIgnoreCase(newMedicine.getFormulation())
+                        && existingMed.getDosageForm().equalsIgnoreCase(newMedicine.getDosageForm())) {
+                    duplicateExists = true;
                     break;
                 }
             }
 
-            if (nameExists) {
+            if (duplicateExists) {
                 JOptionPane.showMessageDialog(this,
-                        "A medicine with this name already exists.",
-                        "Duplicate Medicine Name",
+                        "A medicine with the same name, brand, category, formulation, and dosage already exists.",
+                        "Duplicate Medicine",
                         JOptionPane.ERROR_MESSAGE);
             } else {
                 masterMedicineList.insertLast(newMedicinePair);

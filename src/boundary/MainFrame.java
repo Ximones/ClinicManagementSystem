@@ -14,6 +14,7 @@ import boundary.ConsultationManagementUI.AppointmentPanel;
 import boundary.ConsultationManagementUI.PrescriptionPanel;
 import boundary.ConsultationManagementUI.QueuePanel;
 import boundary.ConsultationManagementUI.ConsultationReportsPanel;
+import boundary.PharmacyManagementUI.DispenseMedicinePanel;
 import java.awt.CardLayout;
 
 /**
@@ -21,6 +22,10 @@ import java.awt.CardLayout;
  * @author Chok Chun Fai
  */
 public class MainFrame extends javax.swing.JFrame {
+
+    private MedicineInformationPanel medInfoPanel;
+    private DispenseMedicinePanel dispenseMedPanel;
+    private PrescriptionPanel prescriptionPanel;
 
     /**
      * Creates new form MainFrame
@@ -37,20 +42,20 @@ public class MainFrame extends javax.swing.JFrame {
         DoctorSchedulePanel docSchedulePanel = new DoctorSchedulePanel(this);
 
         PharmacyManagementPanel pharPanel = new PharmacyManagementPanel(this);
-        MedicineInformationPanel medInfoPanel = new MedicineInformationPanel(this);
-        
+        medInfoPanel = new MedicineInformationPanel(this);
+        dispenseMedPanel = new DispenseMedicinePanel(this);
+
         PatientManagementPanel patientPanel = new PatientManagementPanel(this);
         PatientRegistrationPanel patRegPanel = new PatientRegistrationPanel(this);
         QueueManagementPanel queManagementPanel = new QueueManagementPanel(this);
-        
+
         // Consultation Management Panels
         ConsultationManagementPanel consultationManagementPanel = new ConsultationManagementPanel(this);
         ConsultationPanel consultationPanel = new ConsultationPanel(this);
         AppointmentPanel appointmentPanel = new AppointmentPanel(this);
-        PrescriptionPanel prescriptionPanel = new PrescriptionPanel(this);
+        prescriptionPanel = new PrescriptionPanel(this);
         QueuePanel queuePanel = new QueuePanel(this);
         ConsultationReportsPanel consultationReportsPanel = new ConsultationReportsPanel(this);
-           
 
         // Add the panels to the cardPanel with unique names
         cardPanel.add(clinicPanel, "clinicMenu");
@@ -60,11 +65,12 @@ public class MainFrame extends javax.swing.JFrame {
 
         cardPanel.add(pharPanel, "pharmacyManagement");
         cardPanel.add(medInfoPanel, "medicineInformation");
-        
+        cardPanel.add(dispenseMedPanel, "dispenseMedicine");
+
         cardPanel.add(patientPanel, "patientManagement");
-         cardPanel.add(patRegPanel, "patientRegistration");
-         cardPanel.add(queManagementPanel, "queueManagement");
-         
+        cardPanel.add(patRegPanel, "patientRegistration");
+        cardPanel.add(queManagementPanel, "queueManagement");
+
         // Add consultation management panels
         cardPanel.add(consultationManagementPanel, "consultationManagement");
         cardPanel.add(consultationPanel, "consultationPanel");
@@ -79,6 +85,18 @@ public class MainFrame extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
     }
 
+    public MedicineInformationPanel getMedicineInformationPanel() {
+        return medInfoPanel;
+    }
+    
+    public DispenseMedicinePanel getDispenseMedicinePanel() {
+        return dispenseMedPanel;
+    }
+    
+    public PrescriptionPanel getPrescriptionPanel() {
+        return prescriptionPanel;
+    }
+    
     // Function to switch different windows
     public void showPanel(String panelName) {
         CardLayout cl = (CardLayout) (cardPanel.getLayout());

@@ -168,6 +168,7 @@ public class ConsultationManagementPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_appointmentButtonActionPerformed
 
     private void prescriptionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prescriptionButtonActionPerformed
+        mainFrame.getPrescriptionPanel().reloadPrescriptionData();
         mainFrame.showPanel("prescriptionPanel");
     }//GEN-LAST:event_prescriptionButtonActionPerformed
 
