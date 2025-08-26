@@ -69,10 +69,27 @@ public class ConsultationControl {
         }
 
         // Load queue
-        DoublyLinkedList<Pair<String, QueueEntry>> loadedQueue
-                = (DoublyLinkedList<Pair<String, QueueEntry>>) FileUtils.readDataFromFile("queue");
-        if (loadedQueue != null) {
-            this.queueList = loadedQueue;
+        try {
+            DoublyLinkedList<Pair<String, QueueEntry>> loadedQueue
+                    = (DoublyLinkedList<Pair<String, QueueEntry>>) FileUtils.readDataFromFile("queue");
+            if (loadedQueue != null && !loadedQueue.isEmpty()) {
+                this.queueList = loadedQueue;
+            }
+        } catch (ClassCastException e) {
+            // Handle old format (direct QueueEntry objects)
+            try {
+                DoublyLinkedList<QueueEntry> oldFormatQueue
+                        = (DoublyLinkedList<QueueEntry>) FileUtils.readDataFromFile("queue");
+                if (oldFormatQueue != null && !oldFormatQueue.isEmpty()) {
+                    // Convert old format to new format
+                    for (QueueEntry entry : oldFormatQueue) {
+                        Pair<String, QueueEntry> pair = new Pair<>(entry.getQueueNumber(), entry);
+                        this.queueList.insertLast(pair);
+                    }
+                }
+            } catch (Exception ex) {
+                System.err.println("Error loading queue data: " + ex.getMessage());
+            }
         }
     }
 
@@ -314,6 +331,7 @@ public class ConsultationControl {
         Appointment appointment = getAppointment(appointmentID);
         if (appointment != null) {
             appointment.setStatus(newStatus);
+            saveData();
             return true;
         }
         return false;
@@ -613,6 +631,7 @@ public class ConsultationControl {
         QueueEntry queueEntry = new QueueEntry(patient, queueNumber, "Waiting");
         Pair<String, QueueEntry> queuePair = new Pair<>(queueNumber, queueEntry);
         queueList.insertLast(queuePair);
+        saveData();
         return queueEntry;
     }
 
@@ -627,6 +646,7 @@ public class ConsultationControl {
             if (firstNode != null) {
                 QueueEntry entry = firstNode.getEntry().getValue();
                 entry.markStartConsult();
+                saveData();
                 return entry;
             }
         }
@@ -640,11 +660,27 @@ public class ConsultationControl {
      * @return true if marked successfully, false otherwise
      */
     public boolean markPatientConsulting(String queueNumber) {
-        for (Pair<String, QueueEntry> pair : queueList) {
-            QueueEntry entry = pair.getValue();
-            if (entry.getQueueNumber().equals(queueNumber)) {
-                entry.markConsulting();
-                return true;
+        try {
+            // Try new format (Pair<String, QueueEntry>)
+            for (Pair<String, QueueEntry> pair : queueList) {
+                QueueEntry entry = pair.getValue();
+                if (entry.getQueueNumber().equals(queueNumber)) {
+                    entry.markConsulting();
+                    saveData();
+                    return true;
+                }
+            }
+        } catch (ClassCastException e) {
+            // Handle old format (direct QueueEntry objects)
+            for (Object obj : queueList) {
+                if (obj instanceof QueueEntry) {
+                    QueueEntry entry = (QueueEntry) obj;
+                    if (entry.getQueueNumber().equals(queueNumber)) {
+                        entry.markConsulting();
+                        saveData();
+                        return true;
+                    }
+                }
             }
         }
         return false;
@@ -664,6 +700,7 @@ public class ConsultationControl {
                 node.getEntry().getValue().markConsultationDone();
                 // Remove from queue
                 queueList.deleteAtPosition(i);
+                saveData();
                 return true;
             }
         }
@@ -676,10 +713,23 @@ public class ConsultationControl {
      * @return The consulting queue entry, or null if none
      */
     public QueueEntry getCurrentConsultingPatient() {
-        for (Pair<String, QueueEntry> pair : queueList) {
-            QueueEntry entry = pair.getValue();
-            if ("Consulting".equals(entry.getStatus())) {
-                return entry;
+        try {
+            // Try new format (Pair<String, QueueEntry>)
+            for (Pair<String, QueueEntry> pair : queueList) {
+                QueueEntry entry = pair.getValue();
+                if ("Consulting".equals(entry.getStatus())) {
+                    return entry;
+                }
+            }
+        } catch (ClassCastException e) {
+            // Handle old format (direct QueueEntry objects)
+            for (Object obj : queueList) {
+                if (obj instanceof QueueEntry) {
+                    QueueEntry entry = (QueueEntry) obj;
+                    if ("Consulting".equals(entry.getStatus())) {
+                        return entry;
+                    }
+                }
             }
         }
         return null;
@@ -697,6 +747,7 @@ public class ConsultationControl {
             Node<Pair<String, QueueEntry>> node = queueList.getElement(i);
             if (node != null && node.getEntry().getKey().equals(queueNumber)) {
                 queueList.deleteAtPosition(i);
+                saveData();
                 return true;
             }
         }
@@ -711,8 +762,18 @@ public class ConsultationControl {
     public List<QueueEntry> getAllQueueEntries() {
         List<QueueEntry> allEntries = new ArrayList<>();
 
-        for (Pair<String, QueueEntry> pair : queueList) {
-            allEntries.add(pair.getValue());
+        try {
+            // Try new format (Pair<String, QueueEntry>)
+            for (Pair<String, QueueEntry> pair : queueList) {
+                allEntries.add(pair.getValue());
+            }
+        } catch (ClassCastException e) {
+            // Handle old format (direct QueueEntry objects)
+            for (Object obj : queueList) {
+                if (obj instanceof QueueEntry) {
+                    allEntries.add((QueueEntry) obj);
+                }
+            }
         }
 
         return allEntries;
@@ -726,13 +787,28 @@ public class ConsultationControl {
      */
     public int getQueuePosition(String patientID) {
         int position = 1;
-        for (Pair<String, QueueEntry> pair : queueList) {
-            QueueEntry entry = pair.getValue();
-            if (entry.getPatient() != null
-                    && entry.getPatient().getPatientID().equals(patientID)) {
-                return position;
+        try {
+            // Try new format (Pair<String, QueueEntry>)
+            for (Pair<String, QueueEntry> pair : queueList) {
+                QueueEntry entry = pair.getValue();
+                if (entry.getPatient() != null
+                        && entry.getPatient().getPatientID().equals(patientID)) {
+                    return position;
+                }
+                position++;
             }
-            position++;
+        } catch (ClassCastException e) {
+            // Handle old format (direct QueueEntry objects)
+            for (Object obj : queueList) {
+                if (obj instanceof QueueEntry) {
+                    QueueEntry entry = (QueueEntry) obj;
+                    if (entry.getPatient() != null
+                            && entry.getPatient().getPatientID().equals(patientID)) {
+                        return position;
+                    }
+                    position++;
+                }
+            }
         }
         return -1;
     }
@@ -750,10 +826,22 @@ public class ConsultationControl {
         long totalWaitingTime = 0;
         int count = 0;
 
-        for (Pair<String, QueueEntry> pair : queueList) {
-            QueueEntry entry = pair.getValue();
-            totalWaitingTime += entry.getWaitingTimeMillis();
-            count++;
+        try {
+            // Try new format (Pair<String, QueueEntry>)
+            for (Pair<String, QueueEntry> pair : queueList) {
+                QueueEntry entry = pair.getValue();
+                totalWaitingTime += entry.getWaitingTimeMillis();
+                count++;
+            }
+        } catch (ClassCastException e) {
+            // Handle old format (direct QueueEntry objects)
+            for (Object obj : queueList) {
+                if (obj instanceof QueueEntry) {
+                    QueueEntry entry = (QueueEntry) obj;
+                    totalWaitingTime += entry.getWaitingTimeMillis();
+                    count++;
+                }
+            }
         }
 
         return count > 0 ? totalWaitingTime / count : 0;
@@ -764,6 +852,110 @@ public class ConsultationControl {
     }
 
     public DoublyLinkedList<Pair<String, QueueEntry>> getQueueList() {
+        // If the queue list contains direct QueueEntry objects, convert them to Pair format
+        if (!queueList.isEmpty()) {
+            try {
+                // Test if it's already in Pair format
+                Object first = queueList.getElement(1).getEntry();
+                if (!(first instanceof Pair)) {
+                    // Convert old format to new format
+                    DoublyLinkedList<Pair<String, QueueEntry>> convertedList = new DoublyLinkedList<>();
+                    for (Object obj : queueList) {
+                        if (obj instanceof QueueEntry) {
+                            QueueEntry entry = (QueueEntry) obj;
+                            Pair<String, QueueEntry> pair = new Pair<>(entry.getQueueNumber(), entry);
+                            convertedList.insertLast(pair);
+                        }
+                    }
+                    this.queueList = convertedList;
+                }
+            } catch (Exception e) {
+                // If conversion fails, return empty list
+                return new DoublyLinkedList<>();
+            }
+        }
         return queueList;
+    }
+
+    /**
+     * Marks a patient as prescriptioning after consultation
+     *
+     * @param queueNumber The queue number of the patient
+     * @return true if marked successfully, false otherwise
+     */
+    public boolean markPatientPrescriptioning(String queueNumber) {
+        try {
+            // Try new format (Pair<String, QueueEntry>)
+            for (Pair<String, QueueEntry> pair : queueList) {
+                QueueEntry entry = pair.getValue();
+                if (entry.getQueueNumber().equals(queueNumber)) {
+                    entry.markPrescriptioning();
+                    saveData();
+                    return true;
+                }
+            }
+        } catch (ClassCastException e) {
+            // Handle old format (direct QueueEntry objects)
+            for (Object obj : queueList) {
+                if (obj instanceof QueueEntry) {
+                    QueueEntry entry = (QueueEntry) obj;
+                    if (entry.getQueueNumber().equals(queueNumber)) {
+                        entry.markPrescriptioning();
+                        saveData();
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Completes the entire consultation and prescription process and removes patient from queue
+     *
+     * @param queueNumber The queue number of the patient
+     * @return true if completed successfully, false otherwise
+     */
+    public boolean completeConsultationAndPrescription(String queueNumber) {
+        for (int i = 1; i <= queueList.getSize(); i++) {
+            Node<Pair<String, QueueEntry>> node = queueList.getElement(i);
+            if (node != null && node.getEntry().getKey().equals(queueNumber)) {
+                // Mark as done before removing
+                node.getEntry().getValue().markConsultationDone();
+                // Remove from queue
+                queueList.deleteAtPosition(i);
+                saveData();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Gets the current prescriptioning patient (first patient with "Prescriptioning" status)
+     *
+     * @return The prescriptioning queue entry, or null if none
+     */
+    public QueueEntry getCurrentPrescriptioningPatient() {
+        try {
+            // Try new format (Pair<String, QueueEntry>)
+            for (Pair<String, QueueEntry> pair : queueList) {
+                QueueEntry entry = pair.getValue();
+                if ("Prescriptioning".equals(entry.getStatus())) {
+                    return entry;
+                }
+            }
+        } catch (ClassCastException e) {
+            // Handle old format (direct QueueEntry objects)
+            for (Object obj : queueList) {
+                if (obj instanceof QueueEntry) {
+                    QueueEntry entry = (QueueEntry) obj;
+                    if ("Prescriptioning".equals(entry.getStatus())) {
+                        return entry;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

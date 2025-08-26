@@ -1,248 +1,330 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
 package boundary.ConsultationManagementUI;
 
-import adt.DoublyLinkedList;
-import adt.Pair;
 import boundary.MainFrame;
 import control.ConsultationControl;
+import enitity.Prescription;
+import enitity.PrescriptionItem;
+import enitity.Medicine;
 import enitity.Consultation;
 import enitity.Patient;
 import enitity.Doctor;
-import enitity.Medicine;
-import enitity.Prescription;
-import enitity.PrescriptionItem;
+import adt.DoublyLinkedList;
+import adt.Pair;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Date;
 import java.util.Calendar;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import utility.FileUtils;
-import enitity.QueueEntry;
 import utility.ImageUtils;
 
 /**
- * Prescription Management Panel for Consultation Module
- *
+ * Prescription Management Panel
  * @author Zhen Bang
  */
 public class PrescriptionPanel extends javax.swing.JPanel {
 
     private MainFrame mainFrame;
     private ConsultationControl consultationControl;
-    private DoublyLinkedList<Pair<String, Patient>> patientList;
-    private DoublyLinkedList<Pair<String, Doctor>> doctorList;
-    private DoublyLinkedList<Pair<String, Consultation>> consultationList;
-    private DoublyLinkedList<Pair<String, Medicine>> medicineList;
-    private DoublyLinkedList<Pair<String, PrescriptionItem>> prescriptionItems;
-    private DefaultTableModel prescriptionTableModel;
-    private DefaultTableModel itemsTableModel;
-    private JSpinner dateSpinner;
-    private JSpinner timeSpinner;
-
+    private JTable prescriptionTable;
+    private JTable itemsTable;
+    private JScrollPane prescriptionScrollPane;
+    private JScrollPane itemsScrollPane;
+    private JPanel dataPanel;
+    private JComboBox<String> consultationComboBox;
+    private JComboBox<String> medicineComboBox;
+    private JTextField diagnosisField;
+    private JTextField instructionsField;
+    private JTextField quantityField;
+    private JTextField dosageField;
+    private JTextField frequencyField;
+    private JTextField durationField;
+    private DoublyLinkedList<Pair<String, PrescriptionItem>> currentPrescriptionItems;
+    
     /**
      * Creates new form PrescriptionPanel
      */
     public PrescriptionPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         this.consultationControl = new ConsultationControl();
-        this.prescriptionItems = new DoublyLinkedList<>();
-
-        // Initialize spinners before layout setup
-        setupDateTimeSpinners();
-
+        this.currentPrescriptionItems = new DoublyLinkedList<>();
+        
         initComponents();
-        initializeData();
-        setupTables();
+        // set header logo image
+        logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
+        
+        // Initialize the prescription management interface
+        initializePrescriptionInterface();
         loadPrescriptions();
     }
 
-    
-    
+    public void reloadData() {
+        loadPrescriptions();
+        loadPrescriptionItems();
+    }
 
-    private void setupTables() {
-        // Setup prescription table
+    public void reloadPrescriptionData() {
+        reloadData();
+    }
+    
+    private void initializePrescriptionInterface() {
+        // Create the data panel
+        dataPanel = new JPanel(new BorderLayout());
+        
+        // Create prescription table
         String[] prescriptionColumns = {"ID", "Patient", "Doctor", "Date", "Diagnosis", "Status", "Total Cost"};
-        prescriptionTableModel = new DefaultTableModel(prescriptionColumns, 0) {
+        DefaultTableModel prescriptionModel = new DefaultTableModel(prescriptionColumns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        prescriptionTable.setModel(prescriptionTableModel);
+        prescriptionTable = new JTable(prescriptionModel);
         prescriptionTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         prescriptionTable.getTableHeader().setReorderingAllowed(false);
-
-        // Setup prescription items table
+        
+        prescriptionScrollPane = new JScrollPane(prescriptionTable);
+        prescriptionScrollPane.setPreferredSize(new Dimension(800, 200));
+        
+        // Create items table
         String[] itemsColumns = {"Medicine", "Quantity", "Dosage", "Frequency", "Duration", "Unit Price", "Total"};
-        itemsTableModel = new DefaultTableModel(itemsColumns, 0) {
+        DefaultTableModel itemsModel = new DefaultTableModel(itemsColumns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        itemsTable.setModel(itemsTableModel);
+        itemsTable = new JTable(itemsModel);
         itemsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         itemsTable.getTableHeader().setReorderingAllowed(false);
+        
+        itemsScrollPane = new JScrollPane(itemsTable);
+        itemsScrollPane.setPreferredSize(new Dimension(800, 150));
+        
+        // Create input panels
+        JPanel prescriptionInputPanel = createPrescriptionInputPanel();
+        JPanel medicineInputPanel = createMedicineInputPanel();
+        
+        // Create button panel
+        JPanel buttonPanel = createButtonPanel();
+        
+        // Create tables panel
+        JPanel tablesPanel = new JPanel(new BorderLayout());
+        tablesPanel.add(prescriptionScrollPane, BorderLayout.NORTH);
+        tablesPanel.add(itemsScrollPane, BorderLayout.CENTER);
+        
+        // Create main content panel
+        JPanel mainContentPanel = new JPanel(new BorderLayout());
+        JPanel inputPanels = new JPanel(new BorderLayout());
+        inputPanels.add(prescriptionInputPanel, BorderLayout.NORTH);
+        inputPanels.add(medicineInputPanel, BorderLayout.CENTER);
+        mainContentPanel.add(inputPanels, BorderLayout.NORTH);
+        mainContentPanel.add(tablesPanel, BorderLayout.CENTER);
+        mainContentPanel.add(buttonPanel, BorderLayout.SOUTH);
+        
+        // Wrap main content in scroll pane
+        JScrollPane mainScrollPane = new JScrollPane(mainContentPanel);
+        mainScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        mainScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        
+        // Add scrollable content to data panel
+        dataPanel.add(mainScrollPane, BorderLayout.CENTER);
+        
+        // Add data panel to content panel
+        contentPanel.add(dataPanel);
+        contentPanel.revalidate();
+        contentPanel.repaint();
     }
-
-    private void initializeData() {
-        // Load real patient data from file
-        loadPatientData();
-
-        // Load real doctor data from file
-        loadDoctorData();
-
-        // Load real consultation data from file
-        loadConsultationData();
-
-        // Load real medicine data from file
-        loadMedicineData();
-
-        // Populate combo boxes
-        populateComboBoxes();
+    
+    private JPanel createPrescriptionInputPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Prescription Details"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        
+        // Initialize components
+        consultationComboBox = new JComboBox<>();
+        diagnosisField = new JTextField(20);
+        instructionsField = new JTextField(20);
+        
+        // Add components to panel
+        gbc.gridx = 0; gbc.gridy = 0;
+        panel.add(new JLabel("Consultation:"), gbc);
+        gbc.gridx = 1;
+        panel.add(consultationComboBox, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 1;
+        panel.add(new JLabel("Diagnosis:"), gbc);
+        gbc.gridx = 1;
+        panel.add(diagnosisField, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 2;
+        panel.add(new JLabel("Instructions:"), gbc);
+        gbc.gridx = 1;
+        panel.add(instructionsField, gbc);
+        
+        // Populate consultation combo box
+        populateConsultationComboBox();
+        
+        return panel;
     }
-
-    private void loadPatientData() {
-        patientList = new DoublyLinkedList<>();
-
-        // Load patients from file
-        DoublyLinkedList<Patient> loadedPatients = (DoublyLinkedList<Patient>) FileUtils.readDataFromFile("patients");
-
-        if (loadedPatients != null && !loadedPatients.isEmpty()) {
-            System.out.println("Loading " + loadedPatients.getSize() + " patients from file");
-
-            // Convert to Pair format for consistency
-            for (Patient patient : loadedPatients) {
-                String patientID = patient.getPatientID();
-                patientList.insertLast(new Pair<>(patientID, patient));
-                System.out.println("Loaded patient: " + patientID + " - " + patient.getPatientName());
+    
+    private JPanel createMedicineInputPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Add Medicine Item"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        
+        // Initialize components
+        medicineComboBox = new JComboBox<>();
+        quantityField = new JTextField(10);
+        dosageField = new JTextField(15);
+        frequencyField = new JTextField(15);
+        durationField = new JTextField(10);
+        
+        // Add components to panel
+        gbc.gridx = 0; gbc.gridy = 0;
+        panel.add(new JLabel("Medicine:"), gbc);
+        gbc.gridx = 1;
+        panel.add(medicineComboBox, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 1;
+        panel.add(new JLabel("Quantity:"), gbc);
+        gbc.gridx = 1;
+        panel.add(quantityField, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 2;
+        panel.add(new JLabel("Dosage:"), gbc);
+        gbc.gridx = 1;
+        panel.add(dosageField, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 3;
+        panel.add(new JLabel("Frequency:"), gbc);
+        gbc.gridx = 1;
+        panel.add(frequencyField, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 4;
+        panel.add(new JLabel("Duration (days):"), gbc);
+        gbc.gridx = 1;
+        panel.add(durationField, gbc);
+        
+        // Populate medicine combo box
+        populateMedicineComboBox();
+        
+        return panel;
+    }
+    
+    private JPanel createButtonPanel() {
+        JPanel panel = new JPanel(new FlowLayout());
+        
+        JButton addPrescriptionButton = new JButton("Add Prescription");
+        JButton addMedicineButton = new JButton("Add Medicine");
+        JButton removeMedicineButton = new JButton("Remove Medicine");
+        JButton completeAndRemoveButton = new JButton("Complete & Remove from Queue");
+        JButton backButton = new JButton("Back");
+        
+        addPrescriptionButton.addActionListener(e -> addPrescription());
+        addMedicineButton.addActionListener(e -> addMedicineItem());
+        removeMedicineButton.addActionListener(e -> removeMedicineItem());
+        completeAndRemoveButton.addActionListener(e -> completeAndRemoveFromQueue());
+        backButton.addActionListener(e -> mainFrame.showPanel("consultationManagement"));
+        
+        panel.add(addPrescriptionButton);
+        panel.add(addMedicineButton);
+        panel.add(removeMedicineButton);
+        panel.add(completeAndRemoveButton);
+        panel.add(backButton);
+        
+        return panel;
+    }
+    
+    private void completeAndRemoveFromQueue() {
+        // Get the current prescriptioning patient
+        enitity.QueueEntry currentPrescriptioning = consultationControl.getCurrentPrescriptioningPatient();
+        
+        if (currentPrescriptioning == null) {
+            JOptionPane.showMessageDialog(this, "No patient currently in prescription phase.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        
+        int choice = JOptionPane.showConfirmDialog(this, 
+            "Complete consultation and prescription for " + currentPrescriptioning.getPatient().getPatientName() + "?\n" +
+            "This will remove the patient from the queue and mark the process as complete.", 
+            "Complete Process", JOptionPane.YES_NO_OPTION);
+            
+        if (choice == JOptionPane.YES_OPTION) {
+            // Complete the consultation and prescription process
+            boolean success = consultationControl.completeConsultationAndPrescription(currentPrescriptioning.getQueueNumber());
+            
+            if (success) {
+                JOptionPane.showMessageDialog(this, 
+                    "Patient " + currentPrescriptioning.getPatient().getPatientName() + " has been removed from queue.\n" +
+                    "Consultation and prescription process completed.", 
+                    "Process Completed", JOptionPane.INFORMATION_MESSAGE);
+                
+                // Return to queue panel
+                mainFrame.showPanel("queuePanel");
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to complete the process.", "Error", JOptionPane.ERROR_MESSAGE);
             }
-        } else {
-            System.out.println("No patient data found in file. Using empty list.");
         }
     }
-
-    private void loadDoctorData() {
-        doctorList = new DoublyLinkedList<>();
-
-        // Load doctors from file
-        DoublyLinkedList<Pair<String, Doctor>> loadedDoctors = (DoublyLinkedList<Pair<String, Doctor>>) FileUtils.readDataFromFile("doctors");
-
-        if (loadedDoctors != null && !loadedDoctors.isEmpty()) {
-            System.out.println("Loading " + loadedDoctors.getSize() + " doctors from file");
-
-            // Use the loaded doctors directly since they're already in Pair format
-            for (Pair<String, Doctor> doctorPair : loadedDoctors) {
-                doctorList.insertLast(doctorPair);
-                System.out.println("Loaded doctor: " + doctorPair.getKey() + " - " + doctorPair.getValue().getName());
-            }
-        } else {
-            System.out.println("No doctor data found in file. Using empty list.");
-        }
-    }
-
-    private void loadConsultationData() {
-        consultationList = new DoublyLinkedList<>();
-
-        // Load consultations from file (if they exist)
-        DoublyLinkedList<Pair<String, Consultation>> loadedConsultations = (DoublyLinkedList<Pair<String, Consultation>>) FileUtils.readDataFromFile("consultations");
-
-        if (loadedConsultations != null && !loadedConsultations.isEmpty()) {
-            System.out.println("Loading " + loadedConsultations.getSize() + " consultations from file");
-
-            for (Pair<String, Consultation> consultationPair : loadedConsultations) {
-                consultationList.insertLast(consultationPair);
-                System.out.println("Loaded consultation: " + consultationPair.getKey());
-            }
-        } else {
-            System.out.println("No consultation data found in file. Using empty list.");
-        }
-    }
-
-    private void loadMedicineData() {
-        medicineList = new DoublyLinkedList<>();
-
-        // Load medicines from file
-        DoublyLinkedList<Pair<String, Medicine>> loadedMedicines = (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
-
-        if (loadedMedicines != null && !loadedMedicines.isEmpty()) {
-            System.out.println("Loading " + loadedMedicines.getSize() + " medicines from file");
-
-            for (Pair<String, Medicine> medicinePair : loadedMedicines) {
-                medicineList.insertLast(medicinePair);
-                System.out.println("Loaded medicine: " + medicinePair.getKey() + " - " + medicinePair.getValue().getName());
-            }
-        } else {
-            System.out.println("No medicine data found in file. Using empty list.");
-        }
-    }
-
-    private void populateComboBoxes() {
-        patientComboBox.removeAllItems();
-        doctorComboBox.removeAllItems();
+    
+    private void populateConsultationComboBox() {
         consultationComboBox.removeAllItems();
-        medicineComboBox.removeAllItems();
-
-        // Add patients
-        System.out.println("Populating patients...");
-        for (Pair<String, Patient> pair : patientList) {
-            Patient patient = pair.getValue();
-            String item = patient.getPatientID() + " - " + patient.getPatientName();
-            patientComboBox.addItem(item);
-            System.out.println("Added patient: " + item);
+        
+        // First, check if there's a prescriptioning patient from queue
+        enitity.QueueEntry prescriptioningPatient = consultationControl.getCurrentPrescriptioningPatient();
+        if (prescriptioningPatient != null) {
+            // Find the consultation for this patient
+            List<Consultation> consultations = consultationControl.getAllConsultations();
+            for (Consultation consultation : consultations) {
+                if (consultation.getPatient() != null && 
+                    consultation.getPatient().getPatientID().equals(prescriptioningPatient.getPatient().getPatientID())) {
+                    String item = consultation.getConsultationID() + " - " + 
+                                 consultation.getPatient().getPatientName() + " (FROM QUEUE)";
+                    consultationComboBox.addItem(item);
+                    consultationComboBox.setSelectedItem(item);
+                    break;
+                }
+            }
         }
-
-        // Add doctors
-        System.out.println("Populating doctors...");
-        for (Pair<String, Doctor> pair : doctorList) {
-            Doctor doctor = pair.getValue();
-            String item = doctor.getDoctorID() + " - " + doctor.getName();
-            doctorComboBox.addItem(item);
-            System.out.println("Added doctor: " + item);
-        }
-
-        // Add consultations
-        System.out.println("Populating consultations...");
-        for (Pair<String, Consultation> pair : consultationList) {
-            Consultation consultation = pair.getValue();
-            String item = consultation.getConsultationID() + " - " + consultation.getConsultationType();
-            consultationComboBox.addItem(item);
-            System.out.println("Added consultation: " + item);
-        }
-
-        // Add medicines
-        System.out.println("Populating medicines...");
-        for (Pair<String, Medicine> pair : medicineList) {
-            Medicine medicine = pair.getValue();
-            String item = medicine.getMedicineId() + " - " + medicine.getName() + " (" + medicine.getFormulation() + ")";
-            medicineComboBox.addItem(item);
-            System.out.println("Added medicine: " + item);
-        }
-
-        // Set default selections if available
-        if (patientComboBox.getItemCount() > 0) {
-            patientComboBox.setSelectedIndex(0);
-        }
-        if (doctorComboBox.getItemCount() > 0) {
-            doctorComboBox.setSelectedIndex(0);
-        }
-        if (consultationComboBox.getItemCount() > 0) {
-            consultationComboBox.setSelectedIndex(0);
-        }
-        if (medicineComboBox.getItemCount() > 0) {
-            medicineComboBox.setSelectedIndex(0);
+        
+        // Add all other consultations
+        List<Consultation> consultations = consultationControl.getAllConsultations();
+        for (Consultation consultation : consultations) {
+            String item = consultation.getConsultationID() + " - " + 
+                         (consultation.getPatient() != null ? consultation.getPatient().getPatientName() : "N/A");
+            if (!consultationComboBox.getSelectedItem().equals(item)) {
+                consultationComboBox.addItem(item);
+            }
         }
     }
-
+    
+    private void populateMedicineComboBox() {
+        medicineComboBox.removeAllItems();
+        
+        DoublyLinkedList<Pair<String, Medicine>> medicines = (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
+        if (medicines != null) {
+            for (Pair<String, Medicine> pair : medicines) {
+                Medicine medicine = pair.getValue();
+                String item = medicine.getMedicineId() + " - " + medicine.getName() + " (" + medicine.getFormulation() + ")";
+                medicineComboBox.addItem(item);
+            }
+        }
+    }
+    
     private void loadPrescriptions() {
-        prescriptionTableModel.setRowCount(0);
-
+        if (prescriptionTable == null) return;
+        
+        DefaultTableModel model = (DefaultTableModel) prescriptionTable.getModel();
+        model.setRowCount(0);
+        
         DoublyLinkedList<Pair<String, Prescription>> prescriptions = consultationControl.getAllPrescriptions();
-
+        
         for (Pair<String, Prescription> pair : prescriptions) {
             Prescription prescription = pair.getValue();
             Object[] row = {
@@ -254,14 +336,17 @@ public class PrescriptionPanel extends javax.swing.JPanel {
                 prescription.getStatus(),
                 String.format("RM %.2f", prescription.getTotalCost())
             };
-            prescriptionTableModel.addRow(row);
+            model.addRow(row);
         }
     }
-
+    
     private void loadPrescriptionItems() {
-        itemsTableModel.setRowCount(0);
-
-        for (Pair<String, PrescriptionItem> pair : prescriptionItems) {
+        if (itemsTable == null) return;
+        
+        DefaultTableModel model = (DefaultTableModel) itemsTable.getModel();
+        model.setRowCount(0);
+        
+        for (Pair<String, PrescriptionItem> pair : currentPrescriptionItems) {
             PrescriptionItem item = pair.getValue();
             Object[] row = {
                 item.getMedicineName(),
@@ -272,643 +357,184 @@ public class PrescriptionPanel extends javax.swing.JPanel {
                 String.format("RM %.2f", item.getUnitPrice()),
                 String.format("RM %.2f", item.getTotalCost())
             };
-            itemsTableModel.addRow(row);
+            model.addRow(row);
         }
     }
-
-    private Patient getSelectedPatient() {
-        String selected = (String) patientComboBox.getSelectedItem();
-        if (selected != null) {
-            String patientID = selected.split(" - ")[0];
-            Object result = patientList.findByKey(patientID);
-            if (result instanceof Patient) {
-                return (Patient) result;
-            }
-        }
-        return null;
-    }
-
-    private Doctor getSelectedDoctor() {
-        String selected = (String) doctorComboBox.getSelectedItem();
-        if (selected != null) {
-            String doctorID = selected.split(" - ")[0];
-            Object result = doctorList.findByKey(doctorID);
-            if (result instanceof Doctor) {
-                return (Doctor) result;
-            }
-        }
-        return null;
-    }
-
+    
     private Consultation getSelectedConsultation() {
         String selected = (String) consultationComboBox.getSelectedItem();
         if (selected != null) {
             String consultationID = selected.split(" - ")[0];
-            Object result = consultationList.findByKey(consultationID);
-            if (result instanceof Consultation) {
-                return (Consultation) result;
-            }
+            return consultationControl.getConsultation(consultationID);
         }
         return null;
     }
-
+    
     private Medicine getSelectedMedicine() {
         String selected = (String) medicineComboBox.getSelectedItem();
         if (selected != null) {
             String medicineID = selected.split(" - ")[0];
-            Object result = medicineList.findByKey(medicineID);
-            if (result instanceof Medicine) {
-                return (Medicine) result;
+            DoublyLinkedList<Pair<String, Medicine>> medicines = (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
+            if (medicines != null) {
+                for (Pair<String, Medicine> pair : medicines) {
+                    if (pair.getKey().equals(medicineID)) {
+                        return pair.getValue();
+                    }
+                }
             }
         }
         return null;
     }
-
-    private void setupDateTimeSpinners() {
-        // Create date spinner
-        SpinnerDateModel dateModel = new SpinnerDateModel();
-        dateSpinner = new JSpinner(dateModel);
-        JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(dateSpinner, "dd/MM/yyyy");
-        dateSpinner.setEditor(dateEditor);
-
-        // Create time spinner
-        SpinnerDateModel timeModel = new SpinnerDateModel();
-        timeSpinner = new JSpinner(timeModel);
-        JSpinner.DateEditor timeEditor = new JSpinner.DateEditor(timeSpinner, "HH:mm");
-        timeSpinner.setEditor(timeEditor);
-
-        // Set current date and time as default
-        Calendar calendar = Calendar.getInstance();
-        dateSpinner.setValue(calendar.getTime());
-        timeSpinner.setValue(calendar.getTime());
-
-        // Style the spinners
-        dateSpinner.setPreferredSize(new Dimension(120, 25));
-        timeSpinner.setPreferredSize(new Dimension(80, 25));
+    
+    private void addPrescription() {
+        try {
+            Consultation consultation = getSelectedConsultation();
+            if (consultation == null) {
+                JOptionPane.showMessageDialog(this, "Please select a consultation.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            String diagnosis = diagnosisField.getText().trim();
+            String instructions = instructionsField.getText().trim();
+            
+            if (diagnosis.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please enter diagnosis.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            if (currentPrescriptionItems.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please add at least one medicine item.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // Create prescription
+            Prescription prescription = consultationControl.createPrescription(consultation, diagnosis, instructions);
+            
+            // Add prescription items
+            for (Pair<String, PrescriptionItem> itemPair : currentPrescriptionItems) {
+                PrescriptionItem item = itemPair.getValue();
+                consultationControl.addPrescriptionItem(prescription.getPrescriptionID(),
+                        item.getMedicine(), item.getQuantity(), item.getDosage(),
+                        item.getFrequency(), item.getDuration());
+            }
+            
+            JOptionPane.showMessageDialog(this, "Prescription created successfully!\nID: " + prescription.getPrescriptionID(),
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
+            
+            clearFields();
+            loadPrescriptions();
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error creating prescription: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private void addMedicineItem() {
+        try {
+            Medicine medicine = getSelectedMedicine();
+            if (medicine == null) {
+                JOptionPane.showMessageDialog(this, "Please select a medicine.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            String quantityStr = quantityField.getText().trim();
+            String dosage = dosageField.getText().trim();
+            String frequency = frequencyField.getText().trim();
+            String durationStr = durationField.getText().trim();
+            
+            if (quantityStr.isEmpty() || dosage.isEmpty() || frequency.isEmpty() || durationStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please fill in all medicine item fields.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            int quantity = Integer.parseInt(quantityStr);
+            int duration = Integer.parseInt(durationStr);
+            
+            if (quantity <= 0 || duration <= 0) {
+                JOptionPane.showMessageDialog(this, "Quantity and duration must be positive numbers.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // Create prescription item
+            PrescriptionItem item = new PrescriptionItem(medicine, quantity, dosage, frequency, String.valueOf(duration));
+            
+            // Add to current prescription items
+            String itemID = "ITEM" + (currentPrescriptionItems.getSize() + 1);
+            currentPrescriptionItems.insertLast(new Pair<>(itemID, item));
+            
+            // Refresh items table
+            loadPrescriptionItems();
+            
+            // Clear input fields
+            quantityField.setText("");
+            dosageField.setText("");
+            frequencyField.setText("");
+            durationField.setText("");
+            
+            JOptionPane.showMessageDialog(this, "Medicine item added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Please enter valid numbers for quantity and duration.", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error adding medicine item: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private void removeMedicineItem() {
+        int selectedRow = itemsTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a medicine item to remove.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        // Remove from current prescription items
+        currentPrescriptionItems.deleteAtPosition(selectedRow + 1); // Convert to 1-based indexing
+        
+        // Refresh items table
+        loadPrescriptionItems();
+        
+        JOptionPane.showMessageDialog(this, "Medicine item removed successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void clearFields() {
+        consultationComboBox.setSelectedIndex(0);
+        diagnosisField.setText("");
+        instructionsField.setText("");
+        
+        // Clear current prescription items
+        currentPrescriptionItems = new DoublyLinkedList<>();
+        loadPrescriptionItems();
     }
 
-    private LocalDateTime getSelectedDateTime() {
-        Date date = (Date) dateSpinner.getValue();
-        Date time = (Date) timeSpinner.getValue();
-
-        Calendar dateCal = Calendar.getInstance();
-        dateCal.setTime(date);
-
-        Calendar timeCal = Calendar.getInstance();
-        timeCal.setTime(time);
-
-        Calendar combined = Calendar.getInstance();
-        combined.set(dateCal.get(Calendar.YEAR), dateCal.get(Calendar.MONTH), dateCal.get(Calendar.DAY_OF_MONTH),
-                timeCal.get(Calendar.HOUR_OF_DAY), timeCal.get(Calendar.MINUTE), 0);
-
-        return LocalDateTime.ofInstant(combined.toInstant(), combined.getTimeZone().toZoneId());
-    }
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         logoLabel = new javax.swing.JLabel();
         titlePanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        patientComboBox = new javax.swing.JComboBox<>();
-        doctorComboBox = new javax.swing.JComboBox<>();
-        consultationComboBox = new javax.swing.JComboBox<>();
-        diagnosisField = new javax.swing.JTextField();
-        instructionsField = new javax.swing.JTextField();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        prescriptionTable = new javax.swing.JTable();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        itemsTable = new javax.swing.JTable();
-        addButton = new javax.swing.JButton();
-        addItemButton = new javax.swing.JButton();
-        removeItemButton = new javax.swing.JButton();
-        backButton = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
-        medicineComboBox = new javax.swing.JComboBox<>();
-        quantityField = new javax.swing.JTextField();
-        dosageField = new javax.swing.JTextField();
-        frequencyField = new javax.swing.JTextField();
-        durationField = new javax.swing.JTextField();
-
-        setPreferredSize(new java.awt.Dimension(800, 600));
+        contentPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout());
-        // set header logo image
-        logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
         add(logoLabel, java.awt.BorderLayout.PAGE_START);
 
         titlePanel.setLayout(new java.awt.BorderLayout());
+
         titleLabel.setFont(new java.awt.Font("Corbel", 1, 36)); // NOI18N
         titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         titleLabel.setText(" Prescription Management");
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
-        prescriptionTable.setModel(new javax.swing.table.DefaultTableModel(
-                new Object[][]{
-                    {null, null, null, null, null, null, null},
-                    {null, null, null, null, null, null, null},
-                    {null, null, null, null, null, null, null},
-                    {null, null, null, null, null, null, null}
-                },
-                new String[]{
-                    "ID", "Patient", "Doctor", "Date", "Diagnosis", "Status", "Total Cost"
-                }
-        ));
-        jScrollPane1.setViewportView(prescriptionTable);
-
-        itemsTable.setModel(new javax.swing.table.DefaultTableModel(
-                new Object[][]{
-                    {null, null, null, null, null, null, null},
-                    {null, null, null, null, null, null, null},
-                    {null, null, null, null, null, null, null},
-                    {null, null, null, null, null, null, null}
-                },
-                new String[]{
-                    "Medicine", "Quantity", "Dosage", "Frequency", "Duration", "Unit Price", "Total"
-                }
-        ));
-        jScrollPane2.setViewportView(itemsTable);
-
-        addButton.setText("Add Prescription");
-        addButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addButtonActionPerformed(evt);
-            }
-        });
-
-        addItemButton.setText("Add Medicine");
-        addItemButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addItemButtonActionPerformed(evt);
-            }
-        });
-
-        removeItemButton.setText("Remove Medicine");
-        removeItemButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeItemButtonActionPerformed(evt);
-            }
-        });
-
-        backButton.setText("Back");
-        backButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                backButtonActionPerformed(evt);
-            }
-        });
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Prescription Details"));
-
-        jLabel1.setText("Patient:");
-
-        jLabel2.setText("Doctor:");
-
-        jLabel3.setText("Consultation:");
-
-        jLabel4.setText("Diagnosis:");
-
-        jLabel5.setText("Instructions:");
-
-        jLabel6.setText("Valid Until:");
-
-        jLabel7.setText("Status:");
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jLabel1)
-                                        .addComponent(jLabel2)
-                                        .addComponent(jLabel3)
-                                        .addComponent(jLabel4)
-                                        .addComponent(jLabel5)
-                                        .addComponent(jLabel6)
-                                        .addComponent(jLabel7))
-                                .addGap(10, 10, 10)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(patientComboBox, 0, 200, Short.MAX_VALUE)
-                                        .addComponent(doctorComboBox, 0, 200, Short.MAX_VALUE)
-                                        .addComponent(consultationComboBox, 0, 200, Short.MAX_VALUE)
-                                        .addComponent(diagnosisField)
-                                        .addComponent(instructionsField)
-                                        .addComponent(dateSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(timeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(10, 10, 10))
-        );
-        jPanel1Layout.setVerticalGroup(
-                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel1)
-                                        .addComponent(patientComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(5, 5, 5)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel2)
-                                        .addComponent(doctorComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(5, 5, 5)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel3)
-                                        .addComponent(consultationComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(5, 5, 5)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel4)
-                                        .addComponent(diagnosisField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(5, 5, 5)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel5)
-                                        .addComponent(instructionsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(5, 5, 5)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel6)
-                                        .addComponent(dateSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(5, 5, 5)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel7)
-                                        .addComponent(timeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(10, 10, 10))
-        );
-
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Add Medicine Item"));
-
-        jLabel8.setText("Medicine:");
-
-        jLabel9.setText("Quantity:");
-
-        jLabel10.setText("Dosage:");
-
-        jLabel11.setText("Frequency:");
-
-        jLabel12.setText("Duration (days):");
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jLabel8)
-                                        .addComponent(jLabel9)
-                                        .addComponent(jLabel10)
-                                        .addComponent(jLabel11)
-                                        .addComponent(jLabel12))
-                                .addGap(10, 10, 10)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(medicineComboBox, 0, 200, Short.MAX_VALUE)
-                                        .addComponent(quantityField)
-                                        .addComponent(dosageField)
-                                        .addComponent(frequencyField)
-                                        .addComponent(durationField))
-                                .addGap(10, 10, 10))
-        );
-        jPanel2Layout.setVerticalGroup(
-                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel8)
-                                        .addComponent(medicineComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(5, 5, 5)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel9)
-                                        .addComponent(quantityField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(5, 5, 5)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel10)
-                                        .addComponent(dosageField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(5, 5, 5)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel11)
-                                        .addComponent(frequencyField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(5, 5, 5)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel12)
-                                        .addComponent(durationField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(10, 10, 10))
-        );
-
-        javax.swing.JPanel contentPanel = new javax.swing.JPanel();
-        contentPanel.setLayout(new javax.swing.GroupLayout(contentPanel));
-        javax.swing.GroupLayout layout = (javax.swing.GroupLayout) contentPanel.getLayout();
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(10, 10, 10)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(10, 10, 10)
-                        .addComponent(addItemButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(10, 10, 10)
-                        .addComponent(removeItemButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(10, 10, 10)
-                        .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(20, 20, 20))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(10, 10, 10)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(10, 10, 10)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(10, 10, 10)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(addItemButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(removeItemButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(20, 20, 20))
-        );
+        contentPanel.setLayout(new java.awt.FlowLayout());
 
         titlePanel.add(contentPanel, java.awt.BorderLayout.CENTER);
+
         add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        try {
-            Patient patient = getSelectedPatient();
-            Doctor doctor = getSelectedDoctor();
-            Consultation consultation = getSelectedConsultation();
-
-            if (patient == null || doctor == null) {
-                JOptionPane.showMessageDialog(this, "Please select both patient and doctor.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (consultation == null) {
-                JOptionPane.showMessageDialog(this, "Please select a consultation.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            String diagnosis = diagnosisField.getText().trim();
-            String instructions = instructionsField.getText().trim();
-
-            if (diagnosis.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please enter diagnosis.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (prescriptionItems.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please add at least one medicine item.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Create prescription
-            Prescription prescription = consultationControl.createPrescription(consultation, diagnosis, instructions);
-
-            // Add prescription items
-            for (Pair<String, PrescriptionItem> itemPair : prescriptionItems) {
-                PrescriptionItem item = itemPair.getValue();
-                consultationControl.addPrescriptionItem(prescription.getPrescriptionID(),
-                        item.getMedicine(), item.getQuantity(), item.getDosage(),
-                        item.getFrequency(), item.getDuration());
-            }
-
-            // Mark consultation completed once prescription saved
-            try {
-                consultationControl.updateConsultationStatus(consultation.getConsultationID(), "Completed");
-            } catch (Exception ignore) {}
-
-            JOptionPane.showMessageDialog(this, "Prescription created successfully!\nID: " + prescription.getPrescriptionID(),
-                    "Success", JOptionPane.INFORMATION_MESSAGE);
-
-            // Remove patient from shared queue (completed path)
-            try {
-                boolean updated = false;
-                // Preferred: queue stored as Pair<String, QueueEntry>
-                DoublyLinkedList<Pair<String, QueueEntry>> pairQueue
-                    = (DoublyLinkedList<Pair<String, QueueEntry>>) utility.FileUtils.readDataFromFile("queue");
-                if (pairQueue != null && !pairQueue.isEmpty()) {
-                    String patientId = patient.getPatientID();
-                    for (int i = 1; i <= pairQueue.getSize(); i++) {
-                        adt.Node<Pair<String, QueueEntry>> node = pairQueue.getElement(i);
-                        if (node != null) {
-                            QueueEntry entry = node.getEntry().getValue();
-                            if (entry != null && entry.getPatient() != null && patientId.equals(entry.getPatient().getPatientID())) {
-                                // Either delete from queue or mark done; delete to remove from view
-                                pairQueue.deleteAtPosition(i);
-                                updated = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (updated) {
-                        utility.FileUtils.writeDataToFile("queue", pairQueue);
-                    }
-                }
-
-                if (!updated) {
-                    // Fallback: queue stored as raw QueueEntry list
-                    DoublyLinkedList<QueueEntry> rawQueue
-                        = (DoublyLinkedList<QueueEntry>) utility.FileUtils.readDataFromFile("queue");
-                    if (rawQueue != null && !rawQueue.isEmpty()) {
-                        String patientId = patient.getPatientID();
-                        for (int i = 1; i <= rawQueue.getSize(); i++) {
-                            adt.Node<QueueEntry> node = rawQueue.getElement(i);
-                            if (node != null) {
-                                QueueEntry entry = node.getEntry();
-                                if (entry != null && entry.getPatient() != null && patientId.equals(entry.getPatient().getPatientID())) {
-                                    rawQueue.deleteAtPosition(i);
-                                    updated = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (updated) {
-                            utility.FileUtils.writeDataToFile("queue", rawQueue);
-                        }
-                    }
-                }
-            } catch (Exception ignore) {}
-
-            clearFields();
-            loadPrescriptions();
-
-            // Optionally navigate back
-            // mainFrame.showPanel("consultationManagement");
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error creating prescription: " + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_addButtonActionPerformed
-
-    private void addItemButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addItemButtonActionPerformed
-        try {
-            // Get selected medicine
-            Medicine medicine = getSelectedMedicine();
-            if (medicine == null) {
-                JOptionPane.showMessageDialog(this, "Please select a medicine.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Read medicine item fields
-            String quantityStr = quantityField.getText().trim();
-            String dosage = dosageField.getText().trim();
-            String frequency = frequencyField.getText().trim();
-            String durationStr = durationField.getText().trim();
-
-            if (quantityStr.isEmpty() || dosage.isEmpty() || frequency.isEmpty() || durationStr.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please fill in all medicine item fields.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            int quantity = Integer.parseInt(quantityStr);
-            int duration = Integer.parseInt(durationStr);
-
-            if (quantity <= 0 || duration <= 0) {
-                JOptionPane.showMessageDialog(this, "Quantity and duration must be positive numbers.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Create prescription item
-            PrescriptionItem item = new PrescriptionItem(medicine, quantity, dosage, frequency, String.valueOf(duration));
-
-            // Add to temporary items list with proper ID
-            String itemID = "ITEM" + (prescriptionItems.getSize() + 1);
-            prescriptionItems.insertLast(new Pair<>(itemID, item));
-
-            // Refresh items table
-            loadPrescriptionItems();
-
-            // Clear input fields
-            quantityField.setText("");
-            dosageField.setText("");
-            frequencyField.setText("");
-            durationField.setText("");
-
-            JOptionPane.showMessageDialog(this, "Medicine item added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Please enter valid numbers for quantity and duration.", "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error adding medicine item: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_addItemButtonActionPerformed
-
-    private void removeItemButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeItemButtonActionPerformed
-        int selectedRow = itemsTable.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a medicine item to remove.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // Remove from prescription items list
-        prescriptionItems.deleteAtPosition(selectedRow + 1); // Convert to 1-based indexing
-
-        // Refresh items table
-        loadPrescriptionItems();
-
-        JOptionPane.showMessageDialog(this, "Medicine item removed successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-    }//GEN-LAST:event_removeItemButtonActionPerformed
-
-    private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
-        mainFrame.showPanel("consultationManagement");
-    }//GEN-LAST:event_backButtonActionPerformed
-
-    private void clearFields() {
-        patientComboBox.setSelectedIndex(0);
-        doctorComboBox.setSelectedIndex(0);
-        consultationComboBox.setSelectedIndex(0);
-        diagnosisField.setText("");
-        instructionsField.setText("");
-
-        // Reset date and time spinners to current date/time
-        Calendar calendar = Calendar.getInstance();
-        dateSpinner.setValue(calendar.getTime());
-        timeSpinner.setValue(calendar.getTime());
-
-        // Clear prescription items
-        prescriptionItems = new DoublyLinkedList<>();
-        loadPrescriptionItems();
-    }
-
-    public void reloadPrescriptionData() {
-        consultationControl.reloadPrescriptions();
-        prescriptionItems = new DoublyLinkedList<>();
-        loadPrescriptions();
-        loadPrescriptionItems();
-    }
-
-    // Public method to reload all upstream data and refresh UI selections
-    public void reloadData() {
-        loadPatientData();
-        loadDoctorData();
-        loadConsultationData();
-        loadMedicineData();
-        populateComboBoxes();
-        loadPrescriptions();
-        loadPrescriptionItems();
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addButton;
-    private javax.swing.JButton addItemButton;
-    private javax.swing.JButton backButton;
-    private javax.swing.JComboBox<String> consultationComboBox;
-    private javax.swing.JTextField diagnosisField;
-    private javax.swing.JComboBox<String> doctorComboBox;
-    private javax.swing.JTextField dosageField;
-    private javax.swing.JTextField durationField;
-    private javax.swing.JTextField frequencyField;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable itemsTable;
-    private javax.swing.JTextField instructionsField;
+    private javax.swing.JPanel contentPanel;
     private javax.swing.JLabel logoLabel;
-    private javax.swing.JComboBox<String> medicineComboBox;
-    private javax.swing.JComboBox<String> patientComboBox;
-    private javax.swing.JTable prescriptionTable;
-    private javax.swing.JTextField quantityField;
-    private javax.swing.JButton removeItemButton;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables

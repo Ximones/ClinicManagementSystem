@@ -1,5 +1,6 @@
 package boundary;
 
+import control.ConsultationControl;
 import boundary.DoctorManagementUI.DoctorInformationPanel;
 import boundary.DoctorManagementUI.DoctorManagementPanel;
 import boundary.DoctorManagementUI.DoctorSchedulePanel;
@@ -29,6 +30,7 @@ public class MainFrame extends javax.swing.JFrame {
     private PrescriptionPanel prescriptionPanel;
     private QueuePanel queuePanel; // Reference to queue panel
     private ConsultationPanel consultationPanel; // Reference to consultation panel
+    private ConsultationControl consultationControl; // Shared control
 
     /**
      * Creates new form MainFrame
@@ -39,6 +41,7 @@ public class MainFrame extends javax.swing.JFrame {
         /* Create instances of multiple screen panels
         *  Pass 'this' Main Frame 
          */
+        consultationControl = new ConsultationControl();
         ClinicMenuPanel clinicPanel = new ClinicMenuPanel(this);
         DoctorManagementPanel docPanel = new DoctorManagementPanel(this);
         DoctorInformationPanel docInfoPanel = new DoctorInformationPanel(this);
@@ -54,16 +57,16 @@ public class MainFrame extends javax.swing.JFrame {
 
         // Consultation Management Panels
         ConsultationManagementPanel consultationManagementPanel = new ConsultationManagementPanel(this);
-        queuePanel = new QueuePanel(this);
-        consultationPanel = new ConsultationPanel(this, queuePanel);
+        queuePanel = new QueuePanel(this, consultationControl);
+        consultationPanel = new ConsultationPanel(this, queuePanel, consultationControl);
         
         // Set the consultation panel reference in the queue panel
         queuePanel.setConsultationPanel(consultationPanel);
         
-        AppointmentPanel appointmentPanel = new AppointmentPanel(this);
+        AppointmentPanel appointmentPanel = new AppointmentPanel(this, consultationControl);
         prescriptionPanel = new PrescriptionPanel(this);
-        ConsultationReportsPanel consultationReportsPanel = new ConsultationReportsPanel(this);
-        ConsultationHistoryPanel consultationHistoryPanel = new ConsultationHistoryPanel(this);
+        ConsultationReportsPanel consultationReportsPanel = new ConsultationReportsPanel(this, consultationControl);
+        ConsultationHistoryPanel consultationHistoryPanel = new ConsultationHistoryPanel(this, consultationControl);
 
         // Add the panels to the cardPanel with unique names
         cardPanel.add(clinicPanel, "clinicMenu");
@@ -155,6 +158,16 @@ public class MainFrame extends javax.swing.JFrame {
                 }
                 if (comp instanceof boundary.ConsultationManagementUI.PrescriptionPanel) {
                     ((boundary.ConsultationManagementUI.PrescriptionPanel) comp).reloadData();
+                }
+                break;
+            }
+            case "queuePanel": {
+                java.awt.Component comp = null;
+                for (java.awt.Component c : cardPanel.getComponents()) {
+                    if (c instanceof boundary.ConsultationManagementUI.QueuePanel) { comp = c; break; }
+                }
+                if (comp instanceof boundary.ConsultationManagementUI.QueuePanel) {
+                    ((boundary.ConsultationManagementUI.QueuePanel) comp).refreshQueueDisplay();
                 }
                 break;
             }

@@ -1,221 +1,483 @@
 package boundary.ConsultationManagementUI;
 
-import adt.DoublyLinkedList;
-import adt.Pair;
 import boundary.MainFrame;
 import control.ConsultationControl;
 import enitity.Consultation;
 import enitity.Patient;
-import enitity.Prescription;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import utility.ImageUtils;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import enitity.Doctor;
+import adt.DoublyLinkedList;
+import adt.Pair;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Date;
+import java.util.Calendar;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import utility.FileUtils;
+import utility.ImageUtils;
 
-public class ConsultationHistoryPanel extends JPanel {
+/**
+ * Consultation History Panel
+ * @author Zhen Bang
+ */
+public class ConsultationHistoryPanel extends javax.swing.JPanel {
 
-    private final MainFrame mainFrame;
-    private JTable patientTable;
-    private JTable consultationTable;
-    private JTable prescriptionTable;
-    private DefaultTableModel patientModel;
-    private DefaultTableModel consultationModel;
-    private DefaultTableModel prescriptionModel;
-    private JComboBox<String> doctorFilter;
-    private JComboBox<String> statusFilter;
-
+    private MainFrame mainFrame;
+    private ConsultationControl consultationControl;
+    private JTable historyTable;
+    private JScrollPane tableScrollPane;
+    private JPanel dataPanel;
+    private JComboBox<String> patientFilterComboBox;
+    private JComboBox<String> doctorFilterComboBox;
+    private JComboBox<String> statusFilterComboBox;
+    private JComboBox<String> typeFilterComboBox;
+    private JTextField searchField;
+    private JSpinner fromDateSpinner;
+    private JSpinner toDateSpinner;
+    private List<Consultation> allConsultations;
+    
+    /**
+     * Creates new form ConsultationHistoryPanel
+     */
     public ConsultationHistoryPanel(MainFrame mainFrame) {
+        this(mainFrame, new ConsultationControl());
+    }
+    
+    /**
+     * Creates new form ConsultationHistoryPanel with consultation control
+     */
+    public ConsultationHistoryPanel(MainFrame mainFrame, ConsultationControl consultationControl) {
         this.mainFrame = mainFrame;
-        setLayout(new BorderLayout());
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        initTables();
-        buildLayout();
-        reloadData();
-    }
-
-    private void initTables() {
-        patientModel = new DefaultTableModel(new Object[]{"Patient ID", "Name", "IC"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) { return false; }
-        };
-        consultationModel = new DefaultTableModel(new Object[]{
-            "Consultation ID", "Date/Time", "Doctor", "Type", "Status", "Diagnosis"
-        }, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) { return false; }
-        };
-        prescriptionModel = new DefaultTableModel(new Object[]{
-            "Prescription ID", "Date", "Doctor", "Diagnosis", "Items", "Total"
-        }, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) { return false; }
-        };
-
-        patientTable = new JTable(patientModel);
-        consultationTable = new JTable(consultationModel);
-        prescriptionTable = new JTable(prescriptionModel);
-
-        patientTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        patientTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    onPatientSelected();
-                }
-            }
-        });
-    }
-
-    private void buildLayout() {
-        // Top controls (Back + Filters)
-        JPanel topBar = new JPanel();
-        javax.swing.JLabel logoLabel = new javax.swing.JLabel();
+        this.consultationControl = consultationControl;
+        
+        initComponents();
+        // set header logo image
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
-        JButton backButton = new JButton("Back");
-        backButton.addActionListener(e -> {
-            if (mainFrame != null) {
-                mainFrame.showPanel("consultationManagement");
-            }
-        });
-        doctorFilter = new JComboBox<>();
-        statusFilter = new JComboBox<>();
-        // Style to be consistent with other modules
-        backButton.setFocusPainted(false);
-        backButton.setPreferredSize(new Dimension(200, 35));
-        topBar.add(logoLabel);
-        topBar.add(backButton);
-        topBar.add(new JLabel("Doctor:"));
-        topBar.add(doctorFilter);
-        topBar.add(new JLabel("Status:"));
-        topBar.add(statusFilter);
-        add(topBar, BorderLayout.NORTH);
-
-        JScrollPane left = new JScrollPane(patientTable);
-        left.setPreferredSize(new Dimension(280, 400));
-
-        JPanel right = new JPanel(new BorderLayout());
-        JScrollPane topRight = new JScrollPane(consultationTable);
-        JScrollPane bottomRight = new JScrollPane(prescriptionTable);
-
-        JSplitPane vertical = new JSplitPane(JSplitPane.VERTICAL_SPLIT, topRight, bottomRight);
-        vertical.setResizeWeight(0.5);
-        right.add(vertical, BorderLayout.CENTER);
-
-        JSplitPane root = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, right);
-        root.setResizeWeight(0.35);
-        add(root, BorderLayout.CENTER);
+        
+        // Initialize the consultation history interface
+        initializeHistoryInterface();
+        loadConsultationHistory();
     }
 
     public void reloadData() {
-        // Load patients from file
-        patientModel.setRowCount(0);
-        DoublyLinkedList<Patient> loadedPatients = (DoublyLinkedList<Patient>) FileUtils.readDataFromFile("patients");
-        if (loadedPatients != null) {
-            for (Patient p : loadedPatients) {
-                patientModel.addRow(new Object[]{p.getPatientID(), p.getPatientName(), p.getPatientIC()});
+        loadConsultationHistory();
+    }
+    
+    private void initializeHistoryInterface() {
+        // Create the data panel
+        dataPanel = new JPanel(new BorderLayout());
+        
+        // Create the table
+        String[] columnNames = {"ID", "Patient", "Doctor", "Date/Time", "Type", "Status", "Symptoms", "Diagnosis", "Notes"};
+        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        historyTable = new JTable(tableModel);
+        historyTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        historyTable.getTableHeader().setReorderingAllowed(false);
+        
+        tableScrollPane = new JScrollPane(historyTable);
+        tableScrollPane.setPreferredSize(new Dimension(900, 400));
+        
+        // Create filter panel
+        JPanel filterPanel = createFilterPanel();
+        
+        // Create button panel
+        JPanel buttonPanel = createButtonPanel();
+        
+        // Create main content panel
+        JPanel mainContentPanel = new JPanel(new BorderLayout());
+        mainContentPanel.add(filterPanel, BorderLayout.NORTH);
+        mainContentPanel.add(tableScrollPane, BorderLayout.CENTER);
+        mainContentPanel.add(buttonPanel, BorderLayout.SOUTH);
+        
+        // Wrap main content in scroll pane
+        JScrollPane mainScrollPane = new JScrollPane(mainContentPanel);
+        mainScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        mainScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        
+        // Add scrollable content to data panel
+        dataPanel.add(mainScrollPane, BorderLayout.CENTER);
+        
+        // Add data panel to content panel
+        contentPanel.add(dataPanel);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+    
+    private JPanel createFilterPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Filter Options"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        
+        // Initialize components
+        patientFilterComboBox = new JComboBox<>();
+        doctorFilterComboBox = new JComboBox<>();
+        statusFilterComboBox = new JComboBox<>();
+        typeFilterComboBox = new JComboBox<>();
+        searchField = new JTextField(20);
+        
+        // Setup date spinners
+        setupDateSpinners();
+        
+        // Add components to panel
+        gbc.gridx = 0; gbc.gridy = 0;
+        panel.add(new JLabel("Search:"), gbc);
+        gbc.gridx = 1;
+        panel.add(searchField, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 1;
+        panel.add(new JLabel("Patient:"), gbc);
+        gbc.gridx = 1;
+        panel.add(patientFilterComboBox, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 2;
+        panel.add(new JLabel("Doctor:"), gbc);
+        gbc.gridx = 1;
+        panel.add(doctorFilterComboBox, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 3;
+        panel.add(new JLabel("Status:"), gbc);
+        gbc.gridx = 1;
+        panel.add(statusFilterComboBox, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 4;
+        panel.add(new JLabel("Type:"), gbc);
+        gbc.gridx = 1;
+        panel.add(typeFilterComboBox, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 5;
+        panel.add(new JLabel("From Date:"), gbc);
+        gbc.gridx = 1;
+        panel.add(fromDateSpinner, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 6;
+        panel.add(new JLabel("To Date:"), gbc);
+        gbc.gridx = 1;
+        panel.add(toDateSpinner, gbc);
+        
+        // Populate filter combo boxes
+        populateFilterComboBoxes();
+        
+        return panel;
+    }
+    
+    private JPanel createButtonPanel() {
+        JPanel panel = new JPanel(new FlowLayout());
+        
+        JButton filterButton = new JButton("Apply Filters");
+        JButton clearButton = new JButton("Clear Filters");
+        JButton exportButton = new JButton("Export to CSV");
+        JButton refreshButton = new JButton("Refresh");
+        JButton backButton = new JButton("Back");
+        
+        filterButton.addActionListener(e -> applyFilters());
+        clearButton.addActionListener(e -> clearFilters());
+        exportButton.addActionListener(e -> exportToCSV());
+        refreshButton.addActionListener(e -> refreshData());
+        backButton.addActionListener(e -> mainFrame.showPanel("consultationManagement"));
+        
+        panel.add(filterButton);
+        panel.add(clearButton);
+        panel.add(exportButton);
+        panel.add(refreshButton);
+        panel.add(backButton);
+        
+        return panel;
+    }
+    
+    private void setupDateSpinners() {
+        // Create from date spinner
+        SpinnerDateModel fromDateModel = new SpinnerDateModel();
+        fromDateSpinner = new JSpinner(fromDateModel);
+        JSpinner.DateEditor fromDateEditor = new JSpinner.DateEditor(fromDateSpinner, "dd/MM/yyyy");
+        fromDateSpinner.setEditor(fromDateEditor);
+        
+        // Create to date spinner
+        SpinnerDateModel toDateModel = new SpinnerDateModel();
+        toDateSpinner = new JSpinner(toDateModel);
+        JSpinner.DateEditor toDateEditor = new JSpinner.DateEditor(toDateSpinner, "dd/MM/yyyy");
+        toDateSpinner.setEditor(toDateEditor);
+        
+        // Set default dates (last 30 days)
+        Calendar calendar = Calendar.getInstance();
+        toDateSpinner.setValue(calendar.getTime());
+        
+        calendar.add(Calendar.DAY_OF_MONTH, -30);
+        fromDateSpinner.setValue(calendar.getTime());
+        
+        // Style the spinners
+        fromDateSpinner.setPreferredSize(new Dimension(120, 25));
+        toDateSpinner.setPreferredSize(new Dimension(120, 25));
+    }
+    
+    private void populateFilterComboBoxes() {
+        patientFilterComboBox.removeAllItems();
+        doctorFilterComboBox.removeAllItems();
+        statusFilterComboBox.removeAllItems();
+        typeFilterComboBox.removeAllItems();
+        
+        // Add "All" option to all filters
+        patientFilterComboBox.addItem("All Patients");
+        doctorFilterComboBox.addItem("All Doctors");
+        statusFilterComboBox.addItem("All Statuses");
+        typeFilterComboBox.addItem("All Types");
+        
+        // Load and populate patients
+        DoublyLinkedList<Patient> patients = (DoublyLinkedList<Patient>) FileUtils.readDataFromFile("patients");
+        if (patients != null) {
+            for (Patient patient : patients) {
+                patientFilterComboBox.addItem(patient.getPatientID() + " - " + patient.getPatientName());
             }
         }
-        // Populate filters from current data
-        populateFilters();
-        // Clear detail tables until user selects a patient
-        consultationModel.setRowCount(0);
-        prescriptionModel.setRowCount(0);
-    }
-
-    private void populateFilters() {
-        // Build doctor list from consultations store
-        doctorFilter.removeAllItems();
-        statusFilter.removeAllItems();
-        doctorFilter.addItem("All");
-        statusFilter.addItem("All");
-
-        DoublyLinkedList<Pair<String, Consultation>> consultations
-            = (DoublyLinkedList<Pair<String, Consultation>>) FileUtils.readDataFromFile("consultations");
-        if (consultations != null) {
-            java.util.LinkedHashSet<String> doctors = new java.util.LinkedHashSet<>();
-            java.util.LinkedHashSet<String> statuses = new java.util.LinkedHashSet<>();
-            for (Pair<String, Consultation> pair : consultations) {
-                Consultation c = pair.getValue();
-                if (c == null) continue;
-                if (c.getDoctor() != null) doctors.add(c.getDoctor().getName());
-                if (c.getStatus() != null) {
-                    String s = c.getStatus();
-                    if ("Scheduled".equals(s) || "In Progress".equals(s) || "Completed".equals(s) || "Cancelled".equals(s)) {
-                        statuses.add(s);
-                    }
-                }
+        
+        // Load and populate doctors
+        DoublyLinkedList<Pair<String, Doctor>> doctors = (DoublyLinkedList<Pair<String, Doctor>>) FileUtils.readDataFromFile("doctors");
+        if (doctors != null) {
+            for (Pair<String, Doctor> pair : doctors) {
+                Doctor doctor = pair.getValue();
+                doctorFilterComboBox.addItem(doctor.getDoctorID() + " - " + doctor.getName());
             }
-            for (String d : doctors) doctorFilter.addItem(d);
-            for (String s : statuses) statusFilter.addItem(s);
         }
-
-        java.awt.event.ActionListener filterListener = e -> onPatientSelected();
-        for (java.awt.event.ActionListener l : doctorFilter.getActionListeners()) doctorFilter.removeActionListener(l);
-        for (java.awt.event.ActionListener l : statusFilter.getActionListeners()) statusFilter.removeActionListener(l);
-        doctorFilter.addActionListener(filterListener);
-        statusFilter.addActionListener(filterListener);
+        
+        // Add statuses
+        statusFilterComboBox.addItem("Scheduled");
+        statusFilterComboBox.addItem("In Progress");
+        statusFilterComboBox.addItem("Completed");
+        statusFilterComboBox.addItem("Cancelled");
+        
+        // Add types
+        typeFilterComboBox.addItem("New Visit");
+        typeFilterComboBox.addItem("Follow-up");
+        typeFilterComboBox.addItem("Emergency");
     }
-
-    private void onPatientSelected() {
-        int row = patientTable.getSelectedRow();
-        if (row < 0) { return; }
-        String patientId = patientModel.getValueAt(row, 0).toString();
-
-        // Use ConsultationControl to read current persisted data
-        ConsultationControl control = new ConsultationControl();
-
-        // Populate consultations for patient
-        consultationModel.setRowCount(0);
-        String selectedDoctor = doctorFilter.getSelectedItem() != null ? doctorFilter.getSelectedItem().toString() : "All";
-        String selectedStatus = statusFilter.getSelectedItem() != null ? statusFilter.getSelectedItem().toString() : "All";
-        for (Consultation c : control.getConsultationsByPatient(patientId)) {
-            String doctorName = c.getDoctor() != null ? c.getDoctor().getName() : "N/A";
-            if (!"All".equals(selectedDoctor) && !doctorName.equals(selectedDoctor)) continue;
-            if (!"All".equals(selectedStatus) && c.getStatus() != null && !c.getStatus().equals(selectedStatus)) continue;
-            consultationModel.addRow(new Object[]{
-                c.getConsultationID(),
-                c.getFormattedDateTime(),
-                doctorName,
-                c.getConsultationType(),
-                c.getStatus(),
-                c.getDiagnosis()
+    
+    private void loadConsultationHistory() {
+        if (historyTable == null) return;
+        
+        DefaultTableModel model = (DefaultTableModel) historyTable.getModel();
+        model.setRowCount(0);
+        
+        allConsultations = consultationControl.getAllConsultations();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        
+        for (Consultation consultation : allConsultations) {
+            String date = consultation.getConsultationDateTime() != null ? 
+                         consultation.getConsultationDateTime().format(fmt) : "-";
+            
+            model.addRow(new Object[]{
+                consultation.getConsultationID(),
+                consultation.getPatient() != null ? consultation.getPatient().getPatientName() : "N/A",
+                consultation.getDoctor() != null ? consultation.getDoctor().getName() : "N/A",
+                date,
+                consultation.getConsultationType(),
+                consultation.getStatus(),
+                consultation.getSymptoms(),
+                consultation.getDiagnosis(),
+                consultation.getNotes()
             });
         }
-
-        // Populate prescriptions for patient
-        prescriptionModel.setRowCount(0);
-        DoublyLinkedList<Pair<String, Prescription>> allPrescriptions = control.getPrescriptionList();
-        if (allPrescriptions != null) {
-            for (Pair<String, Prescription> pp : allPrescriptions) {
-                Prescription p = pp.getValue();
-                if (p.getPatient() != null && patientId.equals(p.getPatient().getPatientID())) {
-                    String doctorName = p.getDoctor() != null ? p.getDoctor().getName() : "N/A";
-                    if (!"All".equals(selectedDoctor) && !doctorName.equals(selectedDoctor)) continue;
-                    int itemCount = p.getPrescriptionItems() != null ? p.getPrescriptionItems().size() : 0;
-                    String total = String.format("RM %.2f", p.getTotalCost());
-                    prescriptionModel.addRow(new Object[]{
-                        p.getPrescriptionID(),
-                        p.getFormattedDate(),
-                        doctorName,
-                        p.getDiagnosis(),
-                        itemCount,
-                        total
-                    });
-                }
+    }
+    
+    private void applyFilters() {
+        if (historyTable == null) return;
+        
+        DefaultTableModel model = (DefaultTableModel) historyTable.getModel();
+        model.setRowCount(0);
+        
+        String searchText = searchField.getText().toLowerCase().trim();
+        String selectedPatient = (String) patientFilterComboBox.getSelectedItem();
+        String selectedDoctor = (String) doctorFilterComboBox.getSelectedItem();
+        String selectedStatus = (String) statusFilterComboBox.getSelectedItem();
+        String selectedType = (String) typeFilterComboBox.getSelectedItem();
+        
+        Date fromDate = (Date) fromDateSpinner.getValue();
+        Date toDate = (Date) toDateSpinner.getValue();
+        
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        
+        for (Consultation consultation : allConsultations) {
+            // Apply filters
+            if (!matchesSearch(consultation, searchText)) continue;
+            if (!matchesPatient(consultation, selectedPatient)) continue;
+            if (!matchesDoctor(consultation, selectedDoctor)) continue;
+            if (!matchesStatus(consultation, selectedStatus)) continue;
+            if (!matchesType(consultation, selectedType)) continue;
+            if (!matchesDateRange(consultation, fromDate, toDate)) continue;
+            
+            // Add to table if all filters pass
+            String date = consultation.getConsultationDateTime() != null ? 
+                         consultation.getConsultationDateTime().format(fmt) : "-";
+            
+            model.addRow(new Object[]{
+                consultation.getConsultationID(),
+                consultation.getPatient() != null ? consultation.getPatient().getPatientName() : "N/A",
+                consultation.getDoctor() != null ? consultation.getDoctor().getName() : "N/A",
+                date,
+                consultation.getConsultationType(),
+                consultation.getStatus(),
+                consultation.getSymptoms(),
+                consultation.getDiagnosis(),
+                consultation.getNotes()
+            });
+        }
+        
+        JOptionPane.showMessageDialog(this, "Filters applied. Showing " + model.getRowCount() + " consultations.", 
+                                    "Filter Applied", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private boolean matchesSearch(Consultation consultation, String searchText) {
+        if (searchText.isEmpty()) return true;
+        
+        String patientName = consultation.getPatient() != null ? consultation.getPatient().getPatientName() : "";
+        String doctorName = consultation.getDoctor() != null ? consultation.getDoctor().getName() : "";
+        String symptoms = consultation.getSymptoms() != null ? consultation.getSymptoms() : "";
+        String diagnosis = consultation.getDiagnosis() != null ? consultation.getDiagnosis() : "";
+        String notes = consultation.getNotes() != null ? consultation.getNotes() : "";
+        
+        return patientName.toLowerCase().contains(searchText) ||
+               doctorName.toLowerCase().contains(searchText) ||
+               symptoms.toLowerCase().contains(searchText) ||
+               diagnosis.toLowerCase().contains(searchText) ||
+               notes.toLowerCase().contains(searchText) ||
+               consultation.getConsultationID().toLowerCase().contains(searchText);
+    }
+    
+    private boolean matchesPatient(Consultation consultation, String selectedPatient) {
+        if ("All Patients".equals(selectedPatient)) return true;
+        if (consultation.getPatient() == null) return false;
+        
+        String patientID = selectedPatient.split(" - ")[0];
+        return consultation.getPatient().getPatientID().equals(patientID);
+    }
+    
+    private boolean matchesDoctor(Consultation consultation, String selectedDoctor) {
+        if ("All Doctors".equals(selectedDoctor)) return true;
+        if (consultation.getDoctor() == null) return false;
+        
+        String doctorID = selectedDoctor.split(" - ")[0];
+        return consultation.getDoctor().getDoctorID().equals(doctorID);
+    }
+    
+    private boolean matchesStatus(Consultation consultation, String selectedStatus) {
+        if ("All Statuses".equals(selectedStatus)) return true;
+        return consultation.getStatus().equals(selectedStatus);
+    }
+    
+    private boolean matchesType(Consultation consultation, String selectedType) {
+        if ("All Types".equals(selectedType)) return true;
+        return consultation.getConsultationType().equals(selectedType);
+    }
+    
+    private boolean matchesDateRange(Consultation consultation, Date fromDate, Date toDate) {
+        if (consultation.getConsultationDateTime() == null) return false;
+        
+        LocalDateTime consultationDate = consultation.getConsultationDateTime();
+        LocalDateTime fromDateTime = fromDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime toDateTime = toDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+        
+        return !consultationDate.isBefore(fromDateTime) && !consultationDate.isAfter(toDateTime);
+    }
+    
+    private void clearFilters() {
+        searchField.setText("");
+        patientFilterComboBox.setSelectedIndex(0);
+        doctorFilterComboBox.setSelectedIndex(0);
+        statusFilterComboBox.setSelectedIndex(0);
+        typeFilterComboBox.setSelectedIndex(0);
+        
+        // Reset date range to last 30 days
+        Calendar calendar = Calendar.getInstance();
+        toDateSpinner.setValue(calendar.getTime());
+        
+        calendar.add(Calendar.DAY_OF_MONTH, -30);
+        fromDateSpinner.setValue(calendar.getTime());
+        
+        loadConsultationHistory();
+        JOptionPane.showMessageDialog(this, "All filters cleared.", "Filters Cleared", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void exportToCSV() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Export Consultation History to CSV");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setSelectedFile(new java.io.File("consultation_history.csv"));
+        
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            java.io.File file = fileChooser.getSelectedFile();
+            try {
+                exportConsultationsToCSV(file);
+                JOptionPane.showMessageDialog(this, "Consultation history exported successfully to " + file.getName(), 
+                                            "Export Successful", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error exporting to CSV: " + e.getMessage(), 
+                                            "Export Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
+    
+    private void exportConsultationsToCSV(java.io.File file) throws Exception {
+        try (java.io.PrintWriter writer = new java.io.PrintWriter(file)) {
+            // Write header
+            writer.println("ID,Patient,Doctor,Date/Time,Type,Status,Symptoms,Diagnosis,Notes");
+            
+            // Write data
+            DefaultTableModel model = (DefaultTableModel) historyTable.getModel();
+            for (int i = 0; i < model.getRowCount(); i++) {
+                StringBuilder line = new StringBuilder();
+                for (int j = 0; j < model.getColumnCount(); j++) {
+                    Object value = model.getValueAt(i, j);
+                    String cellValue = value != null ? value.toString().replace("\"", "\"\"") : "";
+                    line.append("\"").append(cellValue).append("\"");
+                    if (j < model.getColumnCount() - 1) {
+                        line.append(",");
+                    }
+                }
+                writer.println(line.toString());
+            }
+        }
+    }
+    
+    private void refreshData() {
+        loadConsultationHistory();
+        JOptionPane.showMessageDialog(this, "Data refreshed successfully.", "Refresh Complete", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        logoLabel = new javax.swing.JLabel();
+        titlePanel = new javax.swing.JPanel();
+        titleLabel = new javax.swing.JLabel();
+        contentPanel = new javax.swing.JPanel();
+
+        setLayout(new java.awt.BorderLayout());
+        add(logoLabel, java.awt.BorderLayout.PAGE_START);
+
+        titlePanel.setLayout(new java.awt.BorderLayout());
+
+        titleLabel.setFont(new java.awt.Font("Corbel", 1, 36)); // NOI18N
+        titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        titleLabel.setText(" Consultation History");
+        titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
+
+        contentPanel.setLayout(new java.awt.FlowLayout());
+
+        titlePanel.add(contentPanel, java.awt.BorderLayout.CENTER);
+
+        add(titlePanel, java.awt.BorderLayout.CENTER);
+    }// </editor-fold>//GEN-END:initComponents
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel contentPanel;
+    private javax.swing.JLabel logoLabel;
+    private javax.swing.JLabel titleLabel;
+    private javax.swing.JPanel titlePanel;
+    // End of variables declaration//GEN-END:variables
 }
-
-
