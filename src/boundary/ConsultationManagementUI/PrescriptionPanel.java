@@ -62,8 +62,13 @@ public class PrescriptionPanel extends javax.swing.JPanel {
     }
 
     public void reloadData() {
+        // Ensure latest data from disk (consultations, prescriptions, queue)
+        consultationControl.reloadConsultations();
+        consultationControl.reloadPrescriptions();
+        consultationControl.reloadQueue();
         loadPrescriptions();
         loadPrescriptionItems();
+        populateConsultationComboBox();
     }
 
     public void reloadPrescriptionData() {
@@ -90,7 +95,7 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         prescriptionScrollPane.setPreferredSize(new Dimension(800, 200));
         
         // Create items table
-        String[] itemsColumns = {"Medicine", "Quantity", "Dosage", "Frequency", "Duration", "Unit Price", "Total"};
+        String[] itemsColumns = {"Medicine", "Quantity", "Duration", "Unit Price", "Total"};
         DefaultTableModel itemsModel = new DefaultTableModel(itemsColumns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -118,9 +123,10 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         
         // Create main content panel
         JPanel mainContentPanel = new JPanel(new BorderLayout());
-        JPanel inputPanels = new JPanel(new BorderLayout());
-        inputPanels.add(prescriptionInputPanel, BorderLayout.NORTH);
-        inputPanels.add(medicineInputPanel, BorderLayout.CENTER);
+        // Place prescription details on the left and add medicine item on the right
+        JPanel inputPanels = new JPanel(new java.awt.GridLayout(1, 2, 20, 0));
+        inputPanels.add(prescriptionInputPanel);
+        inputPanels.add(medicineInputPanel);
         mainContentPanel.add(inputPanels, BorderLayout.NORTH);
         mainContentPanel.add(tablesPanel, BorderLayout.CENTER);
         mainContentPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -178,11 +184,9 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         
-        // Initialize components
+        // Initialize components (dosage and frequency removed)
         medicineComboBox = new JComboBox<>();
         quantityField = new JTextField(10);
-        dosageField = new JTextField(15);
-        frequencyField = new JTextField(15);
         durationField = new JTextField(10);
         
         // Add components to panel
@@ -197,16 +201,6 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         panel.add(quantityField, gbc);
         
         gbc.gridx = 0; gbc.gridy = 2;
-        panel.add(new JLabel("Dosage:"), gbc);
-        gbc.gridx = 1;
-        panel.add(dosageField, gbc);
-        
-        gbc.gridx = 0; gbc.gridy = 3;
-        panel.add(new JLabel("Frequency:"), gbc);
-        gbc.gridx = 1;
-        panel.add(frequencyField, gbc);
-        
-        gbc.gridx = 0; gbc.gridy = 4;
         panel.add(new JLabel("Duration (days):"), gbc);
         gbc.gridx = 1;
         panel.add(durationField, gbc);
@@ -242,11 +236,11 @@ public class PrescriptionPanel extends javax.swing.JPanel {
     }
     
     private void completeAndRemoveFromQueue() {
-        // Get the current prescriptioning patient
+        // Get the current prescribing patient
         enitity.QueueEntry currentPrescriptioning = consultationControl.getCurrentPrescriptioningPatient();
         
         if (currentPrescriptioning == null) {
-            JOptionPane.showMessageDialog(this, "No patient currently in prescription phase.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "No patient currently in prescribing phase.", "Info", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
         
@@ -265,6 +259,15 @@ public class PrescriptionPanel extends javax.swing.JPanel {
                     "Consultation and prescription process completed.", 
                     "Process Completed", JOptionPane.INFORMATION_MESSAGE);
                 
+                // Auto-mark the latest consultation for this patient as Completed
+                try {
+                    java.util.List<Consultation> list = consultationControl.getConsultationsByPatient(currentPrescriptioning.getPatient().getPatientID());
+                    if (!list.isEmpty()) {
+                        Consultation latest = list.get(list.size() - 1);
+                        consultationControl.updateConsultationStatus(latest.getConsultationID(), "Completed");
+                    }
+                } catch (Exception ignore) {}
+
                 // Return to queue panel
                 mainFrame.showPanel("queuePanel");
             } else {
@@ -276,10 +279,9 @@ public class PrescriptionPanel extends javax.swing.JPanel {
     private void populateConsultationComboBox() {
         consultationComboBox.removeAllItems();
         
-        // First, check if there's a prescriptioning patient from queue
+        // If there's a prescribing patient from queue, preselect and lock it
         enitity.QueueEntry prescriptioningPatient = consultationControl.getCurrentPrescriptioningPatient();
         if (prescriptioningPatient != null) {
-            // Find the consultation for this patient
             List<Consultation> consultations = consultationControl.getAllConsultations();
             for (Consultation consultation : consultations) {
                 if (consultation.getPatient() != null && 
@@ -288,9 +290,12 @@ public class PrescriptionPanel extends javax.swing.JPanel {
                                  consultation.getPatient().getPatientName() + " (FROM QUEUE)";
                     consultationComboBox.addItem(item);
                     consultationComboBox.setSelectedItem(item);
+                    consultationComboBox.setEnabled(false);
                     break;
                 }
             }
+        } else {
+            consultationComboBox.setEnabled(true);
         }
         
         // Add all other consultations
@@ -298,7 +303,8 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         for (Consultation consultation : consultations) {
             String item = consultation.getConsultationID() + " - " + 
                          (consultation.getPatient() != null ? consultation.getPatient().getPatientName() : "N/A");
-            if (!consultationComboBox.getSelectedItem().equals(item)) {
+            Object selectedItem = consultationComboBox.getSelectedItem();
+            if (selectedItem == null || !selectedItem.equals(item)) {
                 consultationComboBox.addItem(item);
             }
         }
@@ -351,8 +357,6 @@ public class PrescriptionPanel extends javax.swing.JPanel {
             Object[] row = {
                 item.getMedicineName(),
                 item.getQuantity(),
-                item.getDosage(),
-                item.getFrequency(),
                 item.getDuration() + " days",
                 String.format("RM %.2f", item.getUnitPrice()),
                 String.format("RM %.2f", item.getTotalCost())
@@ -439,12 +443,10 @@ public class PrescriptionPanel extends javax.swing.JPanel {
             }
             
             String quantityStr = quantityField.getText().trim();
-            String dosage = dosageField.getText().trim();
-            String frequency = frequencyField.getText().trim();
             String durationStr = durationField.getText().trim();
             
-            if (quantityStr.isEmpty() || dosage.isEmpty() || frequency.isEmpty() || durationStr.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please fill in all medicine item fields.", "Error", JOptionPane.ERROR_MESSAGE);
+            if (quantityStr.isEmpty() || durationStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please fill in required fields (quantity and duration).", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
@@ -457,7 +459,7 @@ public class PrescriptionPanel extends javax.swing.JPanel {
             }
             
             // Create prescription item
-            PrescriptionItem item = new PrescriptionItem(medicine, quantity, dosage, frequency, String.valueOf(duration));
+            PrescriptionItem item = new PrescriptionItem(medicine, quantity, "", "", String.valueOf(duration));
             
             // Add to current prescription items
             String itemID = "ITEM" + (currentPrescriptionItems.getSize() + 1);
@@ -468,8 +470,6 @@ public class PrescriptionPanel extends javax.swing.JPanel {
             
             // Clear input fields
             quantityField.setText("");
-            dosageField.setText("");
-            frequencyField.setText("");
             durationField.setText("");
             
             JOptionPane.showMessageDialog(this, "Medicine item added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);

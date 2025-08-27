@@ -63,6 +63,7 @@ public class ConsultationHistoryPanel extends javax.swing.JPanel {
 
     public void reloadData() {
         loadConsultationHistory();
+        populateFilterComboBoxes();
     }
     
     private void initializeHistoryInterface() {

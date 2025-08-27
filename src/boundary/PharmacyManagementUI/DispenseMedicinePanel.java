@@ -270,7 +270,7 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
     }
 
     private void showPrescriptionDetails(Prescription p) {
-        String[] cols = {"Med ID", "Med Name", "Quantity", "Stock", "Dosage", "Frequency", "Duration", "Unit Price (RM)", "Line Total (RM)"};
+        String[] cols = {"Med ID", "Med Name", "Quantity", "Stock", "Duration", "Unit Price (RM)", "Line Total (RM)"};
         DefaultTableModel m = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int r, int c) {
@@ -298,7 +298,7 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
                 double unit = it.getUnitPrice();
                 double line = it.getTotalCost();
                 m.addRow(new Object[]{
-                    medId, medName, qty, stock, it.getDosage(), it.getFrequency(), it.getDuration(), unit, line
+                    medId, medName, qty, stock, unit, line
                 });
             }
         }

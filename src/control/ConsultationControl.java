@@ -94,6 +94,33 @@ public class ConsultationControl {
     }
 
     /**
+     * Reloads queue data from persistent storage to reflect external updates
+     */
+    public void reloadQueue() {
+        try {
+            DoublyLinkedList<Pair<String, QueueEntry>> loadedQueue
+                    = (DoublyLinkedList<Pair<String, QueueEntry>>) FileUtils.readDataFromFile("queue");
+            if (loadedQueue != null) {
+                this.queueList = loadedQueue;
+            }
+        } catch (ClassCastException e) {
+            try {
+                DoublyLinkedList<QueueEntry> oldFormatQueue
+                        = (DoublyLinkedList<QueueEntry>) FileUtils.readDataFromFile("queue");
+                if (oldFormatQueue != null) {
+                    DoublyLinkedList<Pair<String, QueueEntry>> converted = new DoublyLinkedList<>();
+                    for (QueueEntry entry : oldFormatQueue) {
+                        converted.insertLast(new Pair<>(entry.getQueueNumber(), entry));
+                    }
+                    this.queueList = converted;
+                }
+            } catch (Exception ex) {
+                System.err.println("Error reloading queue data: " + ex.getMessage());
+            }
+        }
+    }
+
+    /**
      * Saves all consultation data to files
      */
     public void saveData() {
@@ -177,6 +204,52 @@ public class ConsultationControl {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Deletes a consultation by ID
+     *
+     * @param consultationID The consultation ID to delete
+     * @return true if deleted successfully, false otherwise
+     */
+    public boolean deleteConsultation(String consultationID) {
+        // First, check if there are any related prescriptions
+        List<Prescription> relatedPrescriptions = getPrescriptionsByConsultation(consultationID);
+        boolean hasRelatedPrescriptions = !relatedPrescriptions.isEmpty();
+        
+        // Delete the consultation
+        for (int i = 1; i <= consultationList.getSize(); i++) {
+            Node<Pair<String, Consultation>> node = consultationList.getElement(i);
+            if (node != null && node.getEntry().getKey().equals(consultationID)) {
+                consultationList.deleteAtPosition(i);
+                
+                // If there were related prescriptions, delete them too
+                if (hasRelatedPrescriptions) {
+                    deleteRelatedPrescriptions(consultationID);
+                }
+                
+                saveData();
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Deletes all prescriptions related to a consultation
+     *
+     * @param consultationID The consultation ID
+     */
+    private void deleteRelatedPrescriptions(String consultationID) {
+        for (int i = 1; i <= prescriptionList.getSize(); i++) {
+            Node<Pair<String, Prescription>> node = prescriptionList.getElement(i);
+            if (node != null && node.getEntry().getValue().getConsultation() != null &&
+                node.getEntry().getValue().getConsultation().getConsultationID().equals(consultationID)) {
+                prescriptionList.deleteAtPosition(i);
+                // Adjust index since we deleted an element
+                i--;
+            }
+        }
     }
 
     /**
@@ -606,6 +679,17 @@ public class ConsultationControl {
         }
     }
 
+    /**
+     * Reloads consultations from storage to reflect external changes
+     */
+    public void reloadConsultations() {
+        DoublyLinkedList<Pair<String, Consultation>> loadedConsultations
+                = (DoublyLinkedList<Pair<String, Consultation>>) FileUtils.readDataFromFile("consultations");
+        if (loadedConsultations != null) {
+            this.consultationList = loadedConsultations;
+        }
+    }
+
     // Getters for the lists
     public DoublyLinkedList<Pair<String, Consultation>> getConsultationList() {
         return consultationList;
@@ -941,7 +1025,7 @@ public class ConsultationControl {
             // Try new format (Pair<String, QueueEntry>)
             for (Pair<String, QueueEntry> pair : queueList) {
                 QueueEntry entry = pair.getValue();
-                if ("Prescriptioning".equals(entry.getStatus())) {
+                if ("Prescribing".equals(entry.getStatus())) {
                     return entry;
                 }
             }
@@ -950,7 +1034,7 @@ public class ConsultationControl {
             for (Object obj : queueList) {
                 if (obj instanceof QueueEntry) {
                     QueueEntry entry = (QueueEntry) obj;
-                    if ("Prescriptioning".equals(entry.getStatus())) {
+                    if ("Prescribing".equals(entry.getStatus())) {
                         return entry;
                     }
                 }
@@ -958,4 +1042,5 @@ public class ConsultationControl {
         }
         return null;
     }
+
 }
