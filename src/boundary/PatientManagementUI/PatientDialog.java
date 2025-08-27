@@ -52,13 +52,13 @@ public class PatientDialog extends javax.swing.JDialog {
      * Public method to retrieve the result (Patient ID and Patient object).
      * @return A Pair<String, Patient> if saved, null if cancelled.
      */
+    public Patient getResultPatient() {
+    return result != null ? result.getValue() : null;
+}
     
-      public Pair<String, Patient> getResult() {
-        return result;
-    }
       
     
-   private void savePatientAction(java.awt.event.ActionEvent evt) {
+private void savePatientAction(java.awt.event.ActionEvent evt) {
     // 1. Get trimmed text from all input fields
     String name = formNameInput.getText().trim();
     String ageStr = formAgeInput.getText().trim();
@@ -79,9 +79,9 @@ public class PatientDialog extends javax.swing.JDialog {
         errors.append("• Please fill in all fields.\n");
     }
 
-    // 2. Name validation
-    if (!name.matches("^[A-Za-z ]+$")) {
-        errors.append("• Name must contain only alphabets and spaces.\n");
+    // 2. Name validation (alphabets, spaces, and / allowed)
+    if (!name.matches("^[A-Za-z /]+$")) {
+        errors.append("• Name must contain only alphabets, spaces, or '/'.\n");
     }
 
     // 3. IC format validation
@@ -99,14 +99,15 @@ public class PatientDialog extends javax.swing.JDialog {
         errors.append("• Age must be a valid number.\n");
     }
 
-    // 5. Phone validation
-    if (!contact.matches("^\\d+$")) {
-        errors.append("• Phone number must contain only digits.\n");
+    // 5. Phone validation (11 digits only)
+    if (!contact.matches("^\\d{3}-\\d{7,8}$")) {
+        errors.append("• Phone number must be in format xxx-xxxxxxxx or xxx-xxxxxxxxx (10 or 11 digits total).\n");
     }
 
-    // 6. Email validation
-    if (!email.matches("^[A-Za-z0-9._%+-]+@gmail\\.com$")) {
-        errors.append("• Email must be a valid Gmail address ending with @gmail.com.\n");
+
+    // 6. Email validation (must end with gmail.com or yahoo.com)
+    if (!email.matches("^[A-Za-z0-9._%+-]+@(gmail\\.com|yahoo\\.com)$")) {
+        errors.append("• Email must be a valid Gmail or Yahoo address.\n");
     }
 
     // Show all collected errors if any

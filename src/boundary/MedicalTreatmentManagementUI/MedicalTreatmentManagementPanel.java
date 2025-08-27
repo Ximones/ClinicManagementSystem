@@ -56,7 +56,7 @@ public class MedicalTreatmentManagementPanel extends javax.swing.JPanel {
         buttonPanel.setMinimumSize(new java.awt.Dimension(1000, 800));
         buttonPanel.setLayout(new java.awt.GridLayout(3, 2, 50, 50));
 
-        jButton1.setText("Manage Information");
+        jButton1.setText("Manage Diagnosis");
         jButton1.setPreferredSize(new java.awt.Dimension(200, 50));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -65,7 +65,7 @@ public class MedicalTreatmentManagementPanel extends javax.swing.JPanel {
         });
         buttonPanel.add(jButton1);
 
-        jButton2.setText("Manage Schedule");
+        jButton2.setText("Manage Treatment History");
         jButton2.setPreferredSize(new java.awt.Dimension(200, 50));
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

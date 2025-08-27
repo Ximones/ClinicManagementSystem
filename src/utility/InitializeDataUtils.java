@@ -8,6 +8,7 @@ import adt.DoublyLinkedList;
 import adt.Pair;
 import enitity.Doctor;
 import enitity.Medicine;
+import enitity.Patient;
 import java.io.File;
 
 /**
@@ -21,7 +22,8 @@ public class InitializeDataUtils {
         // Ensure doctors exist (kept as before)
         DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
         DoublyLinkedList<Pair<String, Medicine>> medList = new DoublyLinkedList<>();
-
+        DoublyLinkedList<Patient> patientList = new DoublyLinkedList<>();
+         
         // Initialize Doctor Test Data
         Doctor doc1 = new Doctor("Simon", 20, "01118566866", "Doctor", "Present");
         Doctor doc2 = new Doctor("ZB", 21, "01118566866", "Doctor", "Absent");
@@ -39,7 +41,46 @@ public class InitializeDataUtils {
         doctorList.insertLast(doctorPair4);
 
         FileUtils.writeDataToFile("doctors", doctorList);
+        
+        // Initialize Patient Test Data
+       
 
+        patientList.insertLast(new Patient("P001", "Ali bin Hassan", "900101-14-1122", 35, "Male",
+        "012-1111222", "ali.hassan@gmail.com",
+        "No. 5, Jalan Damai, Taman Desa, Kuala Lumpur", "01-08-2025"));
+        patientList.insertLast(new Patient("P002", "Chong Wei Ling", "980202-10-3344", 27, "Female",
+        "013-2222333", "weiling.chong@yahoo.com",
+        "Condo Sri Hartamas, Blok C-8-15, Mont Kiara, KL", "02-08-2025"));
+        patientList.insertLast(new Patient("P003", "Mohd Faiz bin Rahman", "950315-08-5566", 30, "Male",
+        "014-3333444", "faiz.rahman95@gmail.com",
+        "No. 88, Jalan Anggerik, Seksyen 7, Shah Alam, Selangor", "03-08-2025"));
+        patientList.insertLast(new Patient("P004", "Anita a/p Subramaniam", "930420-14-7788", 32, "Female",
+        "015-4444555", "anita.suba@gmail.com",
+        "No. 25, Jalan Indah 3, Taman Sri Tebrau, Johor Bahru, Johor", "05-08-2025"));
+        patientList.insertLast(new Patient("P005", "Lim Boon Huat", "000519-08-9900", 25, "Male",
+        "016-5555666", "boonhuat.lim@gmail.com",
+        "No. 7, Jalan Rasah Jaya, Seremban, Negeri Sembilan", "07-08-2025"));
+        patientList.insertLast(new Patient("P006", "Nur Amirah binti Ismail", "020103-10-2244", 23, "Female",
+        "017-6666777", "amirah.ismail02@gmail.com",
+        "No. 33, Jalan Setia Tropika 5/2, Taman Setia Tropika, Johor Bahru", "10-08-2025"));
+        patientList.insertLast(new Patient("P007", "Raj a/l Manogaran", "970312-08-3355", 28, "Male",
+        "018-7777888", "raj.manogaran@yahoo.com",
+        "No. 19, Jalan Transfer, George Town, Penang", "12-08-2025"));
+        patientList.insertLast(new Patient("P008", "Tan Siew Mei", "890603-14-4466", 36, "Female",
+        "019-8888999", "siewmei.tan@gmail.com",
+        "No. 56, Jalan Kota Laksamana, Melaka City, Melaka", "15-08-2025"));
+        patientList.insertLast(new Patient("P009", "Ahmad Zaki bin Osman", "990927-10-5577", 26, "Male",
+        "011-9999000", "zaki.osman99@yahoo.com",
+        "No. 21, Jalan Raja Dr Nazrin, Taman Jubilee, Ipoh, Perak", "20-08-2025"));
+        patientList.insertLast(new Patient("P010", "Chia Li Xuan", "960512-14-8899", 29, "Female",
+        "012-1212121", "lixuan.chia@yahoo.com",
+        "No. 8, Lorong Taman Alor Akar 3, Kuantan, Pahang", "25-08-2025"));
+
+        FileUtils.writeDataToFile("patients", patientList);
+        System.out.println("10 patients have been saved to dao/patients.bin");
+
+
+  
         // Initialize Medical Test Data (write if file missing OR empty)
         boolean shouldWriteMedicines = false;
         try {
@@ -89,5 +130,7 @@ public class InitializeDataUtils {
         FileUtils.writeDataToFile("medicine", medList);
 
         System.out.println("30 medicines have been saved to dao/medicine.bin");
+        
+        
     }
 }

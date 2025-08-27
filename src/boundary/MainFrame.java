@@ -17,6 +17,7 @@ import boundary.ConsultationManagementUI.QueuePanel;
 import boundary.ConsultationManagementUI.ConsultationReportsPanel;
 import boundary.ConsultationManagementUI.ConsultationHistoryPanel;
 import boundary.PharmacyManagementUI.DispenseMedicinePanel;
+import boundary.MedicalTreatmentManagementUI.MedicalTreatmentManagementPanel;
 import java.awt.CardLayout;
 
 /**
