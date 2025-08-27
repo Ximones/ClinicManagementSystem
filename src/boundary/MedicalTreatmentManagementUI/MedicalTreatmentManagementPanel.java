@@ -5,6 +5,7 @@
 package boundary.MedicalTreatmentManagementUI;
 
 import boundary.MainFrame;
+import utility.ImageUtils; // Import the ImageUtils class
 
 /**
  *
@@ -16,8 +17,11 @@ public class MedicalTreatmentManagementPanel extends javax.swing.JPanel {
     /**
      * Creates new form MedicalTreatmentManagementPanel
      */
-    public MedicalTreatmentManagementPanel() {
+    public MedicalTreatmentManagementPanel(MainFrame mainFrame) {
+        this.mainFrame = mainFrame; // Store the reference
         initComponents();
+        // Use ImageUtils to set the logo
+        logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
     }
 
     /**
@@ -102,11 +106,11 @@ public class MedicalTreatmentManagementPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        mainFrame.showPanel("doctorInformation");
+        mainFrame.showPanel("diagnosisEntry");
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        mainFrame.showPanel("doctorSchedule");
+        mainFrame.showPanel("treatmentHistory");
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed

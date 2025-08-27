@@ -68,6 +68,15 @@ public class MainFrame extends javax.swing.JFrame {
         prescriptionPanel = new PrescriptionPanel(this);
         ConsultationReportsPanel consultationReportsPanel = new ConsultationReportsPanel(this, consultationControl);
         ConsultationHistoryPanel consultationHistoryPanel = new ConsultationHistoryPanel(this, consultationControl);
+        
+        // Medical Treatment Management Panels
+        MedicalTreatmentManagementPanel medicalPanel = new MedicalTreatmentManagementPanel(this);
+        //DiagnosisEntryPanel diagnosisPanel = new DiagnosisEntryPanel(this); 
+        //TreatmentHistoryPanel historyPanel = new TreatmentHistoryPanel(this); 
+        
+        cardPanel.add(medicalPanel, "medicalManagement");
+        //cardPanel.add(diagnosisPanel, "diagnosisEntry");
+        //cardPanel.add(historyPanel, "treatmentHistory");
 
         // Add the panels to the cardPanel with unique names
         cardPanel.add(clinicPanel, "clinicMenu");
@@ -85,7 +94,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         // Add consultation management panels
         cardPanel.add(consultationManagementPanel, "consultationManagement");
-        cardPanel.add(consultationPanel, "consultationPanel");
+        //cardPanel.add(consultationPanel, "consultationPanel");
         cardPanel.add(appointmentPanel, "appointmentPanel");
         cardPanel.add(prescriptionPanel, "prescriptionPanel");
         cardPanel.add(queuePanel, "queuePanel");
