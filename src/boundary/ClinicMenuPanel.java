@@ -138,7 +138,7 @@ public class ClinicMenuPanel extends javax.swing.JPanel {
 
     // Button 4 - to switch Medical Treatment Management window
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        // TODO add your handling code here:
+        mainFrame.showPanel("medicalManagement");
     }//GEN-LAST:event_jButton4ActionPerformed
 
     // Button 5 - to switch Pharmacy Management window
