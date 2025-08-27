@@ -63,6 +63,27 @@ public class QueueEntry implements Comparable<QueueEntry>, Serializable {
         this.startConsultTime = System.currentTimeMillis();
     }
 
+    /**
+     * Marks the consultation as done, sets status to "Done".
+     */
+    public void markConsultationDone() {
+        this.status = "Done";
+    }
+
+    /**
+     * Marks the patient as consulting, sets status to "Consulting".
+     */
+    public void markConsulting() {
+        this.status = "Consulting";
+    }
+    
+    /**
+     * Marks the patient as prescriptioning after consultation.
+     */
+    public void markPrescriptioning() {
+        this.status = "Prescriptioning";
+    }
+
     // --- Waiting Time ---
     /**
      * Returns waiting time in ms (enqueue → start consult OR enqueue → now).

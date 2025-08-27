@@ -1,22 +1,23 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
 package boundary.ConsultationManagementUI;
 
 import boundary.MainFrame;
 import control.ConsultationControl;
-import utility.ReportGenerator;
 import enitity.Consultation;
 import enitity.Appointment;
+import enitity.QueueEntry;
 import adt.DoublyLinkedList;
 import adt.Pair;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Date;
+import java.util.Calendar;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import utility.FileUtils;
+import utility.ImageUtils;
+import utility.ReportGenerator;
 
 /**
  * Consultation Reports Panel
@@ -26,291 +27,607 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
 
     private MainFrame mainFrame;
     private ConsultationControl consultationControl;
-    private DefaultTableModel reportTableModel;
+    private JTable reportTable;
+    private JScrollPane tableScrollPane;
+    private JPanel dataPanel;
+    private JTextArea reportTextArea;
+    private JScrollPane textScrollPane;
+    private JComboBox<String> reportTypeComboBox;
+    private JSpinner fromDateSpinner;
+    private JSpinner toDateSpinner;
     
     /**
      * Creates new form ConsultationReportsPanel
      */
     public ConsultationReportsPanel(MainFrame mainFrame) {
+        this(mainFrame, new ConsultationControl());
+    }
+    
+    /**
+     * Creates new form ConsultationReportsPanel with consultation control
+     */
+    public ConsultationReportsPanel(MainFrame mainFrame, ConsultationControl consultationControl) {
         this.mainFrame = mainFrame;
-        this.consultationControl = new ConsultationControl();
+        this.consultationControl = consultationControl;
+        
         initComponents();
-        setupUI();
-        setupTable();
-    }
-    
-    private void setupUI() {
-        setPreferredSize(new Dimension(700, 500));
-        setBackground(new Color(240, 248, 255));
+        // set header logo image
+        logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
         
-        // Style title
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        titleLabel.setForeground(new Color(25, 25, 112));
+        // Initialize the reports interface
+        initializeReportsInterface();
+    }
+
+    public void reloadData() {
+        // Refresh reports data if needed
+    }
+    
+    private void initializeReportsInterface() {
+        // Create the data panel
+        dataPanel = new JPanel(new BorderLayout());
         
-        // Style buttons
-        styleButton(dailyAppointmentsButton, "Daily Appointments Report", new Color(70, 130, 180));
-        styleButton(consultationTypesButton, "Consultation Types Report", new Color(60, 179, 113));
-        styleButton(backButton, "Back", new Color(128, 128, 128));
-    }
-    
-    private void styleButton(JButton button, String text, Color backgroundColor) {
-        button.setText(text);
-        button.setFont(new Font("Arial", Font.BOLD, 12));
-        button.setForeground(Color.WHITE);
-        button.setBackground(backgroundColor);
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-    }
-    
-    private void setupTable() {
+        // Create the table
         String[] columnNames = {"Report Type", "Generated Date", "Status"};
-        reportTableModel = new DefaultTableModel(columnNames, 0) {
+        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        reportTable.setModel(reportTableModel);
+        reportTable = new JTable(tableModel);
         reportTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         reportTable.getTableHeader().setReorderingAllowed(false);
+        
+        tableScrollPane = new JScrollPane(reportTable);
+        tableScrollPane.setPreferredSize(new Dimension(400, 200));
+        
+        // Create text area for report preview
+        reportTextArea = new JTextArea();
+        reportTextArea.setEditable(false);
+        reportTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        textScrollPane = new JScrollPane(reportTextArea);
+        textScrollPane.setPreferredSize(new Dimension(500, 300));
+        
+        // Create control panel
+        JPanel controlPanel = createControlPanel();
+        
+        // Create button panel
+        JPanel buttonPanel = createButtonPanel();
+        
+        // Create split pane for table and text area
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tableScrollPane, textScrollPane);
+        splitPane.setDividerLocation(400);
+        
+        // Create main content panel
+        JPanel mainContentPanel = new JPanel(new BorderLayout());
+        mainContentPanel.add(controlPanel, BorderLayout.NORTH);
+        mainContentPanel.add(splitPane, BorderLayout.CENTER);
+        mainContentPanel.add(buttonPanel, BorderLayout.SOUTH);
+        
+        // Wrap main content in scroll pane
+        JScrollPane mainScrollPane = new JScrollPane(mainContentPanel);
+        mainScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        mainScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        
+        // Add scrollable content to data panel
+        dataPanel.add(mainScrollPane, BorderLayout.CENTER);
+        
+        // Add data panel to content panel
+        contentPanel.add(dataPanel);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+    
+    private JPanel createControlPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Report Controls"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        
+        // Initialize components
+        reportTypeComboBox = new JComboBox<>();
+        setupDateSpinners();
+        
+        // Add components to panel
+        gbc.gridx = 0; gbc.gridy = 0;
+        panel.add(new JLabel("Report Type:"), gbc);
+        gbc.gridx = 1;
+        panel.add(reportTypeComboBox, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 1;
+        panel.add(new JLabel("From Date:"), gbc);
+        gbc.gridx = 1;
+        panel.add(fromDateSpinner, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 2;
+        panel.add(new JLabel("To Date:"), gbc);
+        gbc.gridx = 1;
+        panel.add(toDateSpinner, gbc);
+        
+        // Populate report types
+        populateReportTypes();
+        
+        return panel;
+    }
+    
+    private JPanel createButtonPanel() {
+        JPanel panel = new JPanel(new FlowLayout());
+        
+        JButton generateButton = new JButton("Generate Report");
+        JButton previewButton = new JButton("Preview Report");
+        JButton exportButton = new JButton("Export Report");
+        JButton clearButton = new JButton("Clear Preview");
+        JButton backButton = new JButton("Back");
+        
+        generateButton.addActionListener(e -> generateReport());
+        previewButton.addActionListener(e -> previewReport());
+        exportButton.addActionListener(e -> exportReport());
+        clearButton.addActionListener(e -> clearPreview());
+        backButton.addActionListener(e -> mainFrame.showPanel("consultationManagement"));
+        
+        panel.add(generateButton);
+        panel.add(previewButton);
+        panel.add(exportButton);
+        panel.add(clearButton);
+        panel.add(backButton);
+        
+        return panel;
+    }
+    
+    private void setupDateSpinners() {
+        // Create from date spinner
+        SpinnerDateModel fromDateModel = new SpinnerDateModel();
+        fromDateSpinner = new JSpinner(fromDateModel);
+        JSpinner.DateEditor fromDateEditor = new JSpinner.DateEditor(fromDateSpinner, "dd/MM/yyyy");
+        fromDateSpinner.setEditor(fromDateEditor);
+        
+        // Create to date spinner
+        SpinnerDateModel toDateModel = new SpinnerDateModel();
+        toDateSpinner = new JSpinner(toDateModel);
+        JSpinner.DateEditor toDateEditor = new JSpinner.DateEditor(toDateSpinner, "dd/MM/yyyy");
+        toDateSpinner.setEditor(toDateEditor);
+        
+        // Set default dates (current month)
+        Calendar calendar = Calendar.getInstance();
+        toDateSpinner.setValue(calendar.getTime());
+        
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        fromDateSpinner.setValue(calendar.getTime());
+        
+        // Style the spinners
+        fromDateSpinner.setPreferredSize(new Dimension(120, 25));
+        toDateSpinner.setPreferredSize(new Dimension(120, 25));
+    }
+    
+    private void populateReportTypes() {
+        reportTypeComboBox.removeAllItems();
+        
+        reportTypeComboBox.addItem("Consultation Statistics Report");
+        reportTypeComboBox.addItem("Appointment Summary Report");
+        reportTypeComboBox.addItem("Queue Statistics Report");
+        reportTypeComboBox.addItem("Doctor Performance Report");
+        reportTypeComboBox.addItem("Patient Consultation History");
+        reportTypeComboBox.addItem("Monthly Consultation Summary");
+    }
+    
+    private void generateReport() {
+        String selectedReport = (String) reportTypeComboBox.getSelectedItem();
+        Date fromDate = (Date) fromDateSpinner.getValue();
+        Date toDate = (Date) toDateSpinner.getValue();
+        
+        if (selectedReport == null) {
+            JOptionPane.showMessageDialog(this, "Please select a report type.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        try {
+            String reportContent = "";
+            
+            switch (selectedReport) {
+                case "Consultation Statistics Report":
+                    reportContent = generateConsultationStatisticsReport(fromDate, toDate);
+                    break;
+                case "Appointment Summary Report":
+                    reportContent = generateAppointmentSummaryReport(fromDate, toDate);
+                    break;
+                case "Queue Statistics Report":
+                    reportContent = generateQueueStatisticsReport();
+                    break;
+                case "Doctor Performance Report":
+                    reportContent = generateDoctorPerformanceReport(fromDate, toDate);
+                    break;
+                case "Patient Consultation History":
+                    reportContent = generatePatientConsultationHistory();
+                    break;
+                case "Monthly Consultation Summary":
+                    reportContent = generateMonthlyConsultationSummary();
+                    break;
+                default:
+                    reportContent = "Report type not implemented.";
+            }
+            
+            // Display report in text area
+            reportTextArea.setText(reportContent);
+            
+            // Add to report table
+            addReportToTable(selectedReport, "Generated");
+            
+            JOptionPane.showMessageDialog(this, "Report generated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error generating report: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private void previewReport() {
+        String selectedReport = (String) reportTypeComboBox.getSelectedItem();
+        Date fromDate = (Date) fromDateSpinner.getValue();
+        Date toDate = (Date) toDateSpinner.getValue();
+        
+        if (selectedReport == null) {
+            JOptionPane.showMessageDialog(this, "Please select a report type.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        try {
+            String reportContent = "";
+            
+            switch (selectedReport) {
+                case "Consultation Statistics Report":
+                    reportContent = generateConsultationStatisticsReport(fromDate, toDate);
+                    break;
+                case "Appointment Summary Report":
+                    reportContent = generateAppointmentSummaryReport(fromDate, toDate);
+                    break;
+                case "Queue Statistics Report":
+                    reportContent = generateQueueStatisticsReport();
+                    break;
+                case "Doctor Performance Report":
+                    reportContent = generateDoctorPerformanceReport(fromDate, toDate);
+                    break;
+                case "Patient Consultation History":
+                    reportContent = generatePatientConsultationHistory();
+                    break;
+                case "Monthly Consultation Summary":
+                    reportContent = generateMonthlyConsultationSummary();
+                    break;
+                default:
+                    reportContent = "Report type not implemented.";
+            }
+            
+            // Display report in text area
+            reportTextArea.setText(reportContent);
+            
+            JOptionPane.showMessageDialog(this, "Report preview generated!", "Preview", JOptionPane.INFORMATION_MESSAGE);
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error generating preview: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private void exportReport() {
+        if (reportTextArea.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No report to export. Please generate a report first.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Export Report");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setSelectedFile(new java.io.File("consultation_report.txt"));
+        
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            java.io.File file = fileChooser.getSelectedFile();
+            try {
+                try (java.io.PrintWriter writer = new java.io.PrintWriter(file)) {
+                    writer.print(reportTextArea.getText());
+                }
+                JOptionPane.showMessageDialog(this, "Report exported successfully to " + file.getName(), 
+                                            "Export Successful", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error exporting report: " + e.getMessage(), 
+                                            "Export Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    
+    private void clearPreview() {
+        reportTextArea.setText("");
+        JOptionPane.showMessageDialog(this, "Preview cleared.", "Cleared", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void addReportToTable(String reportType, String status) {
+        DefaultTableModel model = (DefaultTableModel) reportTable.getModel();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        String currentTime = LocalDateTime.now().format(fmt);
+        
+        model.addRow(new Object[]{reportType, currentTime, status});
+    }
+    
+    private String generateConsultationStatisticsReport(Date fromDate, Date toDate) {
+        StringBuilder report = new StringBuilder();
+        report.append("CONSULTATION STATISTICS REPORT\n");
+        report.append("==============================\n\n");
+        
+        LocalDateTime fromDateTime = fromDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime toDateTime = toDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+        
+        List<Consultation> consultations = consultationControl.getAllConsultations();
+        
+        int totalConsultations = 0;
+        int completedConsultations = 0;
+        int scheduledConsultations = 0;
+        int cancelledConsultations = 0;
+        
+        for (Consultation consultation : consultations) {
+            if (consultation.getConsultationDateTime() != null &&
+                !consultation.getConsultationDateTime().isBefore(fromDateTime) &&
+                !consultation.getConsultationDateTime().isAfter(toDateTime)) {
+                
+                totalConsultations++;
+                
+                switch (consultation.getStatus()) {
+                    case "Completed":
+                        completedConsultations++;
+                        break;
+                    case "Scheduled":
+                        scheduledConsultations++;
+                        break;
+                    case "Cancelled":
+                        cancelledConsultations++;
+                        break;
+                }
+            }
+        }
+        
+        report.append("Date Range: ").append(fromDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        report.append(" to ").append(toDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).append("\n\n");
+        
+        report.append("Total Consultations: ").append(totalConsultations).append("\n");
+        report.append("Completed: ").append(completedConsultations).append("\n");
+        report.append("Scheduled: ").append(scheduledConsultations).append("\n");
+        report.append("Cancelled: ").append(cancelledConsultations).append("\n\n");
+        
+        if (totalConsultations > 0) {
+            double completionRate = (double) completedConsultations / totalConsultations * 100;
+            report.append("Completion Rate: ").append(String.format("%.1f%%", completionRate)).append("\n");
+        }
+        
+        return report.toString();
+    }
+    
+    private String generateAppointmentSummaryReport(Date fromDate, Date toDate) {
+        StringBuilder report = new StringBuilder();
+        report.append("APPOINTMENT SUMMARY REPORT\n");
+        report.append("===========================\n\n");
+        
+        LocalDateTime fromDateTime = fromDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime toDateTime = toDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+        
+        List<Appointment> appointments = consultationControl.getAllAppointments();
+        
+        int totalAppointments = 0;
+        int confirmedAppointments = 0;
+        int completedAppointments = 0;
+        int cancelledAppointments = 0;
+        int noShowAppointments = 0;
+        
+        for (Appointment appointment : appointments) {
+            if (appointment.getAppointmentDateTime() != null &&
+                !appointment.getAppointmentDateTime().isBefore(fromDateTime) &&
+                !appointment.getAppointmentDateTime().isAfter(toDateTime)) {
+                
+                totalAppointments++;
+                
+                switch (appointment.getStatus()) {
+                    case "Confirmed":
+                        confirmedAppointments++;
+                        break;
+                    case "Completed":
+                        completedAppointments++;
+                        break;
+                    case "Cancelled":
+                        cancelledAppointments++;
+                        break;
+                    case "No-show":
+                        noShowAppointments++;
+                        break;
+                }
+            }
+        }
+        
+        report.append("Date Range: ").append(fromDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        report.append(" to ").append(toDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).append("\n\n");
+        
+        report.append("Total Appointments: ").append(totalAppointments).append("\n");
+        report.append("Confirmed: ").append(confirmedAppointments).append("\n");
+        report.append("Completed: ").append(completedAppointments).append("\n");
+        report.append("Cancelled: ").append(cancelledAppointments).append("\n");
+        report.append("No-show: ").append(noShowAppointments).append("\n\n");
+        
+        if (totalAppointments > 0) {
+            double attendanceRate = (double) completedAppointments / totalAppointments * 100;
+            report.append("Attendance Rate: ").append(String.format("%.1f%%", attendanceRate)).append("\n");
+        }
+        
+        return report.toString();
+    }
+    
+    private String generateQueueStatisticsReport() {
+        StringBuilder report = new StringBuilder();
+        report.append("QUEUE STATISTICS REPORT\n");
+        report.append("=======================\n\n");
+        
+        List<QueueEntry> queueEntries = consultationControl.getAllQueueEntries();
+        
+        int totalPatients = queueEntries.size();
+        int waitingPatients = 0;
+        int consultingPatients = 0;
+        int completedPatients = 0;
+        long totalWaitingTime = 0;
+        
+        for (QueueEntry entry : queueEntries) {
+            switch (entry.getStatus()) {
+                case "Waiting":
+                    waitingPatients++;
+                    break;
+                case "Consulting":
+                    consultingPatients++;
+                    break;
+                case "Done":
+                    completedPatients++;
+                    break;
+            }
+            totalWaitingTime += entry.getWaitingTimeMillis();
+        }
+        
+        report.append("Total Patients in Queue: ").append(totalPatients).append("\n");
+        report.append("Currently Waiting: ").append(waitingPatients).append("\n");
+        report.append("Currently Consulting: ").append(consultingPatients).append("\n");
+        report.append("Completed: ").append(completedPatients).append("\n\n");
+        
+        if (totalPatients > 0) {
+            long averageWaitingTime = totalWaitingTime / totalPatients;
+            long minutes = averageWaitingTime / (1000 * 60);
+            long seconds = (averageWaitingTime % (1000 * 60)) / 1000;
+            report.append("Average Waiting Time: ").append(minutes).append("m ").append(seconds).append("s\n");
+        }
+        
+        return report.toString();
+    }
+    
+    private String generateDoctorPerformanceReport(Date fromDate, Date toDate) {
+        StringBuilder report = new StringBuilder();
+        report.append("DOCTOR PERFORMANCE REPORT\n");
+        report.append("==========================\n\n");
+        
+        LocalDateTime fromDateTime = fromDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime toDateTime = toDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+        
+        List<Consultation> consultations = consultationControl.getAllConsultations();
+        
+        // Count consultations by doctor
+        java.util.Map<String, Integer> doctorConsultations = new java.util.HashMap<>();
+        java.util.Map<String, Integer> doctorCompleted = new java.util.HashMap<>();
+        
+        for (Consultation consultation : consultations) {
+            if (consultation.getConsultationDateTime() != null &&
+                !consultation.getConsultationDateTime().isBefore(fromDateTime) &&
+                !consultation.getConsultationDateTime().isAfter(toDateTime) &&
+                consultation.getDoctor() != null) {
+                
+                String doctorName = consultation.getDoctor().getName();
+                doctorConsultations.put(doctorName, doctorConsultations.getOrDefault(doctorName, 0) + 1);
+                
+                if ("Completed".equals(consultation.getStatus())) {
+                    doctorCompleted.put(doctorName, doctorCompleted.getOrDefault(doctorName, 0) + 1);
+                }
+            }
+        }
+        
+        report.append("Date Range: ").append(fromDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        report.append(" to ").append(toDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).append("\n\n");
+        
+        for (String doctorName : doctorConsultations.keySet()) {
+            int total = doctorConsultations.get(doctorName);
+            int completed = doctorCompleted.getOrDefault(doctorName, 0);
+            double completionRate = total > 0 ? (double) completed / total * 100 : 0;
+            
+            report.append("Doctor: ").append(doctorName).append("\n");
+            report.append("  Total Consultations: ").append(total).append("\n");
+            report.append("  Completed: ").append(completed).append("\n");
+            report.append("  Completion Rate: ").append(String.format("%.1f%%", completionRate)).append("\n\n");
+        }
+        
+        return report.toString();
+    }
+    
+    private String generatePatientConsultationHistory() {
+        StringBuilder report = new StringBuilder();
+        report.append("PATIENT CONSULTATION HISTORY\n");
+        report.append("============================\n\n");
+        
+        List<Consultation> consultations = consultationControl.getAllConsultations();
+        
+        // Group consultations by patient
+        java.util.Map<String, java.util.List<Consultation>> patientConsultations = new java.util.HashMap<>();
+        
+        for (Consultation consultation : consultations) {
+            if (consultation.getPatient() != null) {
+                String patientName = consultation.getPatient().getPatientName();
+                patientConsultations.computeIfAbsent(patientName, k -> new java.util.ArrayList<>()).add(consultation);
+            }
+        }
+        
+        for (String patientName : patientConsultations.keySet()) {
+            report.append("Patient: ").append(patientName).append("\n");
+            report.append("  Consultations:\n");
+            
+            for (Consultation consultation : patientConsultations.get(patientName)) {
+                String date = consultation.getConsultationDateTime() != null ? 
+                             consultation.getConsultationDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "N/A";
+                
+                report.append("    - ").append(date).append(" (").append(consultation.getConsultationType()).append(") - ").append(consultation.getStatus()).append("\n");
+            }
+            report.append("\n");
+        }
+        
+        return report.toString();
+    }
+    
+    private String generateMonthlyConsultationSummary() {
+        StringBuilder report = new StringBuilder();
+        report.append("MONTHLY CONSULTATION SUMMARY\n");
+        report.append("============================\n\n");
+        
+        List<Consultation> consultations = consultationControl.getAllConsultations();
+        
+        // Group consultations by month
+        java.util.Map<String, Integer> monthlyConsultations = new java.util.HashMap<>();
+        
+        for (Consultation consultation : consultations) {
+            if (consultation.getConsultationDateTime() != null) {
+                String monthYear = consultation.getConsultationDateTime().format(DateTimeFormatter.ofPattern("MMMM yyyy"));
+                monthlyConsultations.put(monthYear, monthlyConsultations.getOrDefault(monthYear, 0) + 1);
+            }
+        }
+        
+        for (String monthYear : monthlyConsultations.keySet()) {
+            report.append(monthYear).append(": ").append(monthlyConsultations.get(monthYear)).append(" consultations\n");
+        }
+        
+        return report.toString();
     }
 
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        logoLabel = new javax.swing.JLabel();
+        titlePanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
-        dailyAppointmentsButton = new javax.swing.JButton();
-        consultationTypesButton = new javax.swing.JButton();
-        backButton = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        reportTable = new javax.swing.JTable();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        contentPanel = new javax.swing.JPanel();
 
-        setPreferredSize(new java.awt.Dimension(700, 500));
+        setLayout(new java.awt.BorderLayout());
+        add(logoLabel, java.awt.BorderLayout.PAGE_START);
 
-        titleLabel.setFont(new java.awt.Font("Arial", 1, 20)); // NOI18N
+        titlePanel.setLayout(new java.awt.BorderLayout());
+
+        titleLabel.setFont(new java.awt.Font("Corbel", 1, 36)); // NOI18N
         titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        titleLabel.setText("Consultation Reports");
+        titleLabel.setText(" Consultation Reports");
+        titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
-        dailyAppointmentsButton.setText("Daily Appointments Report");
-        dailyAppointmentsButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dailyAppointmentsButtonActionPerformed(evt);
-            }
-        });
+        contentPanel.setLayout(new java.awt.FlowLayout());
 
-        consultationTypesButton.setText("Consultation Types Report");
-        consultationTypesButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                consultationTypesButtonActionPerformed(evt);
-            }
-        });
+        titlePanel.add(contentPanel, java.awt.BorderLayout.CENTER);
 
-        backButton.setText("Back");
-        backButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                backButtonActionPerformed(evt);
-            }
-        });
-
-        reportTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
-            },
-            new String [] {
-                "Report Type", "Generated Date", "Status"
-            }
-        ));
-        jScrollPane1.setViewportView(reportTable);
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Report Information"));
-
-        jLabel1.setText("Available Reports:");
-
-        jLabel2.setText("1. Daily Appointments Report - Shows all scheduled appointments for today");
-        jLabel2.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(10, 10, 10)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(10, 10, 10))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(10, 10, 10)
-                .addComponent(jLabel1)
-                .addGap(5, 5, 5)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(10, 10, 10))
-        );
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(titleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(dailyAppointmentsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(10, 10, 10)
-                        .addComponent(consultationTypesButton, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(10, 10, 10)
-                        .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(20, 20, 20))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(titleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(10, 10, 10)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(10, 10, 10)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(10, 10, 10)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(dailyAppointmentsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(consultationTypesButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(20, 20, 20))
-        );
+        add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void dailyAppointmentsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dailyAppointmentsButtonActionPerformed
-        try {
-            List<Appointment> todayAppointments = consultationControl.getTodayAppointments();
-            
-            if (todayAppointments.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "No appointments scheduled for today.", "Info", JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-            
-            // Create a simple report display
-            StringBuilder report = new StringBuilder();
-            report.append("DAILY APPOINTMENTS REPORT\n");
-            report.append("Date: ").append(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).append("\n");
-            report.append("Total Appointments: ").append(todayAppointments.size()).append("\n\n");
-            
-            for (Appointment appointment : todayAppointments) {
-                report.append("ID: ").append(appointment.getAppointmentID()).append("\n");
-                report.append("Patient: ").append(appointment.getPatient() != null ? appointment.getPatient().getPatientName() : "N/A").append("\n");
-                report.append("Doctor: ").append(appointment.getDoctor() != null ? appointment.getDoctor().getName() : "N/A").append("\n");
-                report.append("Time: ").append(appointment.getFormattedDateTime()).append("\n");
-                report.append("Type: ").append(appointment.getAppointmentType()).append("\n");
-                report.append("Status: ").append(appointment.getStatus()).append("\n");
-                report.append("Reason: ").append(appointment.getReason()).append("\n");
-                report.append("----------------------------------------\n");
-            }
-            
-            // Display report in a dialog
-            JTextArea textArea = new JTextArea(report.toString());
-            textArea.setEditable(false);
-            JScrollPane scrollPane = new JScrollPane(textArea);
-            scrollPane.setPreferredSize(new Dimension(500, 400));
-            
-            JOptionPane.showMessageDialog(this, scrollPane, "Daily Appointments Report", JOptionPane.INFORMATION_MESSAGE);
-            
-            // Add to report table
-            addReportToTable("Daily Appointments Report", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), "Generated");
-            
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error generating daily appointments report: " + e.getMessage(), 
-                                        "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_dailyAppointmentsButtonActionPerformed
-
-    private void consultationTypesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consultationTypesButtonActionPerformed
-        try {
-            DoublyLinkedList<Pair<String, Integer>> typeCounts = consultationControl.getConsultationTypeCounts();
-            
-            if (typeCounts.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "No consultations found to generate report.", "Info", JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-            
-            // Create a simple report display
-            StringBuilder report = new StringBuilder();
-            report.append("CONSULTATION TYPES REPORT\n");
-            report.append("Generated Date: ").append(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).append("\n\n");
-            
-            int totalConsultations = 0;
-            for (Pair<String, Integer> pair : typeCounts) {
-                totalConsultations += pair.getValue();
-            }
-            
-            report.append("Total Consultations: ").append(totalConsultations).append("\n\n");
-            report.append("Breakdown by Type:\n");
-            report.append("----------------------------------------\n");
-            
-            for (Pair<String, Integer> pair : typeCounts) {
-                String type = pair.getKey();
-                int count = pair.getValue();
-                double percentage = (double) count / totalConsultations * 100;
-                
-                report.append("Type: ").append(type).append("\n");
-                report.append("Count: ").append(count).append("\n");
-                report.append("Percentage: ").append(String.format("%.1f", percentage)).append("%\n");
-                report.append("----------------------------------------\n");
-            }
-            
-            // Display report in a dialog
-            JTextArea textArea = new JTextArea(report.toString());
-            textArea.setEditable(false);
-            JScrollPane scrollPane = new JScrollPane(textArea);
-            scrollPane.setPreferredSize(new Dimension(500, 400));
-            
-            JOptionPane.showMessageDialog(this, scrollPane, "Consultation Types Report", JOptionPane.INFORMATION_MESSAGE);
-            
-            // Add to report table
-            addReportToTable("Consultation Types Report", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), "Generated");
-            
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error generating consultation types report: " + e.getMessage(), 
-                                        "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_consultationTypesButtonActionPerformed
-
-    private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
-        mainFrame.showPanel("consultationManagement");
-    }//GEN-LAST:event_backButtonActionPerformed
-
-    private void addReportToTable(String reportType, String generatedDate, String status) {
-        Object[] row = {reportType, generatedDate, status};
-        reportTableModel.addRow(row);
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton backButton;
-    private javax.swing.JButton consultationTypesButton;
-    private javax.swing.JButton dailyAppointmentsButton;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable reportTable;
+    private javax.swing.JPanel contentPanel;
+    private javax.swing.JLabel logoLabel;
     private javax.swing.JLabel titleLabel;
+    private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables
 } 

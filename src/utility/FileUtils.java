@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /**
  * A utility class for handling file input and output operations,
@@ -47,7 +49,7 @@ public class FileUtils {
             oos.writeObject(list);
             System.out.println("Data successfully saved to " + file.getPath());
         } catch (IOException e) {
-            System.err.println("Error writing to file: " + e.getMessage());
+            System.err.println("Error writing to file: " + file.getPath() + ". " + e.getClass().getSimpleName() + ": " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -75,8 +77,23 @@ public class FileUtils {
             Object obj = ois.readObject();
             System.out.println("Data successfully loaded from " + file.getPath());
             return (DoublyLinkedList<?>) obj;
+        } catch (java.io.InvalidClassException ice) {
+            // The on-disk serialized class UID no longer matches. Backup and reset.
+            System.err.println("Incompatible data format for " + file.getPath() + ": " + ice.getMessage());
+            try {
+                File backup = new File(file.getParent(), file.getName() + ".bak");
+                Files.copy(file.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                System.err.println("Backed up incompatible file to: " + backup.getPath());
+                // Reset the original to a fresh empty list to allow the app to continue.
+                DoublyLinkedList<?> empty = new DoublyLinkedList<>();
+                writeDataToFile(fileName, empty);
+            } catch (IOException ioe) {
+                System.err.println("Failed to backup/reset incompatible file: " + ioe.getMessage());
+                ioe.printStackTrace();
+            }
+            return new DoublyLinkedList<>();
         } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error reading from file: " + e.getMessage());
+            System.err.println("Error reading from file: " + file.getPath() + ". " + e.getClass().getSimpleName() + ": " + e.getMessage());
             e.printStackTrace();
             // Return a new list in case of an error to prevent the program from crashing.
             return new DoublyLinkedList<>();

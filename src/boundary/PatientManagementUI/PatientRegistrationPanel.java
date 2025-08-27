@@ -14,7 +14,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import utility.FileUtils;
-import utility.ReportGenerator;
 
 /**
  *
@@ -67,6 +66,11 @@ public class PatientRegistrationPanel extends javax.swing.JPanel {
             
     }
     
+    // Public method to re-read from disk and refresh table when panel is shown
+    public void reloadData() {
+        loadAndDisplayPatients();
+    }
+
     private Patient findPatientById(String id) {
     for (Patient p : patientList) {
         if (id.equals(p.getPatientID())) {
@@ -145,19 +149,21 @@ private void reloadPatientRow(int row, Patient p) {
 
     
     
-    private void loadAndDisplayPatients() {
+private void loadAndDisplayPatients() {
     int maxId = 0;
-
-    // Clear the table and patient list
     tableModel.setRowCount(0);
+
+    // Initialize as Patient list, not Pair
     patientList = new DoublyLinkedList<>();
 
-    // Read from file
+    // Load data
     DoublyLinkedList<Patient> loadedList =
-        (DoublyLinkedList<Patient>) utility.FileUtils.readDataFromFile("patients");
+        (DoublyLinkedList<Patient>) FileUtils.readDataFromFile("patients");
 
     if (loadedList != null) {
         patientList = loadedList;
+
+        // Loop through patients directly
         for (Patient p : patientList) {
             tableModel.addRow(new Object[]{
                 p.getPatientID(),
@@ -171,22 +177,22 @@ private void reloadPatientRow(int row, Patient p) {
                 p.getDateOfRegistration()
             });
 
+            // Track max patient ID number
             try {
-                String idNumStr = p.getPatientID().substring(1);
+                String idNumStr = p.getPatientID().substring(1); // assumes format P###
                 int currentIdNum = Integer.parseInt(idNumStr);
-                if (currentIdNum > maxId) {
-                    maxId = currentIdNum;
-                }
+                if (currentIdNum > maxId) maxId = currentIdNum;
             } catch (NumberFormatException | StringIndexOutOfBoundsException ex) {
                 System.err.println("Warning: Could not parse patient ID: " + p.getPatientID());
             }
         }
+
+        // Update static patient index
         Patient.setPatientIndex(maxId);
     } else {
         System.out.println("No patient data found or unable to read file. Starting with empty list.");
     }
 }
-
      
     private void savePatientData() {
     utility.FileUtils.writeDataToFile("patients", patientList);
@@ -197,12 +203,9 @@ private void reloadPatientRow(int row, Patient p) {
     PatientDialog dialog = new PatientDialog(mainFrame, true);
     dialog.setVisible(true);
 
-    Pair<String, Patient> patientResult = dialog.getResult();
-
-    if (patientResult != null) {
-        Patient newPatient = patientResult.getValue();
+    Patient newPatient = dialog.getResultPatient(); // ✅ should return a Patient, not Pair
+    if (newPatient != null) {
         patientList.insertLast(newPatient);
-        
         tableModel.addRow(new Object[]{
             newPatient.getPatientID(),
             newPatient.getPatientName(),
@@ -214,14 +217,15 @@ private void reloadPatientRow(int row, Patient p) {
             newPatient.getAddress(),
             newPatient.getDateOfRegistration()
         });
-
         savePatientData();
-
-        JOptionPane.showMessageDialog(this, "Patient " + newPatient.getPatientName() + " (ID: " + newPatient.getPatientID() + ") added successfully!");
+        JOptionPane.showMessageDialog(this,
+            "Patient " + newPatient.getPatientName() +
+            " (ID: " + newPatient.getPatientID() + ") added successfully!");
     } else {
         JOptionPane.showMessageDialog(this, "Patient registration cancelled.");
     }
 }
+
     
 private void filterPatients() {
     String selectedFilter = (String) filterBox.getSelectedItem();

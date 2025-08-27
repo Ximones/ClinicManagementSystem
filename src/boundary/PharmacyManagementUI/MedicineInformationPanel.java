@@ -237,6 +237,11 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         populateMedicineTable(masterMedicineList);
     }
 
+    // Public method to standardize reloading for navigation
+    public void reloadData() {
+        reloadMedicineTable();
+    }
+
     private void filterTable() {
         String selectedCriterion = (String) filterBox.getSelectedItem();
         String searchText = filterField.getText().trim().toLowerCase();

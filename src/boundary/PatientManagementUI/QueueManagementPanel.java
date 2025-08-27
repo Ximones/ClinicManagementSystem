@@ -6,6 +6,7 @@ package boundary.PatientManagementUI;
 
 import adt.DoublyLinkedList;
 import adt.Node;
+import adt.Pair;
 import boundary.MainFrame;
 import enitity.Patient;
 import enitity.QueueEntry;
