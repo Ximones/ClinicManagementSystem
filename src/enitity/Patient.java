@@ -34,8 +34,7 @@ public class Patient implements Comparable<Patient>, Serializable {
         this.status = "Active"; // Example
     }
 
-    public Patient(String id, String patientName, int patientAge, String patientIC, String gender, String contact,
-            String email, String address, String dateOfRegistration) {
+    public Patient(String id, String patientName, String patientIC, int patientAge, String gender, String contact, String email, String address, String dateOfRegistration) {
         this.patientID = id;
         this.patientName = patientName;
         this.patientAge = patientAge;
