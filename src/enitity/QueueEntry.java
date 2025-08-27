@@ -78,10 +78,10 @@ public class QueueEntry implements Comparable<QueueEntry>, Serializable {
     }
     
     /**
-     * Marks the patient as prescriptioning after consultation.
+     * Marks the patient as prescribing after consultation.
      */
     public void markPrescriptioning() {
-        this.status = "Prescriptioning";
+        this.status = "Prescribing";
     }
 
     // --- Waiting Time ---

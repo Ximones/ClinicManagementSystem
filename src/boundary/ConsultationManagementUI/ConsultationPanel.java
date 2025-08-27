@@ -6,6 +6,7 @@ import enitity.Consultation;
 import enitity.Patient;
 import enitity.Doctor;
 import enitity.QueueEntry;
+import enitity.Prescription;
 import adt.DoublyLinkedList;
 import adt.Pair;
 import java.time.LocalDateTime;
@@ -109,6 +110,7 @@ public class ConsultationPanel extends javax.swing.JPanel {
     // Public method to re-read all required data and refresh UI when panel is shown
     public void reloadData() {
         loadConsultations();
+        populateComboBoxes();
         updateCurrentConsultingPatient();
     }
     
@@ -216,16 +218,19 @@ public class ConsultationPanel extends javax.swing.JPanel {
         JButton addButton = new JButton("Add Consultation");
         JButton updateButton = new JButton("Update Consultation");
         JButton deleteButton = new JButton("Delete Consultation");
+        JButton toPrescriptionButton = new JButton("To Prescription");
         JButton backButton = new JButton("Back");
         
         addButton.addActionListener(e -> addConsultation());
         updateButton.addActionListener(e -> updateConsultation());
         deleteButton.addActionListener(e -> deleteConsultation());
+        toPrescriptionButton.addActionListener(e -> moveToPrescription());
         backButton.addActionListener(e -> mainFrame.showPanel("consultationManagement"));
         
         panel.add(addButton);
         panel.add(updateButton);
         panel.add(deleteButton);
+        panel.add(toPrescriptionButton);
         panel.add(backButton);
         
         return panel;
@@ -282,11 +287,12 @@ public class ConsultationPanel extends javax.swing.JPanel {
         consultationTypeComboBox.addItem("Follow-up");
         consultationTypeComboBox.addItem("Emergency");
         
-        // Add statuses
+        // Add statuses (kept for display) but disable manual change; automation will set it
         statusComboBox.addItem("Scheduled");
         statusComboBox.addItem("In Progress");
         statusComboBox.addItem("Completed");
         statusComboBox.addItem("Cancelled");
+        statusComboBox.setEnabled(false);
     }
     
     private void loadConsultations() {
@@ -365,22 +371,58 @@ public class ConsultationPanel extends javax.swing.JPanel {
 
     private void updateCurrentConsultingPatient() {
         // Load shared queue and find current consulting
-        DoublyLinkedList<QueueEntry> queueList = (DoublyLinkedList<QueueEntry>) FileUtils.readDataFromFile("queue");
         QueueEntry currentConsulting = null;
-        if (queueList != null) {
-            for (QueueEntry entry : queueList) {
-                if ("Consulting".equals(entry.getStatus())) {
-                    currentConsulting = entry;
-                    break;
+        
+        try {
+            // Try to load in new format (Pair<String, QueueEntry>)
+            DoublyLinkedList<Pair<String, QueueEntry>> queueListPair = 
+                (DoublyLinkedList<Pair<String, QueueEntry>>) FileUtils.readDataFromFile("queue");
+            
+            if (queueListPair != null) {
+                for (Pair<String, QueueEntry> pair : queueListPair) {
+                    QueueEntry entry = pair.getValue();
+                    if ("Consulting".equals(entry.getStatus())) {
+                        currentConsulting = entry;
+                        break;
+                    }
                 }
             }
+        } catch (ClassCastException e) {
+            // Handle old format (direct QueueEntry objects)
+            try {
+                DoublyLinkedList<QueueEntry> queueList = 
+                    (DoublyLinkedList<QueueEntry>) FileUtils.readDataFromFile("queue");
+                
+                if (queueList != null) {
+                    for (QueueEntry entry : queueList) {
+                        if ("Consulting".equals(entry.getStatus())) {
+                            currentConsulting = entry;
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                System.err.println("Error loading queue data in updateCurrentConsultingPatient: " + ex.getMessage());
+            }
         }
+        
         if (currentConsulting != null) {
             Patient patient = currentConsulting.getPatient();
-            String patientName = patient != null ? patient.getPatientName() : "Unknown";
-            System.out.println("Current consulting: " + patientName + " (Queue: " + currentConsulting.getQueueNumber() + ")");
+            String targetId = patient != null ? patient.getPatientID() : null;
+            if (targetId != null) {
+                for (int i = 0; i < patientComboBox.getItemCount(); i++) {
+                    String item = patientComboBox.getItemAt(i);
+                    if (item.startsWith(targetId + " ")) {
+                        patientComboBox.setSelectedIndex(i);
+                        break;
+                    }
+                }
+                // Lock patient selection during active consultation
+                patientComboBox.setEnabled(false);
+            }
         } else {
-            System.out.println("No patient currently consulting");
+            // No active consulting patient; allow normal selection
+            patientComboBox.setEnabled(true);
         }
     }
     
@@ -445,12 +487,73 @@ public class ConsultationPanel extends javax.swing.JPanel {
             return;
         }
         
-        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this consultation?", 
-                                                   "Confirm Delete", JOptionPane.YES_NO_OPTION);
-        if (confirm == JOptionPane.YES_OPTION) {
-            JOptionPane.showMessageDialog(this, "Delete functionality not implemented in this demo.", 
-                                        "Info", JOptionPane.INFORMATION_MESSAGE);
+        String consultationID = (String) consultationTable.getValueAt(selectedRow, 0);
+        String patientName = (String) consultationTable.getValueAt(selectedRow, 1);
+        
+        // Check for related prescriptions
+        List<Prescription> relatedPrescriptions = consultationControl.getPrescriptionsByConsultation(consultationID);
+        boolean hasRelatedPrescriptions = !relatedPrescriptions.isEmpty();
+        
+        StringBuilder confirmMessage = new StringBuilder();
+        confirmMessage.append("Are you sure you want to delete this consultation?\n\n");
+        confirmMessage.append("Consultation ID: ").append(consultationID).append("\n");
+        confirmMessage.append("Patient: ").append(patientName).append("\n\n");
+        
+        if (hasRelatedPrescriptions) {
+            confirmMessage.append("WARNING: This consultation has ").append(relatedPrescriptions.size())
+                         .append(" related prescription(s) that will also be deleted:\n");
+            for (Prescription prescription : relatedPrescriptions) {
+                confirmMessage.append("  - Prescription ID: ").append(prescription.getPrescriptionID()).append("\n");
+            }
+            confirmMessage.append("\n");
         }
+        
+        confirmMessage.append("This action cannot be undone.");
+        
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            confirmMessage.toString(), 
+            "Confirm Delete Consultation", JOptionPane.YES_NO_OPTION);
+            
+        if (confirm == JOptionPane.YES_OPTION) {
+            boolean deleted = consultationControl.deleteConsultation(consultationID);
+            
+            if (deleted) {
+                StringBuilder successMessage = new StringBuilder();
+                successMessage.append("Consultation deleted successfully!\n\n");
+                successMessage.append("Consultation ID: ").append(consultationID).append("\n");
+                successMessage.append("Patient: ").append(patientName).append("\n");
+                
+                if (hasRelatedPrescriptions) {
+                    successMessage.append("\nRelated prescriptions were also deleted.");
+                }
+                
+                JOptionPane.showMessageDialog(this, 
+                    successMessage.toString(), 
+                    "Delete Successful", JOptionPane.INFORMATION_MESSAGE);
+                loadConsultations();
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "Failed to delete consultation.\n" +
+                    "Consultation ID: " + consultationID + "\n\n" +
+                    "The consultation may not exist or may have already been deleted.", 
+                    "Delete Failed", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void moveToPrescription() {
+        // Move the current consulting patient to prescribing and open prescription panel
+        QueueEntry currentConsulting = consultationControl.getCurrentConsultingPatient();
+        if (currentConsulting == null) {
+            JOptionPane.showMessageDialog(this, "No patient currently consulting.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        currentConsulting.markPrescriptioning();
+        consultationControl.saveData();
+        mainFrame.showPanel("prescriptionPanel");
+        JOptionPane.showMessageDialog(this,
+                "Moved to prescription for " + (currentConsulting.getPatient() != null ? currentConsulting.getPatient().getPatientName() : "patient") + ".",
+                "Proceed to Prescription", JOptionPane.INFORMATION_MESSAGE);
     }
     
     private void clearFields() {

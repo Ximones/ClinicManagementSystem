@@ -44,6 +44,8 @@ public class QueuePanel extends javax.swing.JPanel {
 
     public void refreshQueueDisplay() {
         if (queueTable == null || consultationControl == null) return;
+        // Ensure we see updates made by PatientManagement queue panel
+        consultationControl.reloadQueue();
         DefaultTableModel model = (DefaultTableModel) queueTable.getModel();
         model.setRowCount(0);
         List<QueueEntry> entries = consultationControl.getAllQueueEntries();
@@ -134,8 +136,17 @@ public class QueuePanel extends javax.swing.JPanel {
             }
             
             refreshQueueDisplay();
-            JOptionPane.showMessageDialog(this, 
-                "Started consultation for " + nextPatient.getPatient().getPatientName(), 
+            // Also mark latest consultation for this patient as In Progress
+            try {
+                java.util.List<enitity.Consultation> list = consultationControl.getConsultationsByPatient(nextPatient.getPatient().getPatientID());
+                if (!list.isEmpty()) {
+                    enitity.Consultation latest = list.get(list.size() - 1);
+                    consultationControl.updateConsultationStatus(latest.getConsultationID(), "In Progress");
+                }
+            } catch (Exception ignore) {}
+
+            JOptionPane.showMessageDialog(this,
+                "Started consultation for " + nextPatient.getPatient().getPatientName(),
                 "Consultation Started", JOptionPane.INFORMATION_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(this, "Failed to start consultation.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -156,7 +167,7 @@ public class QueuePanel extends javax.swing.JPanel {
             "Complete Consultation", JOptionPane.YES_NO_OPTION);
             
         if (choice == JOptionPane.YES_OPTION) {
-            // Mark patient as prescriptioning
+            // Mark patient as prescribing
             currentConsulting.markPrescriptioning();
             consultationControl.saveData();
             
@@ -165,7 +176,7 @@ public class QueuePanel extends javax.swing.JPanel {
             
             refreshQueueDisplay();
             JOptionPane.showMessageDialog(this, 
-                "Consultation completed. Patient moved to prescription phase.", 
+                "Consultation completed. Patient moved to prescribing phase.", 
                 "Consultation Completed", JOptionPane.INFORMATION_MESSAGE);
         }
     }

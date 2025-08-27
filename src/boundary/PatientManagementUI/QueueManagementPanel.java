@@ -43,20 +43,48 @@ public class QueueManagementPanel extends javax.swing.JPanel {
     }
     
     private void loadQueueData() {
-    DoublyLinkedList<QueueEntry> savedQueue =
-        (DoublyLinkedList<QueueEntry>) utility.FileUtils.readDataFromFile("queue");
+    try {
+        // Try to load in new format (Pair<String, QueueEntry>)
+        DoublyLinkedList<Pair<String, QueueEntry>> savedQueuePair =
+            (DoublyLinkedList<Pair<String, QueueEntry>>) utility.FileUtils.readDataFromFile("queue");
 
-    if (savedQueue != null) {
-        queueList = savedQueue;
-    } else {
-        queueList = new DoublyLinkedList<>();
+        if (savedQueuePair != null && !savedQueuePair.isEmpty()) {
+            // Convert Pair format to QueueEntry format for this panel
+            queueList = new DoublyLinkedList<>();
+            for (Pair<String, QueueEntry> pair : savedQueuePair) {
+                queueList.insertLast(pair.getValue());
+            }
+        } else {
+            queueList = new DoublyLinkedList<>();
+        }
+    } catch (ClassCastException e) {
+        // Handle old format (direct QueueEntry objects)
+        try {
+            DoublyLinkedList<QueueEntry> savedQueue =
+                (DoublyLinkedList<QueueEntry>) utility.FileUtils.readDataFromFile("queue");
+
+            if (savedQueue != null) {
+                queueList = savedQueue;
+            } else {
+                queueList = new DoublyLinkedList<>();
+            }
+        } catch (Exception ex) {
+            System.err.println("Error loading queue data: " + ex.getMessage());
+            queueList = new DoublyLinkedList<>();
+        }
     }
 }
 
 
     
     private void saveQueueData() {
-    utility.FileUtils.writeDataToFile("queue", queueList);
+    // Convert QueueEntry format to Pair format for saving to maintain consistency
+    DoublyLinkedList<Pair<String, QueueEntry>> pairQueueList = new DoublyLinkedList<>();
+    for (QueueEntry entry : queueList) {
+        Pair<String, QueueEntry> pair = new Pair<>(entry.getQueueNumber(), entry);
+        pairQueueList.insertLast(pair);
+    }
+    utility.FileUtils.writeDataToFile("queue", pairQueueList);
 }
     
 private void displayQueueData() {

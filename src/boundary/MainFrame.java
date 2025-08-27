@@ -191,6 +191,26 @@ public class MainFrame extends javax.swing.JFrame {
                 }
                 break;
             }
+            case "appointmentPanel": {
+                java.awt.Component comp = null;
+                for (java.awt.Component c : cardPanel.getComponents()) {
+                    if (c instanceof boundary.ConsultationManagementUI.AppointmentPanel) { comp = c; break; }
+                }
+                if (comp instanceof boundary.ConsultationManagementUI.AppointmentPanel) {
+                    ((boundary.ConsultationManagementUI.AppointmentPanel) comp).reloadData();
+                }
+                break;
+            }
+            case "consultationReports": {
+                java.awt.Component comp = null;
+                for (java.awt.Component c : cardPanel.getComponents()) {
+                    if (c instanceof boundary.ConsultationManagementUI.ConsultationReportsPanel) { comp = c; break; }
+                }
+                if (comp instanceof boundary.ConsultationManagementUI.ConsultationReportsPanel) {
+                    ((boundary.ConsultationManagementUI.ConsultationReportsPanel) comp).reloadData();
+                }
+                break;
+            }
             default:
                 break;
         }

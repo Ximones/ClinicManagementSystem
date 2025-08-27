@@ -464,6 +464,7 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         int waitingPatients = 0;
         int consultingPatients = 0;
         int completedPatients = 0;
+        int prescribingPatients = 0;
         long totalWaitingTime = 0;
         
         for (QueueEntry entry : queueEntries) {
@@ -477,6 +478,9 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
                 case "Done":
                     completedPatients++;
                     break;
+                case "Prescribing":
+                    prescribingPatients++;
+                    break;
             }
             totalWaitingTime += entry.getWaitingTimeMillis();
         }
@@ -484,6 +488,7 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         report.append("Total Patients in Queue: ").append(totalPatients).append("\n");
         report.append("Currently Waiting: ").append(waitingPatients).append("\n");
         report.append("Currently Consulting: ").append(consultingPatients).append("\n");
+        report.append("Currently Prescribing: ").append(prescribingPatients).append("\n");
         report.append("Completed: ").append(completedPatients).append("\n\n");
         
         if (totalPatients > 0) {
