@@ -3,27 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/utility/ReportGenerator.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/ClinicMenuPanel.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/DoctorManagementUI/DoctorSchedulePanel.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/control/TreatmentControl.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/PatientManagementUI/PatientRegistrationPanel.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/PatientManagementUI/QueueDialog.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/PatientManagementUI/PatientDialog.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/MedicalTreatmentManagementUI/DiagnosisEntryPanel.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/MainFrame.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/adt/MapInterface.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/adt/ListMap.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/MedicalTreatmentManagementUI/TreatmentHistoryPanel.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/MedicalTreatmentManagementUI/MedicalTreatmentManagementPanel.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/ConsultationManagementUI/ConsultationPanel.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/PharmacyManagementUI/DispenseMedicinePanel.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/adt/DoublyLinkedListIterator.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/adt/Pair.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/adt/StackInterface.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/adt/DoublyLinkedList.java</file>
-            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/DoctorManagementUI/DoctorEditDialog.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/MedicalTreatmentManagementUI/TreatmentEditDialog.java</file>
+            <file>file:/C:/Users/User/Documents/NetBeansProjects/ClinicManagementSystem/src/utility/ReportGenerator.java</file>
         </group>
     </open-files>
 </project-private>

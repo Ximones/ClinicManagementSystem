@@ -22,7 +22,7 @@ import utility.ReportGenerator;
  * @author User
  */
 public class TreatmentHistoryPanel extends javax.swing.JPanel {
-
+    
     private MainFrame mainFrame;
     private TreatmentControl treatmentControl = new TreatmentControl();
     private DoublyLinkedList<Pair<String, Treatment>> masterTreatmentList;
@@ -64,7 +64,7 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         model.addColumn("Doctor ID");
         model.addColumn("Doctor Name");
         model.addColumn("Diagnosis");
-        model.addColumn("Treatment Details");
+        model.addColumn("Treatment Type");
         model.addColumn("Cost (RM)");
         model.addColumn("Date & Time");
     }
@@ -125,7 +125,7 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
             }
         }
         populateTable(searchResults);
-    }  
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -150,7 +150,8 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         editButton = new javax.swing.JButton();
         report1Button = new javax.swing.JButton();
         report2Button = new javax.swing.JButton();
-        costReportButton = new javax.swing.JButton();
+        revenueReportButton = new javax.swing.JButton();
+        refreshButton = new javax.swing.JButton();
         backButton = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
@@ -227,13 +228,21 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         });
         ButtonPanel.add(report2Button);
 
-        costReportButton.setText("Treatment Cost Analysis");
-        costReportButton.addActionListener(new java.awt.event.ActionListener() {
+        revenueReportButton.setText("Monthly Revenue Report");
+        revenueReportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                costReportButtonActionPerformed(evt);
+                revenueReportButtonActionPerformed(evt);
             }
         });
-        ButtonPanel.add(costReportButton);
+        ButtonPanel.add(revenueReportButton);
+
+        refreshButton.setText("Refresh");
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
+        ButtonPanel.add(refreshButton);
 
         backButton.setText("Back");
         backButton.addActionListener(new java.awt.event.ActionListener() {
@@ -300,31 +309,38 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         populateTable(sortedList);
     }//GEN-LAST:event_sortComboBoxActionPerformed
 
-    private void costReportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_costReportButtonActionPerformed
+    private void revenueReportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revenueReportButtonActionPerformed
+        loadAndDisplayTreatments(); // Ensure data is fresh before generating report
         if (masterTreatmentList.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No treatment data to generate report.", "Report Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        ReportGenerator.generateTreatmentCostReport(masterTreatmentList);
-        JOptionPane.showMessageDialog(this, "Treatment Cost Analysis Report generated!", "Success", JOptionPane.INFORMATION_MESSAGE);
-    }//GEN-LAST:event_costReportButtonActionPerformed
+        ReportGenerator.generateMonthlyRevenueReport(masterTreatmentList);
+        JOptionPane.showMessageDialog(this, "Report generated: 'Monthly_Revenue_Report_Report.pdf'", "Success", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_revenueReportButtonActionPerformed
 
     private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
         mainFrame.showPanel("medicalManagement");
     }//GEN-LAST:event_backButtonActionPerformed
 
+    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+        loadAndDisplayTreatments();
+        JOptionPane.showMessageDialog(this, "Treatment history has been refreshed.", "Refresh Complete", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_refreshButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ButtonPanel;
     private javax.swing.JButton backButton;
-    private javax.swing.JButton costReportButton;
     private javax.swing.JButton editButton;
     private javax.swing.JLabel filterLabel;
     private javax.swing.JTable historyTable;
     private javax.swing.JScrollPane historyTablePanel;
     private javax.swing.JLabel logoLabel;
+    private javax.swing.JButton refreshButton;
     private javax.swing.JButton report1Button;
     private javax.swing.JButton report2Button;
+    private javax.swing.JButton revenueReportButton;
     private javax.swing.JTextField searchInput;
     private javax.swing.JPanel searchPanel;
     private javax.swing.JPanel searchWrapperPanel;

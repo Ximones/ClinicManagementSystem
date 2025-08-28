@@ -684,57 +684,57 @@ public class ReportGenerator {
     }
 
      /**
-     * NEW REPORT: Generates a PDF report analyzing treatment costs by doctor.
-     * This version uses a DoublyLinkedList to simulate a map.
+     * NEW REPORT: Generates a PDF report analyzing treatment revenue by month.
      * @param masterTreatmentList The complete list of all treatments.
      */
-    public static void generateTreatmentCostReport(DoublyLinkedList<Pair<String, Treatment>> masterTreatmentList) {
+    public static void generateMonthlyRevenueReport(DoublyLinkedList<Pair<String, Treatment>> masterTreatmentList) {
         try {
-            // --- 1. Aggregate Data using a DoublyLinkedList of Pairs ---
-            DoublyLinkedList<Pair<String, Double>> doctorRevenue = new DoublyLinkedList<>();
-            
+            // --- 1. Aggregate Data by Month using a DoublyLinkedList to simulate a map ---
+            DoublyLinkedList<Pair<String, Double>> monthlyRevenue = new DoublyLinkedList<>();
+            DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("yyyy-MM");
+
             for (Pair<String, Treatment> pair : masterTreatmentList) {
                 Treatment t = pair.getValue();
-                String doctorName = t.getConsultation().getDoctor().getName();
+                String monthYear = t.getTreatmentDateTime().format(monthFormatter);
                 boolean found = false;
 
-                // Search for the doctor in our revenue list
-                for (Pair<String, Double> revenuePair : doctorRevenue) {
-                    if (revenuePair.getKey().equals(doctorName)) {
+                // Search for the month in our revenue list
+                for (Pair<String, Double> revenuePair : monthlyRevenue) {
+                    if (revenuePair.getKey().equals(monthYear)) {
                         revenuePair.setValue(revenuePair.getValue() + t.getCost());
                         found = true;
                         break;
                     }
                 }
 
-                // If doctor not found, add a new entry
+                // If month not found, add a new entry
                 if (!found) {
-                    doctorRevenue.insertLast(new Pair<>(doctorName, t.getCost()));
+                    monthlyRevenue.insertLast(new Pair<>(monthYear, t.getCost()));
                 }
             }
 
             // --- 2. Create Bar Chart ---
             DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-            for (Pair<String, Double> entry : doctorRevenue) {
+            for (Pair<String, Double> entry : monthlyRevenue) {
                 dataset.addValue(entry.getValue(), "Revenue", entry.getKey());
             }
 
             JFreeChart barChart = ChartFactory.createBarChart(
-                "Treatment Revenue by Doctor",
-                "Doctor",
-                "Total Cost (RM)",
+                "Monthly Treatment Revenue",
+                "Month",
+                "Total Revenue (RM)",
                 dataset
             );
 
-            File chartFile = new File("treatment_cost_chart.png");
-            ChartUtils.saveChartAsPNG(chartFile, barChart, 600, 400);
+            File chartFile = new File("monthly_revenue_chart.png");
+            ChartUtils.saveChartAsPNG(chartFile, barChart, 700, 400);
 
             // --- 3. Create PDF ---
-            PdfWriter writer = new PdfWriter("Treatment_Cost_Analysis_Report.pdf");
+            PdfWriter writer = new PdfWriter("Monthly_Revenue_Report.pdf");
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf);
 
-            document.add(new Paragraph("Treatment Cost Analysis Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("Monthly Treatment Revenue Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph(" "));
             
             Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));

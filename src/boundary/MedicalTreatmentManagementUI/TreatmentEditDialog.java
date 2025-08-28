@@ -4,9 +4,11 @@
  */
 package boundary.MedicalTreatmentManagementUI;
 
+import adt.DoublyLinkedList;
 import adt.Pair;
 import control.TreatmentControl;
 import enitity.Treatment;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import utility.ImageUtils;
 
@@ -17,24 +19,38 @@ import utility.ImageUtils;
 public class TreatmentEditDialog extends javax.swing.JDialog {
 
     private TreatmentControl treatmentControl;
-    private Treatment treatmentToEdit; // The treatment object being edited
+    private Treatment treatmentToEdit;
+    private DoublyLinkedList<Pair<String, Double>> treatmentTypes = new DoublyLinkedList<>();
 
-    /**
-     * Creates new form TreatmentEditDialog
-     */
     public TreatmentEditDialog(java.awt.Frame parent, boolean modal, TreatmentControl control) {
         super(parent, modal);
         this.treatmentControl = control;
         initComponents();
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
         setLocationRelativeTo(parent);
-        setFieldsEditable(false); // Fields are disabled until a treatment is found
+        
+        initializeTreatmentTypes();
+        setFieldsEditable(false);
+    }
+    
+    private void initializeTreatmentTypes() {
+        treatmentTypes.insertLast(new Pair<>("Standard Consultation", 30.00));
+        treatmentTypes.insertLast(new Pair<>("Minor Wound Dressing", 50.00));
+        treatmentTypes.insertLast(new Pair<>("Vaccination Shot", 80.00));
+        treatmentTypes.insertLast(new Pair<>("Blood Test", 120.00));
+        treatmentTypes.insertLast(new Pair<>("Specialist Referral", 20.00));
+        
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        model.addElement("-- Select Treatment Type --");
+        for (Pair<String, Double> pair : treatmentTypes) {
+            model.addElement(pair.getKey() + String.format(" (RM %.2f)", pair.getValue()));
+        }
+        treatmentTypeComboBox.setModel(model);
     }
 
     private void setFieldsEditable(boolean editable) {
         diagnosisInput.setEditable(editable);
-        treatmentDetailsInput.setEditable(editable);
-        costInput.setEditable(editable);
+        treatmentTypeComboBox.setEnabled(editable);
         notesInput.setEditable(editable);
         saveButton.setEnabled(editable);
     }
@@ -62,10 +78,7 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
         diagnosisLabel = new javax.swing.JLabel();
         diagnosisInput = new javax.swing.JTextField();
         treatmentDetailsLabel = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        treatmentDetailsInput = new javax.swing.JTextArea();
-        costLabel = new javax.swing.JLabel();
-        costInput = new javax.swing.JTextField();
+        treatmentTypeComboBox = new javax.swing.JComboBox<>();
         notesLabel = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         notesInput = new javax.swing.JTextArea();
@@ -108,7 +121,7 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
         formGridPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder(""), "Treatment Information :", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Corbel", 1, 14))); // NOI18N
         formGridPanel.setMinimumSize(new java.awt.Dimension(350, 228));
         formGridPanel.setPreferredSize(new java.awt.Dimension(300, 270));
-        formGridPanel.setLayout(new java.awt.GridLayout(5, 2, 5, 15));
+        formGridPanel.setLayout(new java.awt.GridLayout(4, 2, 5, 15));
 
         treatmentIdLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         treatmentIdLabel.setText("ID :");
@@ -131,21 +144,10 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
         formGridPanel.add(diagnosisInput);
 
         treatmentDetailsLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        treatmentDetailsLabel.setText("Details:");
+        treatmentDetailsLabel.setText("Type :");
         formGridPanel.add(treatmentDetailsLabel);
 
-        treatmentDetailsInput.setColumns(20);
-        treatmentDetailsInput.setRows(5);
-        jScrollPane1.setViewportView(treatmentDetailsInput);
-
-        formGridPanel.add(jScrollPane1);
-
-        costLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        costLabel.setText("Cost (RM):");
-        formGridPanel.add(costLabel);
-
-        costInput.setColumns(15);
-        formGridPanel.add(costInput);
+        formGridPanel.add(treatmentTypeComboBox);
 
         notesLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         notesLabel.setText("Notes :");
@@ -190,31 +192,17 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        if (treatmentToEdit == null) {
-            return; // Should not happen if button is disabled correctly
-        }
+        if (treatmentToEdit == null) return;
 
-        // --- VALIDATION LOGIC (same as your DiagnosisEntryPanel) ---
         StringBuilder errors = new StringBuilder();
         String diagnosis = diagnosisInput.getText().trim();
-        String details = treatmentDetailsInput.getText().trim();
-        String costStr = costInput.getText().trim();
-        String notes = notesInput.getText().trim();
+        int treatmentTypeIndex = treatmentTypeComboBox.getSelectedIndex();
 
-        if (diagnosis.isEmpty() || details.isEmpty() || costStr.isEmpty()) {
-            errors.append("- Diagnosis, Details, and Cost cannot be empty.\n");
+        if (diagnosis.isEmpty()) {
+            errors.append("- Diagnosis cannot be empty.\n");
         }
-        
-        double cost = 0.0;
-        if (!costStr.isEmpty()) {
-            try {
-                cost = Double.parseDouble(costStr);
-                if (cost < 0) {
-                    errors.append("- Cost cannot be a negative number.\n");
-                }
-            } catch (NumberFormatException e) {
-                errors.append("- Cost must be a valid number.\n");
-            }
+        if (treatmentTypeIndex <= 0) {
+            errors.append("- Please select a treatment type.\n");
         }
         
         if (errors.length() > 0) {
@@ -222,17 +210,20 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
             return;
         }
 
-        // Update the treatment object
-        treatmentToEdit.setDiagnosis(diagnosis);
-        treatmentToEdit.setTreatmentDetails(details);
-        treatmentToEdit.setCost(cost);
-        treatmentToEdit.setNotes(notes);
+        Pair<String, Double> selectedTreatmentPair = treatmentTypes.getElement(treatmentTypeIndex).getEntry();
+        String newDetails = selectedTreatmentPair.getKey();
+        double newCost = selectedTreatmentPair.getValue();
+        String newNotes = notesInput.getText().trim();
 
-        // Call control to save the updated list
+        treatmentToEdit.setDiagnosis(diagnosis);
+        treatmentToEdit.setTreatmentDetails(newDetails);
+        treatmentToEdit.setCost(newCost);
+        treatmentToEdit.setNotes(newNotes);
+
         treatmentControl.updateTreatment();
         
         JOptionPane.showMessageDialog(this, "Treatment " + treatmentToEdit.getTreatmentID() + " updated successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
-        this.dispose(); // Close the dialog
+        this.dispose();
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
@@ -249,16 +240,23 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
         treatmentToEdit = treatmentControl.findTreatmentById(idToSearch);
 
         if (treatmentToEdit != null) {
-            // Populate the form with the found treatment's data
             treatmentIdField.setText(treatmentToEdit.getTreatmentID());
             diagnosisInput.setText(treatmentToEdit.getDiagnosis());
-            treatmentDetailsInput.setText(treatmentToEdit.getTreatmentDetails());
-            costInput.setText(String.format("%.2f", treatmentToEdit.getCost()));
             notesInput.setText(treatmentToEdit.getNotes());
-            setFieldsEditable(true); // Enable fields for editing
+            
+            // Find and select the matching treatment type in the combo box
+            for (int i = 1; i < treatmentTypeComboBox.getItemCount(); i++) {
+                String item = (String) treatmentTypeComboBox.getItemAt(i);
+                if (item.startsWith(treatmentToEdit.getTreatmentDetails())) {
+                    treatmentTypeComboBox.setSelectedIndex(i);
+                    break;
+                }
+            }
+            
+            setFieldsEditable(true);
         } else {
             JOptionPane.showMessageDialog(this, "Treatment with ID '" + idToSearch + "' not found.", "Not Found", JOptionPane.WARNING_MESSAGE);
-            setFieldsEditable(false); // Keep fields disabled
+            setFieldsEditable(false);
         }
     }//GEN-LAST:event_searchButtonActionPerformed
 
@@ -274,15 +272,12 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JTextField costInput;
-    private javax.swing.JLabel costLabel;
     private javax.swing.JTextField diagnosisInput;
     private javax.swing.JLabel diagnosisLabel;
     private javax.swing.JPanel formGridPanel;
     private javax.swing.JPanel formWrapperPanel;
     private javax.swing.JPanel getContentPane;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JPanel logoPanel;
@@ -294,9 +289,9 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
     private javax.swing.JLabel searchLabel;
     private javax.swing.JPanel searchPanel;
     private javax.swing.JPanel titlePanel;
-    private javax.swing.JTextArea treatmentDetailsInput;
     private javax.swing.JLabel treatmentDetailsLabel;
     private javax.swing.JTextField treatmentIdField;
     private javax.swing.JLabel treatmentIdLabel;
+    private javax.swing.JComboBox<String> treatmentTypeComboBox;
     // End of variables declaration//GEN-END:variables
 }
