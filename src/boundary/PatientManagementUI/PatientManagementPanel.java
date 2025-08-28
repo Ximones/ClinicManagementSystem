@@ -39,10 +39,10 @@ public class PatientManagementPanel extends javax.swing.JPanel {
         buttonWrapperPanel = new javax.swing.JPanel();
         buttonWrapper = new javax.swing.JPanel();
         buttonPanel = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
+        PatientManagement = new javax.swing.JButton();
+        PatientQueue = new javax.swing.JButton();
+        MainMenu = new javax.swing.JButton();
+        Exit = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
         add(logoLabel, java.awt.BorderLayout.PAGE_START);
@@ -59,41 +59,41 @@ public class PatientManagementPanel extends javax.swing.JPanel {
 
         buttonPanel.setLayout(new java.awt.GridLayout(3, 2, 50, 50));
 
-        jButton1.setText("Patient Management");
-        jButton1.setPreferredSize(new java.awt.Dimension(200, 50));
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        PatientManagement.setText("Patient Management");
+        PatientManagement.setPreferredSize(new java.awt.Dimension(200, 50));
+        PatientManagement.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                PatientManagementActionPerformed(evt);
             }
         });
-        buttonPanel.add(jButton1);
+        buttonPanel.add(PatientManagement);
 
-        jButton3.setText("Patient Queue");
-        jButton3.setPreferredSize(new java.awt.Dimension(200, 50));
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        PatientQueue.setText("Patient Queue");
+        PatientQueue.setPreferredSize(new java.awt.Dimension(200, 50));
+        PatientQueue.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                PatientQueueActionPerformed(evt);
             }
         });
-        buttonPanel.add(jButton3);
+        buttonPanel.add(PatientQueue);
 
-        jButton2.setText("Main Menu");
-        jButton2.setPreferredSize(new java.awt.Dimension(200, 50));
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        MainMenu.setText("Main Menu");
+        MainMenu.setPreferredSize(new java.awt.Dimension(200, 50));
+        MainMenu.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                MainMenuActionPerformed(evt);
             }
         });
-        buttonPanel.add(jButton2);
+        buttonPanel.add(MainMenu);
 
-        jButton5.setText("Exit");
-        jButton5.setPreferredSize(new java.awt.Dimension(200, 50));
-        jButton5.addActionListener(new java.awt.event.ActionListener() {
+        Exit.setText("Exit");
+        Exit.setPreferredSize(new java.awt.Dimension(200, 50));
+        Exit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton5ActionPerformed(evt);
+                ExitActionPerformed(evt);
             }
         });
-        buttonPanel.add(jButton5);
+        buttonPanel.add(Exit);
 
         buttonWrapper.add(buttonPanel);
 
@@ -104,31 +104,31 @@ public class PatientManagementPanel extends javax.swing.JPanel {
         add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void PatientManagementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_PatientManagementActionPerformed
         mainFrame.showPanel("patientRegistration");
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_PatientManagementActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void PatientQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_PatientQueueActionPerformed
         mainFrame.showPanel("queueManagement");
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_PatientQueueActionPerformed
 
-    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+    private void ExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExitActionPerformed
        mainFrame.dispose();
-    }//GEN-LAST:event_jButton5ActionPerformed
+    }//GEN-LAST:event_ExitActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void MainMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MainMenuActionPerformed
         mainFrame.showPanel("clinicMenu");
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_MainMenuActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Exit;
+    private javax.swing.JButton MainMenu;
+    private javax.swing.JButton PatientManagement;
+    private javax.swing.JButton PatientQueue;
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JPanel buttonWrapper;
     private javax.swing.JPanel buttonWrapperPanel;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton5;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;

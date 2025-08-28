@@ -777,19 +777,16 @@ public class ConsultationControl {
      * @return true if completed successfully, false otherwise
      */
     public boolean completeConsultation(String queueNumber) {
-        for (int i = 1; i <= queueList.getSize(); i++) {
-            Node<Pair<String, QueueEntry>> node = queueList.getElement(i);
-            if (node != null && node.getEntry().getKey().equals(queueNumber)) {
-                // Mark as done before removing
-                node.getEntry().getValue().markConsultationDone();
-                // Remove from queue
-                queueList.deleteAtPosition(i);
-                saveData();
-                return true;
-            }
+        for (Pair<String, QueueEntry> pair : queueList) {
+        QueueEntry entry = pair.getValue();
+           if (entry.getQueueNumber().equals(queueNumber)) {
+            entry.markConsultationDone();  // ✅ only mark Done
+            saveData();                   // ✅ keep in queue file
+            return true;
         }
-        return false;
     }
+    return false;
+}
 
     /**
      * Gets the current consulting patient (first patient with "Consulting" status)
@@ -1001,19 +998,17 @@ public class ConsultationControl {
      * @return true if completed successfully, false otherwise
      */
     public boolean completeConsultationAndPrescription(String queueNumber) {
-        for (int i = 1; i <= queueList.getSize(); i++) {
-            Node<Pair<String, QueueEntry>> node = queueList.getElement(i);
-            if (node != null && node.getEntry().getKey().equals(queueNumber)) {
-                // Mark as done before removing
-                node.getEntry().getValue().markConsultationDone();
-                // Remove from queue
-                queueList.deleteAtPosition(i);
-                saveData();
-                return true;
-            }
+         for (Pair<String, QueueEntry> pair : queueList) {
+        QueueEntry entry = pair.getValue();
+          if (entry.getQueueNumber().equals(queueNumber)) {
+            entry.markConsultationDone();  // ✅ only mark Done
+            saveData();
+            return true;
         }
-        return false;
+      }
+    return false;
     }
+
 
     /**
      * Gets the current prescriptioning patient (first patient with "Prescriptioning" status)
