@@ -5,15 +5,10 @@
 package control;
 
 import adt.DoublyLinkedList;
-import adt.ListMap;
-import adt.MapInterface;
-import adt.ListStack;
 import adt.Pair;
-import adt.StackInterface;
 import enitity.Consultation;
 import enitity.Treatment;
 import utility.FileUtils;
-import adt.ListMap;
 
 /**
  *

@@ -2,8 +2,6 @@ package utility;
 
 import adt.DoublyLinkedList;
 import adt.Pair;
-import adt.MapInterface;
-import adt.ListMap;
 import enitity.Doctor;
 import enitity.Treatment;
 import java.io.File;
@@ -596,11 +594,8 @@ public class ReportGenerator {
     }
 
     /**
-     * REPORT 1: Generates a PDF report showing the frequency of common
-     * diagnoses.
-     *
-     * @param frequencyData A list of pairs, where each pair is (Diagnosis,
-     * Count).
+     * REPORT 1: Generates a PDF report showing the frequency of common diagnoses.
+     * @param frequencyData A list of pairs, where each pair is (Diagnosis, Count).
      */
     public static void generateDiagnosisFrequencyReport(DoublyLinkedList<Pair<String, Integer>> frequencyData) {
         try {
@@ -625,7 +620,7 @@ public class ReportGenerator {
             document.add(new Paragraph("Common Diagnoses Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph("This report shows the distribution of diagnoses recorded.").setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph(" "));
-
+            
             Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
             document.add(chartImage);
 
@@ -638,9 +633,7 @@ public class ReportGenerator {
     }
 
     /**
-     * REPORT 2: Generates a PDF report detailing a single patient's medical
-     * history.
-     *
+     * REPORT 2: Generates a PDF report detailing a single patient's medical history.
      * @param patientHistory A list of treatments for a single patient.
      */
     public static void generatePatientHistoryReport(DoublyLinkedList<Treatment> patientHistory) {
@@ -690,34 +683,47 @@ public class ReportGenerator {
         }
     }
 
-    /**
+     /**
      * NEW REPORT: Generates a PDF report analyzing treatment costs by doctor.
-     *
+     * This version uses a DoublyLinkedList to simulate a map.
      * @param masterTreatmentList The complete list of all treatments.
      */
     public static void generateTreatmentCostReport(DoublyLinkedList<Pair<String, Treatment>> masterTreatmentList) {
         try {
-            // --- 1. Aggregate Data using a Map ---
-            MapInterface<String, Double> doctorRevenue = new ListMap<>();
+            // --- 1. Aggregate Data using a DoublyLinkedList of Pairs ---
+            DoublyLinkedList<Pair<String, Double>> doctorRevenue = new DoublyLinkedList<>();
+            
             for (Pair<String, Treatment> pair : masterTreatmentList) {
                 Treatment t = pair.getValue();
                 String doctorName = t.getConsultation().getDoctor().getName();
-                double currentRevenue = doctorRevenue.getValue(doctorName) == null ? 0.0 : doctorRevenue.getValue(doctorName);
-                doctorRevenue.add(doctorName, currentRevenue + t.getCost());
+                boolean found = false;
+
+                // Search for the doctor in our revenue list
+                for (Pair<String, Double> revenuePair : doctorRevenue) {
+                    if (revenuePair.getKey().equals(doctorName)) {
+                        revenuePair.setValue(revenuePair.getValue() + t.getCost());
+                        found = true;
+                        break;
+                    }
+                }
+
+                // If doctor not found, add a new entry
+                if (!found) {
+                    doctorRevenue.insertLast(new Pair<>(doctorName, t.getCost()));
+                }
             }
 
             // --- 2. Create Bar Chart ---
             DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-            DoublyLinkedList<Pair<String, Double>> revenueList = ((ListMap<String, Double>) doctorRevenue).getPairList();
-            for (Pair<String, Double> entry : revenueList) {
+            for (Pair<String, Double> entry : doctorRevenue) {
                 dataset.addValue(entry.getValue(), "Revenue", entry.getKey());
             }
 
             JFreeChart barChart = ChartFactory.createBarChart(
-                    "Treatment Revenue by Doctor",
-                    "Doctor",
-                    "Total Cost (RM)",
-                    dataset
+                "Treatment Revenue by Doctor",
+                "Doctor",
+                "Total Cost (RM)",
+                dataset
             );
 
             File chartFile = new File("treatment_cost_chart.png");
@@ -730,7 +736,7 @@ public class ReportGenerator {
 
             document.add(new Paragraph("Treatment Cost Analysis Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph(" "));
-
+            
             Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
             document.add(chartImage);
 

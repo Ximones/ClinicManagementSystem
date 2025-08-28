@@ -5,7 +5,7 @@
 package boundary.MedicalTreatmentManagementUI;
 
 import adt.DoublyLinkedList;
-import adt.ListStack;
+
 import adt.Pair;
 import boundary.MainFrame;
 import control.TreatmentControl;
