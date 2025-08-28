@@ -22,19 +22,17 @@ import adt.ListMap;
 public class TreatmentControl {
 
     private DoublyLinkedList<Pair<String, Treatment>> treatmentList;
-    private StackInterface<Treatment> recentTreatmentsStack; // STACK ADDED HERE
+    private DoublyLinkedList<Treatment> recentTreatmentsList; 
 
     public TreatmentControl() {
-        // Load existing treatments from file when the control is created
         this.treatmentList = (DoublyLinkedList<Pair<String, Treatment>>) FileUtils.readDataFromFile("treatments");
         if (this.treatmentList == null) {
             this.treatmentList = new DoublyLinkedList<>();
         }
         
-        // Initialize the stack for this session
-        this.recentTreatmentsStack = new ListStack<>();
+        // Initialize the list for this session
+        this.recentTreatmentsList = new DoublyLinkedList<>();
         
-        // After loading, find the highest ID to set the static counter
         if (!treatmentList.isEmpty()) {
             int maxId = 0;
             for (Pair<String, Treatment> pair : treatmentList) {
@@ -56,18 +54,13 @@ public class TreatmentControl {
      * @param notes Any additional notes.
      */
     public void addTreatment(Consultation consultation, String diagnosis, String details, double cost, String notes) {
-        // Create a new Treatment object
         Treatment newTreatment = new Treatment(consultation, diagnosis, details, cost, notes);
-
-        // Create a Pair to store in the list
         Pair<String, Treatment> treatmentPair = new Pair<>(newTreatment.getTreatmentID(), newTreatment);
-
-        // Add to the list and save to file
         treatmentList.insertLast(treatmentPair);
         FileUtils.writeDataToFile("treatments", treatmentList);
         
-        // PUSH TO STACK
-        recentTreatmentsStack.push(newTreatment);
+        // SIMULATE PUSH: Add to the front of the list to act like a stack
+        recentTreatmentsList.insertFirst(newTreatment);
     }
 
     /**
@@ -82,8 +75,8 @@ public class TreatmentControl {
      * Retrieves the stack of recently added treatments.
      * @return The stack of recent treatments.
      */
-    public StackInterface<Treatment> getRecentTreatmentsStack() {
-        return recentTreatmentsStack;
+     public DoublyLinkedList<Treatment> getRecentTreatmentsList() {
+        return recentTreatmentsList;
     }
     
     /**
@@ -138,22 +131,33 @@ public class TreatmentControl {
     }
 
     /**
-     * Counts the frequency of each diagnosis using a Map ADT.
+     * Counts the frequency of each diagnosis using a DoublyLinkedList of Pairs
+     * to simulate a map.
      * @return A list of pairs, where each pair is (Diagnosis, Count).
      */
     public DoublyLinkedList<Pair<String, Integer>> getDiagnosisFrequency() {
-        MapInterface<String, Integer> frequencyMap = new ListMap<>();
+        DoublyLinkedList<Pair<String, Integer>> frequencyList = new DoublyLinkedList<>();
+        
         for (Pair<String, Treatment> pair : treatmentList) {
             String diagnosis = pair.getValue().getDiagnosis();
-            Integer count = frequencyMap.getValue(diagnosis);
-            if (count == null) {
-                frequencyMap.add(diagnosis, 1);
-            } else {
-                frequencyMap.add(diagnosis, count + 1);
+            boolean found = false;
+
+            // Iterate through the frequency list to find if the diagnosis already exists
+            for (Pair<String, Integer> freqPair : frequencyList) {
+                if (freqPair.getKey().equals(diagnosis)) {
+                    // If found, increment the count
+                    freqPair.setValue(freqPair.getValue() + 1);
+                    found = true;
+                    break;
+                }
+            }
+
+            // If not found after checking the whole list, add it as a new entry
+            if (!found) {
+                frequencyList.insertLast(new Pair<>(diagnosis, 1));
             }
         }
-        // Convert the map back to a list for the report generator
-        return ((ListMap<String, Integer>) frequencyMap).getPairList();
+        return frequencyList;
     }
 
     /**

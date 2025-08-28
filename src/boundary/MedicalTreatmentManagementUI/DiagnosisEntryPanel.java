@@ -27,20 +27,15 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     private TreatmentControl treatmentControl = new TreatmentControl();
     private DoublyLinkedList<Pair<String, Consultation>> consultationList;
 
-    /**
-     * Creates new form DiagnosisEntryPanel
-     * @param mainFrame
-     */
     public DiagnosisEntryPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         initComponents();
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
         loadConsultations();
+        updateRecentTreatmentsDisplay();
     }
 
-    // Load ongoing consultations to the dropdown
     public void loadConsultations() {
-        // Read all consultations
         consultationList = (DoublyLinkedList<Pair<String, Consultation>>) FileUtils.readDataFromFile("consultations");
         
         DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
@@ -49,7 +44,6 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         if (consultationList != null) {
             for (Pair<String, Consultation> pair : consultationList) {
                 Consultation c = pair.getValue();
-                // Only add consultations that are "In Progress/Schedule??"
                 if ("In Progress".equalsIgnoreCase(c.getStatus())) {
                     String displayText = c.getConsultationID() + " - " + c.getPatient().getPatientName();
                     model.addElement(displayText);
@@ -59,26 +53,25 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         consultationComboBox.setModel(model);
     }
     
-    // NEW METHOD: Clears all input fields on the form.
     private void clearForm() {
         consultationComboBox.setSelectedIndex(0);
         diagnosisInput.setText("");
         treatmentDetailsInput.setText("");
         costInput.setText("");
         notesInput.setText("");
-        diagnosisInput.requestFocus(); // Set focus back to the first field
+        diagnosisInput.requestFocus();
     }
     
-    // NEW METHOD: Updates the JList with data from the stack.
     private void updateRecentTreatmentsDisplay() {
         DefaultListModel<String> model = new DefaultListModel<>();
-        ListStack<Treatment> recentStack = (ListStack<Treatment>) treatmentControl.getRecentTreatmentsStack();
+        // UPDATED: Call the new method that returns a DoublyLinkedList
+        DoublyLinkedList<Treatment> recentList = treatmentControl.getRecentTreatmentsList();
 
-        if (recentStack.isEmpty()) {
+        if (recentList.isEmpty()) {
             model.addElement("No treatments added this session.");
         } else {
-            // Use the iterator to view stack contents without removing them
-            Iterator<Treatment> iterator = recentStack.getIterator();
+            // The iterator works perfectly on the DoublyLinkedList
+            Iterator<Treatment> iterator = recentList.iterator();
             while (iterator.hasNext()) {
                 Treatment t = iterator.next();
                 model.addElement(t.getTreatmentID() + ": " + t.getDiagnosis() + " for " + t.getConsultation().getPatient().getPatientName());
