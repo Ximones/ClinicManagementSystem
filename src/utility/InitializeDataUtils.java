@@ -13,11 +13,6 @@ import enitity.Patient;
  */
 public class InitializeDataUtils {
 
-    private static DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
-    private static DoublyLinkedList<DutySlot> thisWeekSchedule = new DoublyLinkedList<>();
-    private static DoublyLinkedList<Patient> patientList = new DoublyLinkedList<>();
-    private static DoublyLinkedList<Pair<String, Medicine>> medList = new DoublyLinkedList<>();
-
     public static void initializeData() {
 
         // Pre-condition to perform reinitialize data
@@ -47,22 +42,29 @@ public class InitializeDataUtils {
             System.out.println("No data is corrupted and from file reading");
             return;
         }
-        
+
         //Initialize the data to List
-        initializeDoctorData();
-        initializeScheduleData();
-        initializePatientData();
-        initializeMedicineData();
+        DoublyLinkedList<Pair<String, Doctor>> doctorList = initializeDoctorData();
+        DoublyLinkedList<DutySlot> thisWeekSchedule = initializeScheduleData(doctorList);
+        DoublyLinkedList<Patient> patientList = initializePatientData();
+        DoublyLinkedList<Pair<String, Medicine>> medList = initializeMedicineData();
 
         // Write the List's data to each file
         FileUtils.writeDataToFile("doctors", doctorList);
         FileUtils.writeDataToFile("this_week_schedule", thisWeekSchedule);
         FileUtils.writeDataToFile("patients", patientList);
         FileUtils.writeDataToFile("medicine", medList);
+        
+        System.out.println("Doctors Data have been intialized and saved to dao/doctos.bin");
+        System.out.println("This Week Schedule Data have been intialized and saved to dao/this_week_schedule.bin");
+        System.out.println("Patients data have been intialized and saved to dao/patients.bin");
+        System.out.println("Medicines data have been intialized have been saved to dao/medicine.bin");
     }
 
     // Initialize Doctor Test Data
-    public static void initializeDoctorData() {
+    private static DoublyLinkedList<Pair<String, Doctor>> initializeDoctorData() {
+
+        DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
 
         Doctor doc1 = new Doctor("Simon", 20, "01118566866", "Doctor", "Present");
         Doctor doc2 = new Doctor("ZB", 21, "01118566866", "Doctor", "Absent");
@@ -79,12 +81,14 @@ public class InitializeDataUtils {
         doctorList.insertLast(doctorPair3);
         doctorList.insertLast(doctorPair4);
 
-        System.out.println("Doctors Data have been intialized and saved to dao/doctos.bin");
+        return doctorList;
     }
 
     // Initialize Schedule Test Data
-    public static void initializeScheduleData() {
-        
+    private static DoublyLinkedList<DutySlot> initializeScheduleData(DoublyLinkedList<Pair<String, Doctor>> doctorList) {
+
+        DoublyLinkedList<DutySlot> thisWeekSchedule = new DoublyLinkedList<>();
+
         DutySlot dataSlot1 = new DutySlot("Monday", "Morning (8am - 2pm)", doctorList.getElement(1).getEntry().getValue());
         DutySlot dataSlot2 = new DutySlot("Tuesday", "Morning (8am - 2pm)", doctorList.getElement(1).getEntry().getValue());
         DutySlot dataSlot3 = new DutySlot("Wednesday", "Morning (8am - 2pm)", doctorList.getElement(1).getEntry().getValue());
@@ -110,12 +114,14 @@ public class InitializeDataUtils {
         thisWeekSchedule.insertLast(dataSlot10);
         thisWeekSchedule.insertLast(dataSlot11);
         thisWeekSchedule.insertLast(dataSlot12);
-        
-        System.out.println("This Week Schedule Data have been intialized and saved to dao/this_week_schedule.bin");
+
+        return thisWeekSchedule;
     }
 
     // Initialize Patient Test Data
-    public static void initializePatientData() {
+    private static DoublyLinkedList<Patient> initializePatientData() {
+
+        DoublyLinkedList<Patient> patientList = new DoublyLinkedList<>();
 
         patientList.insertLast(new Patient("P001", "Ali bin Hassan", "900101-14-1122", 35, "Male",
                 "012-1111222", "ali.hassan@gmail.com",
@@ -188,11 +194,13 @@ public class InitializeDataUtils {
                 "012-9898989", "lifang.cheong97@yahoo.com",
                 "No. 10, Jalan Pasir Puteh, Ipoh, Perak", "2025-08-28"));
 
-        System.out.println("Patients data have been intialized and saved to dao/patients.bin");
+        return patientList;
     }
 
     // Initialize Medicine Test Data
-    public static void initializeMedicineData() {
+    private static DoublyLinkedList<Pair<String, Medicine>> initializeMedicineData() {
+
+        DoublyLinkedList<Pair<String, Medicine>> medList = new DoublyLinkedList<>();
 
         medList.insertLast(new Pair<>("MED001", new Medicine("MED001", "Amoxicillin", "Amoxil", "Antibiotic", "Capsule", "250mg", 160, 12.50)));
         medList.insertLast(new Pair<>("MED002", new Medicine("MED002", "Paracetamol", "Panadol", "Analgesic", "Tablet", "500mg", 300, 0.50)));
@@ -225,7 +233,7 @@ public class InitializeDataUtils {
         medList.insertLast(new Pair<>("MED029", new Medicine("MED029", "Loperamide Capsule", "Imodium", "Gastrointestinal", "Capsule", "2mg", 90, 15.00)));
         medList.insertLast(new Pair<>("MED030", new Medicine("MED030", "Diazepam Suppository", "Valium Suppository", "Antidepressant", "Suppository", "5mg", 120, 32.00)));
 
-        System.out.println("Medicines data have been intialized have been saved to dao/medicine.bin");
+        return medList;
 
     }
 
