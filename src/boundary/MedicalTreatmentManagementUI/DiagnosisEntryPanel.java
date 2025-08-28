@@ -5,12 +5,15 @@
 package boundary.MedicalTreatmentManagementUI;
 
 import adt.DoublyLinkedList;
+import adt.ListStack;
 import adt.Pair;
 import boundary.MainFrame;
 import control.TreatmentControl;
 import enitity.Consultation;
 import enitity.Treatment;
+import java.util.Iterator;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import utility.FileUtils;
 import utility.ImageUtils;
@@ -46,7 +49,7 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         if (consultationList != null) {
             for (Pair<String, Consultation> pair : consultationList) {
                 Consultation c = pair.getValue();
-                // Only add consultations that are "In Progress"
+                // Only add consultations that are "In Progress/Schedule??"
                 if ("Scheduled".equalsIgnoreCase(c.getStatus())) {
                     String displayText = c.getConsultationID() + " - " + c.getPatient().getPatientName();
                     model.addElement(displayText);
@@ -54,6 +57,34 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
             }
         }
         consultationComboBox.setModel(model);
+    }
+    
+    // NEW METHOD: Clears all input fields on the form.
+    private void clearForm() {
+        consultationComboBox.setSelectedIndex(0);
+        diagnosisInput.setText("");
+        treatmentDetailsInput.setText("");
+        costInput.setText("");
+        notesInput.setText("");
+        diagnosisInput.requestFocus(); // Set focus back to the first field
+    }
+    
+    // NEW METHOD: Updates the JList with data from the stack.
+    private void updateRecentTreatmentsDisplay() {
+        DefaultListModel<String> model = new DefaultListModel<>();
+        ListStack<Treatment> recentStack = (ListStack<Treatment>) treatmentControl.getRecentTreatmentsStack();
+
+        if (recentStack.isEmpty()) {
+            model.addElement("No treatments added this session.");
+        } else {
+            // Use the iterator to view stack contents without removing them
+            Iterator<Treatment> iterator = recentStack.getIterator();
+            while (iterator.hasNext()) {
+                Treatment t = iterator.next();
+                model.addElement(t.getTreatmentID() + ": " + t.getDiagnosis() + " for " + t.getConsultation().getPatient().getPatientName());
+            }
+        }
+        recentTreatmentsList.setModel(model);
     }
     
     /**
@@ -68,6 +99,7 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         logoLabel = new javax.swing.JLabel();
         titlePanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
+        contentPanel = new javax.swing.JPanel();
         formWrapperPanel = new javax.swing.JPanel();
         formGridPanel = new javax.swing.JPanel();
         consultationLabel = new javax.swing.JLabel();
@@ -82,8 +114,13 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         notesLabel = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         notesInput = new javax.swing.JTextArea();
+        recentPanel = new javax.swing.JPanel();
+        recentAdded = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        recentTreatmentsList = new javax.swing.JList<>();
         buttonPanel = new javax.swing.JPanel();
         saveButton = new javax.swing.JButton();
+        clearButton = new javax.swing.JButton();
         backButton = new javax.swing.JButton();
         checkSaveButton = new javax.swing.JButton();
 
@@ -98,16 +135,23 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
+        contentPanel.setLayout(new java.awt.GridLayout(2, 1, 10, 10));
+
         formWrapperPanel.setLayout(new java.awt.BorderLayout());
 
         formGridPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
         formGridPanel.setAlignmentX(1.0F);
         formGridPanel.setAlignmentY(1.0F);
-        formGridPanel.setLayout(new java.awt.GridLayout(8, 2, 5, 15));
+        formGridPanel.setLayout(new java.awt.GridLayout(5, 2, 10, 5));
 
         consultationLabel.setText("Select Consultation:");
         formGridPanel.add(consultationLabel);
 
+        consultationComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                consultationComboBoxActionPerformed(evt);
+            }
+        });
         formGridPanel.add(consultationComboBox);
 
         diagnosisLabel.setText("Diagnosis:");
@@ -150,7 +194,22 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
 
         formWrapperPanel.add(formGridPanel, java.awt.BorderLayout.CENTER);
 
-        titlePanel.add(formWrapperPanel, java.awt.BorderLayout.CENTER);
+        contentPanel.add(formWrapperPanel);
+
+        recentPanel.setLayout(new java.awt.BorderLayout());
+
+        recentAdded.setText(" Recently Added (This Session)");
+        recentPanel.add(recentAdded, java.awt.BorderLayout.PAGE_START);
+
+        jScrollPane3.setPreferredSize(new java.awt.Dimension(50, 50));
+
+        jScrollPane3.setViewportView(recentTreatmentsList);
+
+        recentPanel.add(jScrollPane3, java.awt.BorderLayout.CENTER);
+
+        contentPanel.add(recentPanel);
+
+        titlePanel.add(contentPanel, java.awt.BorderLayout.CENTER);
 
         saveButton.setText("Save");
         saveButton.addActionListener(new java.awt.event.ActionListener() {
@@ -158,6 +217,15 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
                 saveButtonActionPerformed(evt);
             }
         });
+        buttonPanel.add(saveButton);
+
+        clearButton.setText("Clear");
+        clearButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearButtonActionPerformed(evt);
+            }
+        });
+        buttonPanel.add(clearButton);
 
         backButton.setText("Back");
         backButton.addActionListener(new java.awt.event.ActionListener() {
@@ -165,6 +233,7 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
                 backButtonActionPerformed(evt);
             }
         });
+        buttonPanel.add(backButton);
 
         checkSaveButton.setText("test");
         checkSaveButton.addActionListener(new java.awt.event.ActionListener() {
@@ -172,30 +241,7 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
                 checkSaveButtonActionPerformed(evt);
             }
         });
-
-        javax.swing.GroupLayout buttonPanelLayout = new javax.swing.GroupLayout(buttonPanel);
-        buttonPanel.setLayout(buttonPanelLayout);
-        buttonPanelLayout.setHorizontalGroup(
-            buttonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(buttonPanelLayout.createSequentialGroup()
-                .addGap(180, 180, 180)
-                .addComponent(saveButton)
-                .addGap(74, 74, 74)
-                .addComponent(backButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
-                .addComponent(checkSaveButton)
-                .addGap(52, 52, 52))
-        );
-        buttonPanelLayout.setVerticalGroup(
-            buttonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(buttonPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(buttonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(saveButton)
-                    .addComponent(backButton)
-                    .addComponent(checkSaveButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        buttonPanel.add(checkSaveButton);
 
         titlePanel.add(buttonPanel, java.awt.BorderLayout.PAGE_END);
 
@@ -211,13 +257,51 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_costInputActionPerformed
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        // 1. Get selected consultation
+       // --- VALIDATION LOGIC ---
+        StringBuilder errors = new StringBuilder();
+        
+        // 1. Validate Consultation Selection
         int selectedIndex = consultationComboBox.getSelectedIndex();
         if (selectedIndex <= 0) {
-            JOptionPane.showMessageDialog(this, "Please select a consultation.", "Validation Error", JOptionPane.ERROR_MESSAGE);
-            return;
+            errors.append("- Please select a consultation.\n");
+        }
+
+        // 2. Validate Text Fields
+        String diagnosis = diagnosisInput.getText().trim();
+        String details = treatmentDetailsInput.getText().trim();
+        String costStr = costInput.getText().trim();
+        String notes = notesInput.getText().trim(); // Notes can be optional
+
+        if (diagnosis.isEmpty()) {
+            errors.append("- Diagnosis field cannot be empty.\n");
+        }
+        if (details.isEmpty()) {
+            errors.append("- Treatment Details field cannot be empty.\n");
+        }
+        if (costStr.isEmpty()) {
+            errors.append("- Cost field cannot be empty.\n");
+        }
+
+        // 3. Validate Cost Format
+        double cost = 0.0;
+        if (!costStr.isEmpty()) {
+            try {
+                cost = Double.parseDouble(costStr);
+                if (cost < 0) {
+                    errors.append("- Cost cannot be a negative number.\n");
+                }
+            } catch (NumberFormatException e) {
+                errors.append("- Cost must be a valid number (e.g., 50.00).\n");
+            }
+        }
+
+        // 4. Show errors if any, otherwise proceed to save
+        if (errors.length() > 0) {
+            JOptionPane.showMessageDialog(this, errors.toString(), "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return; // Stop the saving process
         }
         
+        // --- SAVE LOGIC (runs only if validation passes) ---
         String selectedText = (String) consultationComboBox.getSelectedItem();
         String consultationId = selectedText.split(" - ")[0];
         
@@ -229,40 +313,23 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
             }
         }
 
-        // 2. Get other form data and validate
-        String diagnosis = diagnosisInput.getText().trim();
-        String details = treatmentDetailsInput.getText().trim();
-        String costStr = costInput.getText().trim();
-        String notes = notesInput.getText().trim();
-
-        if (diagnosis.isEmpty() || details.isEmpty() || costStr.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Diagnosis, Details, and Cost cannot be empty.", "Validation Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        double cost;
-        try {
-            cost = Double.parseDouble(costStr);
-            if (cost < 0) {
-                JOptionPane.showMessageDialog(this, "Cost cannot be negative.", "Validation Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Please enter a valid number for the cost.", "Validation Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // 3. Use the control class to create the treatment
+        // Use the control class to create the treatment
         treatmentControl.addTreatment(selectedConsultation, diagnosis, details, cost, notes);
+        
+        // Update consultation status to "Completed"
+        if (selectedConsultation != null) {
+            selectedConsultation.setStatus("Completed");
+            // You need a way to save the updated consultation list.
+            // This might require a method in ConsultationControl.
+            FileUtils.writeDataToFile("consultations", consultationList);
+        }
 
         JOptionPane.showMessageDialog(this, "Treatment record saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
-        // 4. Clear form and reload consultations
-        diagnosisInput.setText("");
-        treatmentDetailsInput.setText("");
-        costInput.setText("");
-        notesInput.setText("");
+        // Clear form, reload consultations, and update recent list
+        clearForm();
         loadConsultations();
+        updateRecentTreatmentsDisplay();
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
@@ -289,14 +356,45 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         JOptionPane.showMessageDialog(this, "Check the console output to see the saved data!");
     }//GEN-LAST:event_checkSaveButtonActionPerformed
 
+    private void consultationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consultationComboBoxActionPerformed
+        int selectedIndex = consultationComboBox.getSelectedIndex();
+        if (selectedIndex <= 0) {
+            diagnosisInput.setText(""); // Clear if they re-select the placeholder
+            return;
+        }
+
+        String selectedText = (String) consultationComboBox.getSelectedItem();
+        String consultationId = selectedText.split(" - ")[0];
+        
+        Consultation selectedConsultation = null;
+        for(Pair<String, Consultation> pair : consultationList) {
+            if(pair.getKey().equals(consultationId)) {
+                selectedConsultation = pair.getValue();
+                break;
+            }
+        }
+
+        if (selectedConsultation != null && selectedConsultation.getDiagnosis() != null) {
+            diagnosisInput.setText(selectedConsultation.getDiagnosis());
+        } else {
+            diagnosisInput.setText("");
+        }
+    }//GEN-LAST:event_consultationComboBoxActionPerformed
+
+    private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
+        clearForm();
+    }//GEN-LAST:event_clearButtonActionPerformed
+
    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton backButton;
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JButton checkSaveButton;
+    private javax.swing.JButton clearButton;
     private javax.swing.JComboBox<String> consultationComboBox;
     private javax.swing.JLabel consultationLabel;
+    private javax.swing.JPanel contentPanel;
     private javax.swing.JTextField costInput;
     private javax.swing.JLabel costLabel;
     private javax.swing.JTextField diagnosisInput;
@@ -305,9 +403,14 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     private javax.swing.JPanel formWrapperPanel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JTextArea notesInput;
     private javax.swing.JLabel notesLabel;
+    private javax.swing.JLabel recentAdded;
+    private javax.swing.JPanel recentPanel;
+    private javax.swing.JList<String> recentTreatmentsList;
     private javax.swing.JButton saveButton;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;

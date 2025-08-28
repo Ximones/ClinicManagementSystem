@@ -33,6 +33,7 @@ public class MainFrame extends javax.swing.JFrame {
     private QueuePanel queuePanel; // Reference to queue panel
     private ConsultationPanel consultationPanel; // Reference to consultation panel
     private ConsultationControl consultationControl; // Shared control
+    private DiagnosisEntryPanel diagnosisPanel; // Add this instance variable
 
     /**
      * Creates new form MainFrame
@@ -74,10 +75,7 @@ public class MainFrame extends javax.swing.JFrame {
         MedicalTreatmentManagementPanel medicalPanel = new MedicalTreatmentManagementPanel(this);
         DiagnosisEntryPanel diagnosisPanel = new DiagnosisEntryPanel(this); 
         //TreatmentHistoryPanel historyPanel = new TreatmentHistoryPanel(this); 
-        
-        cardPanel.add(medicalPanel, "medicalManagement");
-        cardPanel.add(diagnosisPanel, "diagnosisEntry");
-        //cardPanel.add(historyPanel, "treatmentHistory");
+        diagnosisPanel = new DiagnosisEntryPanel(this);
 
         // Add the panels to the cardPanel with unique names
         cardPanel.add(clinicPanel, "clinicMenu");
@@ -101,6 +99,10 @@ public class MainFrame extends javax.swing.JFrame {
         cardPanel.add(queuePanel, "queuePanel");
         cardPanel.add(consultationReportsPanel, "consultationReports");
         cardPanel.add(consultationHistoryPanel, "consultationHistory");
+        
+        cardPanel.add(medicalPanel, "medicalManagement");
+        cardPanel.add(diagnosisPanel, "diagnosisEntry"); 
+        //cardPanel.add(historyPanel, "treatmentHistory");
 
         // Set frame properties
         this.setTitle("Clinic Management System");
@@ -126,6 +128,10 @@ public class MainFrame extends javax.swing.JFrame {
     
     public ConsultationPanel getConsultationPanel() {
         return consultationPanel;
+    }
+    
+    public DiagnosisEntryPanel getDiagnosisEntryPanel() {
+        return diagnosisPanel;
     }
 
     // Function to switch different windows
