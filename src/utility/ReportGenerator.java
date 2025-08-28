@@ -2,7 +2,10 @@ package utility;
 
 import adt.DoublyLinkedList;
 import adt.Pair;
+import adt.MapInterface;
+import adt.ListMap;
 import enitity.Doctor;
+import enitity.Treatment;
 import java.io.File;
 
 // Core PDF creation classes for iText 7
@@ -18,6 +21,7 @@ import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.UnitValue;
+import com.itextpdf.layout.property.TextAlignment;
 import enitity.DispenseRecord;
 import enitity.DutySlot;
 import enitity.Medicine;
@@ -503,5 +507,145 @@ public class ReportGenerator {
             e.printStackTrace();
         }
     }
+    
+    /**
+     * REPORT 1: Generates a PDF report showing the frequency of common diagnoses.
+     * @param frequencyData A list of pairs, where each pair is (Diagnosis, Count).
+     */
+    public static void generateDiagnosisFrequencyReport(DoublyLinkedList<Pair<String, Integer>> frequencyData) {
+        try {
+            // --- 1. Create the Pie Chart ---
+            DefaultPieDataset pieDataset = new DefaultPieDataset();
+            for (Pair<String, Integer> entry : frequencyData) {
+                pieDataset.setValue(entry.getKey(), entry.getValue());
+            }
+            JFreeChart pieChart = ChartFactory.createPieChart("Common Diagnoses Distribution", pieDataset, true, true, false);
 
+            PiePlot plot = (PiePlot) pieChart.getPlot();
+            plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0}: {1} ({2})")); // Key: Value (Percentage)
+
+            File chartFile = new File("diagnosis_frequency_chart.png");
+            ChartUtils.saveChartAsPNG(chartFile, pieChart, 500, 400);
+
+            // --- 2. Create the PDF ---
+            PdfWriter writer = new PdfWriter("Common_Diagnoses_Report.pdf");
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            document.add(new Paragraph("Common Diagnoses Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("This report shows the distribution of diagnoses recorded.").setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph(" "));
+            
+            Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
+            document.add(chartImage);
+
+            document.close();
+            chartFile.delete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * REPORT 2: Generates a PDF report detailing a single patient's medical history.
+     * @param patientHistory A list of treatments for a single patient.
+     */
+    public static void generatePatientHistoryReport(DoublyLinkedList<Treatment> patientHistory) {
+        if (patientHistory.isEmpty()) {
+            return;
+        }
+        try {
+            // Get patient details from the first treatment record
+            Treatment firstTreatment = patientHistory.getFirst().getEntry();
+            String patientName = firstTreatment.getConsultation().getPatient().getPatientName();
+            String patientId = firstTreatment.getConsultation().getPatient().getPatientID();
+            String fileName = "Patient_History_" + patientId + ".pdf";
+
+            // --- 1. Create the PDF ---
+            PdfWriter writer = new PdfWriter(fileName);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            document.add(new Paragraph("Patient Medical History Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("Patient: " + patientName + " (ID: " + patientId + ")").setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph(" "));
+
+            // --- 2. Create the Table ---
+            Table table = new Table(UnitValue.createPercentArray(new float[]{2, 2, 3, 1, 2}));
+            table.setWidth(UnitValue.createPercentValue(100));
+
+            table.addHeaderCell(new Cell().add(new Paragraph("Date")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Doctor")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Diagnosis")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Cost (RM)")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Treatment Details")));
+
+            // --- 3. Populate the Table ---
+            for (Treatment t : patientHistory) {
+                table.addCell(t.getFormattedDateTime());
+                table.addCell(t.getConsultation().getDoctor().getName());
+                table.addCell(t.getDiagnosis());
+                table.addCell(String.format("%.2f", t.getCost()));
+                table.addCell(t.getTreatmentDetails());
+            }
+
+            document.add(table);
+            document.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * NEW REPORT: Generates a PDF report analyzing treatment costs by doctor.
+     * @param masterTreatmentList The complete list of all treatments.
+     */
+    public static void generateTreatmentCostReport(DoublyLinkedList<Pair<String, Treatment>> masterTreatmentList) {
+        try {
+            // --- 1. Aggregate Data using a Map ---
+            MapInterface<String, Double> doctorRevenue = new ListMap<>();
+            for (Pair<String, Treatment> pair : masterTreatmentList) {
+                Treatment t = pair.getValue();
+                String doctorName = t.getConsultation().getDoctor().getName();
+                double currentRevenue = doctorRevenue.getValue(doctorName) == null ? 0.0 : doctorRevenue.getValue(doctorName);
+                doctorRevenue.add(doctorName, currentRevenue + t.getCost());
+            }
+
+            // --- 2. Create Bar Chart ---
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+            DoublyLinkedList<Pair<String, Double>> revenueList = ((ListMap<String, Double>) doctorRevenue).getPairList();
+            for (Pair<String, Double> entry : revenueList) {
+                dataset.addValue(entry.getValue(), "Revenue", entry.getKey());
+            }
+
+            JFreeChart barChart = ChartFactory.createBarChart(
+                "Treatment Revenue by Doctor",
+                "Doctor",
+                "Total Cost (RM)",
+                dataset
+            );
+
+            File chartFile = new File("treatment_cost_chart.png");
+            ChartUtils.saveChartAsPNG(chartFile, barChart, 600, 400);
+
+            // --- 3. Create PDF ---
+            PdfWriter writer = new PdfWriter("Treatment_Cost_Analysis_Report.pdf");
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            document.add(new Paragraph("Treatment Cost Analysis Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph(" "));
+            
+            Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
+            document.add(chartImage);
+
+            document.close();
+            chartFile.delete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -5,12 +5,15 @@
 package control;
 
 import adt.DoublyLinkedList;
+import adt.ListMap;
+import adt.MapInterface;
 import adt.ListStack;
 import adt.Pair;
 import adt.StackInterface;
 import enitity.Consultation;
 import enitity.Treatment;
 import utility.FileUtils;
+import adt.ListMap;
 
 /**
  *
@@ -81,6 +84,114 @@ public class TreatmentControl {
      */
     public StackInterface<Treatment> getRecentTreatmentsStack() {
         return recentTreatmentsStack;
+    }
+    
+    /**
+     * Sorts a list of treatments using the Bubble Sort algorithm.
+     * @param list The list of treatments to sort.
+     * @param sortBy The attribute to sort by ("Date" or "Cost").
+     * @param order The order ("ASC" or "DESC").
+     * @return A new, sorted DoublyLinkedList.
+     */
+    public DoublyLinkedList<Pair<String, Treatment>> bubbleSortTreatments(DoublyLinkedList<Pair<String, Treatment>> list, String sortBy, String order) {
+        // Create a copy to avoid modifying the original list
+        DoublyLinkedList<Pair<String, Treatment>> sortedList = new DoublyLinkedList<>();
+        for (Pair<String, Treatment> p : list) {
+            sortedList.insertLast(p);
+        }
+
+        int n = sortedList.getSize();
+        if (n < 2) {
+            return sortedList;
+        }
+
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 1; j <= n - i - 1; j++) {
+                Pair<String, Treatment> pair1 = sortedList.getElement(j).getEntry();
+                Pair<String, Treatment> pair2 = sortedList.getElement(j + 1).getEntry();
+                Treatment t1 = pair1.getValue();
+                Treatment t2 = pair2.getValue();
+
+                boolean shouldSwap = false;
+                int comparison = 0;
+
+                if ("Date".equals(sortBy)) {
+                    comparison = t1.getTreatmentDateTime().compareTo(t2.getTreatmentDateTime());
+                } else { // Cost
+                    comparison = Double.compare(t1.getCost(), t2.getCost());
+                }
+
+                if ("ASC".equals(order) && comparison > 0) {
+                    shouldSwap = true;
+                } else if ("DESC".equals(order) && comparison < 0) {
+                    shouldSwap = true;
+                }
+
+                if (shouldSwap) {
+                    // Swap the pairs in the linked list
+                    sortedList.replace(j, pair2);
+                    sortedList.replace(j + 1, pair1);
+                }
+            }
+        }
+        return sortedList;
+    }
+
+    /**
+     * Counts the frequency of each diagnosis using a Map ADT.
+     * @return A list of pairs, where each pair is (Diagnosis, Count).
+     */
+    public DoublyLinkedList<Pair<String, Integer>> getDiagnosisFrequency() {
+        MapInterface<String, Integer> frequencyMap = new ListMap<>();
+        for (Pair<String, Treatment> pair : treatmentList) {
+            String diagnosis = pair.getValue().getDiagnosis();
+            Integer count = frequencyMap.getValue(diagnosis);
+            if (count == null) {
+                frequencyMap.add(diagnosis, 1);
+            } else {
+                frequencyMap.add(diagnosis, count + 1);
+            }
+        }
+        // Convert the map back to a list for the report generator
+        return ((ListMap<String, Integer>) frequencyMap).getPairList();
+    }
+
+    /**
+     * Filters the master treatment list to find all records for a specific patient.
+     * @param patientId The ID of the patient to search for.
+     * @return A list of treatments for the specified patient.
+     */
+    public DoublyLinkedList<Treatment> getTreatmentsForPatient(String patientId) {
+        DoublyLinkedList<Treatment> patientHistory = new DoublyLinkedList<>();
+        for (Pair<String, Treatment> pair : treatmentList) {
+            Treatment t = pair.getValue();
+            if (t.getConsultation().getPatient().getPatientID().equals(patientId)) {
+                patientHistory.insertLast(t);
+            }
+        }
+        return patientHistory;
+    }
+    
+    /**
+     * Finds a specific treatment by its ID.
+     * @param treatmentId The ID of the treatment to find.
+     * @return The Treatment object if found, otherwise null.
+     */
+    public Treatment findTreatmentById(String treatmentId) {
+        for (Pair<String, Treatment> pair : treatmentList) {
+            if (pair.getKey().equalsIgnoreCase(treatmentId)) {
+                return pair.getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Saves the entire (potentially modified) treatment list back to the file.
+     * This is called after an edit is made in the dialog.
+     */
+    public void updateTreatment() {
+        FileUtils.writeDataToFile("treatments", treatmentList);
     }
 }
 

@@ -50,7 +50,7 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
             for (Pair<String, Consultation> pair : consultationList) {
                 Consultation c = pair.getValue();
                 // Only add consultations that are "In Progress/Schedule??"
-                if ("Scheduled".equalsIgnoreCase(c.getStatus())) {
+                if ("In Progress".equalsIgnoreCase(c.getStatus())) {
                     String displayText = c.getConsultationID() + " - " + c.getPatient().getPatientName();
                     model.addElement(displayText);
                 }

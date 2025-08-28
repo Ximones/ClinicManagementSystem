@@ -19,6 +19,7 @@ import boundary.ConsultationManagementUI.ConsultationHistoryPanel;
 import boundary.PharmacyManagementUI.DispenseMedicinePanel;
 import boundary.MedicalTreatmentManagementUI.MedicalTreatmentManagementPanel;
 import boundary.MedicalTreatmentManagementUI.DiagnosisEntryPanel;
+import boundary.MedicalTreatmentManagementUI.TreatmentHistoryPanel;
 import java.awt.CardLayout;
 
 /**
@@ -74,7 +75,7 @@ public class MainFrame extends javax.swing.JFrame {
         // Medical Treatment Management Panels
         MedicalTreatmentManagementPanel medicalPanel = new MedicalTreatmentManagementPanel(this);
         DiagnosisEntryPanel diagnosisPanel = new DiagnosisEntryPanel(this); 
-        //TreatmentHistoryPanel historyPanel = new TreatmentHistoryPanel(this); 
+        TreatmentHistoryPanel historyPanel = new TreatmentHistoryPanel(this); 
         diagnosisPanel = new DiagnosisEntryPanel(this);
 
         // Add the panels to the cardPanel with unique names
@@ -102,7 +103,7 @@ public class MainFrame extends javax.swing.JFrame {
         
         cardPanel.add(medicalPanel, "medicalManagement");
         cardPanel.add(diagnosisPanel, "diagnosisEntry"); 
-        //cardPanel.add(historyPanel, "treatmentHistory");
+        cardPanel.add(historyPanel, "treatmentHistory");
 
         // Set frame properties
         this.setTitle("Clinic Management System");
@@ -228,8 +229,6 @@ public class MainFrame extends javax.swing.JFrame {
                 }
                 break;
             }
-            default:
-                break;
         }
 
         CardLayout cl = (CardLayout) (cardPanel.getLayout());
