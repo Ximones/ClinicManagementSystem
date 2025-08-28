@@ -367,9 +367,14 @@ public class ReportGenerator {
 
             // 2) Aggregate quantities per medicine
             Map<String, Integer> medicineQuantities = new HashMap<>();
+            int totalQuantity = 0;
+            double totalAmount = 0.0;
+
             for (DispenseRecord dr : todayRecords) {
                 medicineQuantities.put(dr.getMedicineName(),
                         medicineQuantities.getOrDefault(dr.getMedicineName(), 0) + dr.getQuantity());
+                totalQuantity += dr.getQuantity();
+                totalAmount += dr.getLineTotal();
             }
 
             // 3) Create Bar Chart
@@ -404,7 +409,12 @@ public class ReportGenerator {
             document.add(new Paragraph("Daily Dispensing Report - " + today).setFontSize(18));
             document.add(new Paragraph(" "));
 
-            // 5) Table of dispensed items
+            // 5) Add chart image FIRST
+            Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
+            document.add(chartImage);
+            document.add(new Paragraph(" "));
+
+            // 6) Table of dispensed items AFTER chart
             Table table = new Table(UnitValue.createPercentArray(new float[]{3, 3, 3, 2, 2, 2}))
                     .setWidth(UnitValue.createPercentValue(100));
             table.addHeaderCell(new Cell().add(new Paragraph("Prescription ID")));
@@ -423,13 +433,17 @@ public class ReportGenerator {
                 table.addCell(new Cell().add(new Paragraph(String.format("%.2f", dr.getLineTotal()))));
             }
 
+            // Add total row at the end
+            Cell totalCell = new Cell(1, 4).add(new Paragraph("TOTAL").setBold());
+            totalCell.setTextAlignment(TextAlignment.RIGHT);
+            table.addCell(totalCell);
+
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(totalQuantity)).setBold()));
+            table.addCell(new Cell().add(new Paragraph(String.format("%.2f", totalAmount)).setBold()));
+
             document.add(table);
-            document.add(new Paragraph(" "));
 
-            // 6) Add chart image
-            Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
-            document.add(chartImage);
-
+            // 7) Finish up
             document.close();
             chartFile.delete();
 
@@ -439,8 +453,8 @@ public class ReportGenerator {
             e.printStackTrace();
         }
     }
-    
-      public static void generatePatientAgeRangeReport(DoublyLinkedList<Patient> patientList) {
+
+    public static void generatePatientAgeRangeReport(DoublyLinkedList<Patient> patientList) {
         try {
             // Step 1: Filter patients by today's date
             LocalDate today = LocalDate.now();
@@ -480,8 +494,8 @@ public class ReportGenerator {
 
             // Step 3: Generate Pie Chart
             JFreeChart pieChart = ChartFactory.createPieChart(
-                    "Patient Age Range Report (" + today + ")", 
-                    dataset, 
+                    "Patient Age Range Report (" + today + ")",
+                    dataset,
                     true, true, false
             );
 
@@ -512,7 +526,6 @@ public class ReportGenerator {
             e.printStackTrace();
         }
     }
-
 
     public static void generateQueueStatisticsReport(DoublyLinkedList<QueueEntry> queueList) {
         try {
@@ -581,10 +594,13 @@ public class ReportGenerator {
             e.printStackTrace();
         }
     }
-    
+
     /**
-     * REPORT 1: Generates a PDF report showing the frequency of common diagnoses.
-     * @param frequencyData A list of pairs, where each pair is (Diagnosis, Count).
+     * REPORT 1: Generates a PDF report showing the frequency of common
+     * diagnoses.
+     *
+     * @param frequencyData A list of pairs, where each pair is (Diagnosis,
+     * Count).
      */
     public static void generateDiagnosisFrequencyReport(DoublyLinkedList<Pair<String, Integer>> frequencyData) {
         try {
@@ -609,7 +625,7 @@ public class ReportGenerator {
             document.add(new Paragraph("Common Diagnoses Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph("This report shows the distribution of diagnoses recorded.").setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph(" "));
-            
+
             Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
             document.add(chartImage);
 
@@ -622,7 +638,9 @@ public class ReportGenerator {
     }
 
     /**
-     * REPORT 2: Generates a PDF report detailing a single patient's medical history.
+     * REPORT 2: Generates a PDF report detailing a single patient's medical
+     * history.
+     *
      * @param patientHistory A list of treatments for a single patient.
      */
     public static void generatePatientHistoryReport(DoublyLinkedList<Treatment> patientHistory) {
@@ -674,6 +692,7 @@ public class ReportGenerator {
 
     /**
      * NEW REPORT: Generates a PDF report analyzing treatment costs by doctor.
+     *
      * @param masterTreatmentList The complete list of all treatments.
      */
     public static void generateTreatmentCostReport(DoublyLinkedList<Pair<String, Treatment>> masterTreatmentList) {
@@ -695,10 +714,10 @@ public class ReportGenerator {
             }
 
             JFreeChart barChart = ChartFactory.createBarChart(
-                "Treatment Revenue by Doctor",
-                "Doctor",
-                "Total Cost (RM)",
-                dataset
+                    "Treatment Revenue by Doctor",
+                    "Doctor",
+                    "Total Cost (RM)",
+                    dataset
             );
 
             File chartFile = new File("treatment_cost_chart.png");
@@ -711,7 +730,7 @@ public class ReportGenerator {
 
             document.add(new Paragraph("Treatment Cost Analysis Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph(" "));
-            
+
             Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
             document.add(chartImage);
 
