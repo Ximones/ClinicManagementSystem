@@ -121,6 +121,8 @@ public class Treatment implements Serializable, Comparable<Treatment> {
                 ", patient=" + (consultation != null ? consultation.getPatient().getPatientName() : "N/A") +
                 ", diagnosis='" + diagnosis + '\'' +
                 ", details='" + treatmentDetails + '\'' +
+                ", cost=" + cost +                  // Added cost
+                ", notes='" + notes + '\'' +        // Added notes
                 ", dateTime=" + getFormattedDateTime() +
                 '}';
     }

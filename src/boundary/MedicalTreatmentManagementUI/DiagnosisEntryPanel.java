@@ -4,19 +4,58 @@
  */
 package boundary.MedicalTreatmentManagementUI;
 
+import adt.DoublyLinkedList;
+import adt.Pair;
+import boundary.MainFrame;
+import control.TreatmentControl;
+import enitity.Consultation;
+import enitity.Treatment;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
+import utility.FileUtils;
+import utility.ImageUtils;
+
 /**
  *
  * @author User
  */
 public class DiagnosisEntryPanel extends javax.swing.JPanel {
+    private MainFrame mainFrame;
+    private TreatmentControl treatmentControl = new TreatmentControl();
+    private DoublyLinkedList<Pair<String, Consultation>> consultationList;
 
     /**
      * Creates new form DiagnosisEntryPanel
+     * @param mainFrame
      */
-    public DiagnosisEntryPanel() {
+    public DiagnosisEntryPanel(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
         initComponents();
+        logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
+        loadConsultations();
     }
 
+    // Load ongoing consultations to the dropdown
+    public void loadConsultations() {
+        // Read all consultations
+        consultationList = (DoublyLinkedList<Pair<String, Consultation>>) FileUtils.readDataFromFile("consultations");
+        
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        model.addElement("-- Select a Consultation --");
+
+        if (consultationList != null) {
+            for (Pair<String, Consultation> pair : consultationList) {
+                Consultation c = pair.getValue();
+                // Only add consultations that are "In Progress"
+                if ("Scheduled".equalsIgnoreCase(c.getStatus())) {
+                    String displayText = c.getConsultationID() + " - " + c.getPatient().getPatientName();
+                    model.addElement(displayText);
+                }
+            }
+        }
+        consultationComboBox.setModel(model);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -26,19 +65,253 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+        logoLabel = new javax.swing.JLabel();
+        titlePanel = new javax.swing.JPanel();
+        titleLabel = new javax.swing.JLabel();
+        formWrapperPanel = new javax.swing.JPanel();
+        formGridPanel = new javax.swing.JPanel();
+        consultationLabel = new javax.swing.JLabel();
+        consultationComboBox = new javax.swing.JComboBox<>();
+        diagnosisLabel = new javax.swing.JLabel();
+        diagnosisInput = new javax.swing.JTextField();
+        treatmentDetailsLabel = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        treatmentDetailsInput = new javax.swing.JTextArea();
+        costLabel = new javax.swing.JLabel();
+        costInput = new javax.swing.JTextField();
+        notesLabel = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        notesInput = new javax.swing.JTextArea();
+        buttonPanel = new javax.swing.JPanel();
+        saveButton = new javax.swing.JButton();
+        backButton = new javax.swing.JButton();
+        checkSaveButton = new javax.swing.JButton();
+
+        setLayout(new java.awt.BorderLayout());
+        add(logoLabel, java.awt.BorderLayout.PAGE_START);
+
+        titlePanel.setLayout(new java.awt.BorderLayout());
+
+        titleLabel.setFont(new java.awt.Font("Corbel", 1, 36)); // NOI18N
+        titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        titleLabel.setText("Diagnosis and Treatment Entry");
+        titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
+
+        formWrapperPanel.setLayout(new java.awt.BorderLayout());
+
+        formGridPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
+        formGridPanel.setAlignmentX(1.0F);
+        formGridPanel.setAlignmentY(1.0F);
+        formGridPanel.setLayout(new java.awt.GridLayout(8, 2, 5, 15));
+
+        consultationLabel.setText("Select Consultation:");
+        formGridPanel.add(consultationLabel);
+
+        formGridPanel.add(consultationComboBox);
+
+        diagnosisLabel.setText("Diagnosis:");
+        formGridPanel.add(diagnosisLabel);
+
+        diagnosisInput.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                diagnosisInputActionPerformed(evt);
+            }
+        });
+        formGridPanel.add(diagnosisInput);
+
+        treatmentDetailsLabel.setText("Treatment Details:");
+        formGridPanel.add(treatmentDetailsLabel);
+
+        treatmentDetailsInput.setColumns(20);
+        treatmentDetailsInput.setRows(5);
+        jScrollPane1.setViewportView(treatmentDetailsInput);
+
+        formGridPanel.add(jScrollPane1);
+
+        costLabel.setText("Cost (RM) :");
+        formGridPanel.add(costLabel);
+
+        costInput.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                costInputActionPerformed(evt);
+            }
+        });
+        formGridPanel.add(costInput);
+
+        notesLabel.setText("Notes :");
+        formGridPanel.add(notesLabel);
+
+        notesInput.setColumns(20);
+        notesInput.setRows(5);
+        jScrollPane2.setViewportView(notesInput);
+
+        formGridPanel.add(jScrollPane2);
+
+        formWrapperPanel.add(formGridPanel, java.awt.BorderLayout.CENTER);
+
+        titlePanel.add(formWrapperPanel, java.awt.BorderLayout.CENTER);
+
+        saveButton.setText("Save");
+        saveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveButtonActionPerformed(evt);
+            }
+        });
+
+        backButton.setText("Back");
+        backButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                backButtonActionPerformed(evt);
+            }
+        });
+
+        checkSaveButton.setText("test");
+        checkSaveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkSaveButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout buttonPanelLayout = new javax.swing.GroupLayout(buttonPanel);
+        buttonPanel.setLayout(buttonPanelLayout);
+        buttonPanelLayout.setHorizontalGroup(
+            buttonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonPanelLayout.createSequentialGroup()
+                .addGap(180, 180, 180)
+                .addComponent(saveButton)
+                .addGap(74, 74, 74)
+                .addComponent(backButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
+                .addComponent(checkSaveButton)
+                .addGap(52, 52, 52))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+        buttonPanelLayout.setVerticalGroup(
+            buttonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(buttonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(saveButton)
+                    .addComponent(backButton)
+                    .addComponent(checkSaveButton))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        titlePanel.add(buttonPanel, java.awt.BorderLayout.PAGE_END);
+
+        add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void diagnosisInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_diagnosisInputActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_diagnosisInputActionPerformed
+
+    private void costInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_costInputActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_costInputActionPerformed
+
+    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+        // 1. Get selected consultation
+        int selectedIndex = consultationComboBox.getSelectedIndex();
+        if (selectedIndex <= 0) {
+            JOptionPane.showMessageDialog(this, "Please select a consultation.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        String selectedText = (String) consultationComboBox.getSelectedItem();
+        String consultationId = selectedText.split(" - ")[0];
+        
+        Consultation selectedConsultation = null;
+        for(Pair<String, Consultation> pair : consultationList) {
+            if(pair.getKey().equals(consultationId)) {
+                selectedConsultation = pair.getValue();
+                break;
+            }
+        }
+
+        // 2. Get other form data and validate
+        String diagnosis = diagnosisInput.getText().trim();
+        String details = treatmentDetailsInput.getText().trim();
+        String costStr = costInput.getText().trim();
+        String notes = notesInput.getText().trim();
+
+        if (diagnosis.isEmpty() || details.isEmpty() || costStr.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Diagnosis, Details, and Cost cannot be empty.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        double cost;
+        try {
+            cost = Double.parseDouble(costStr);
+            if (cost < 0) {
+                JOptionPane.showMessageDialog(this, "Cost cannot be negative.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid number for the cost.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // 3. Use the control class to create the treatment
+        treatmentControl.addTreatment(selectedConsultation, diagnosis, details, cost, notes);
+
+        JOptionPane.showMessageDialog(this, "Treatment record saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
+        // 4. Clear form and reload consultations
+        diagnosisInput.setText("");
+        treatmentDetailsInput.setText("");
+        costInput.setText("");
+        notesInput.setText("");
+        loadConsultations();
+    }//GEN-LAST:event_saveButtonActionPerformed
+
+    private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
+        mainFrame.showPanel("medicalManagement");
+    }//GEN-LAST:event_backButtonActionPerformed
+
+    private void checkSaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkSaveButtonActionPerformed
+        System.out.println("--- Reading treatments.bin ---");
+    
+        // Use your control class to get the data, just like the history panel would
+        DoublyLinkedList<Pair<String, Treatment>> savedTreatments = treatmentControl.getAllTreatments();
+
+        if (savedTreatments == null || savedTreatments.isEmpty()) {
+            System.out.println("File is empty or could not be read.");
+            return;
+        }
+
+        // Loop through the list and print each treatment to the console
+        for (Pair<String, Treatment> pair : savedTreatments) {
+            System.out.println(pair.getValue().toString());
+        }
+
+        System.out.println("--- End of file ---");
+        JOptionPane.showMessageDialog(this, "Check the console output to see the saved data!");
+    }//GEN-LAST:event_checkSaveButtonActionPerformed
+
+   
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton backButton;
+    private javax.swing.JPanel buttonPanel;
+    private javax.swing.JButton checkSaveButton;
+    private javax.swing.JComboBox<String> consultationComboBox;
+    private javax.swing.JLabel consultationLabel;
+    private javax.swing.JTextField costInput;
+    private javax.swing.JLabel costLabel;
+    private javax.swing.JTextField diagnosisInput;
+    private javax.swing.JLabel diagnosisLabel;
+    private javax.swing.JPanel formGridPanel;
+    private javax.swing.JPanel formWrapperPanel;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel logoLabel;
+    private javax.swing.JTextArea notesInput;
+    private javax.swing.JLabel notesLabel;
+    private javax.swing.JButton saveButton;
+    private javax.swing.JLabel titleLabel;
+    private javax.swing.JPanel titlePanel;
+    private javax.swing.JTextArea treatmentDetailsInput;
+    private javax.swing.JLabel treatmentDetailsLabel;
     // End of variables declaration//GEN-END:variables
 }

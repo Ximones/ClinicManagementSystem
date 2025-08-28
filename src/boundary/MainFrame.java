@@ -18,6 +18,7 @@ import boundary.ConsultationManagementUI.ConsultationReportsPanel;
 import boundary.ConsultationManagementUI.ConsultationHistoryPanel;
 import boundary.PharmacyManagementUI.DispenseMedicinePanel;
 import boundary.MedicalTreatmentManagementUI.MedicalTreatmentManagementPanel;
+import boundary.MedicalTreatmentManagementUI.DiagnosisEntryPanel;
 import java.awt.CardLayout;
 
 /**
@@ -71,11 +72,11 @@ public class MainFrame extends javax.swing.JFrame {
         
         // Medical Treatment Management Panels
         MedicalTreatmentManagementPanel medicalPanel = new MedicalTreatmentManagementPanel(this);
-        //DiagnosisEntryPanel diagnosisPanel = new DiagnosisEntryPanel(this); 
+        DiagnosisEntryPanel diagnosisPanel = new DiagnosisEntryPanel(this); 
         //TreatmentHistoryPanel historyPanel = new TreatmentHistoryPanel(this); 
         
         cardPanel.add(medicalPanel, "medicalManagement");
-        //cardPanel.add(diagnosisPanel, "diagnosisEntry");
+        cardPanel.add(diagnosisPanel, "diagnosisEntry");
         //cardPanel.add(historyPanel, "treatmentHistory");
 
         // Add the panels to the cardPanel with unique names
@@ -94,7 +95,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         // Add consultation management panels
         cardPanel.add(consultationManagementPanel, "consultationManagement");
-        //cardPanel.add(consultationPanel, "consultationPanel");
+        cardPanel.add(consultationPanel, "consultationPanel");
         cardPanel.add(appointmentPanel, "appointmentPanel");
         cardPanel.add(prescriptionPanel, "prescriptionPanel");
         cardPanel.add(queuePanel, "queuePanel");
