@@ -329,6 +329,7 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         medicineTable = new javax.swing.JTable();
         ButtonPanel = new javax.swing.JPanel();
         addMedicineButton = new javax.swing.JButton();
+        editMedicineButton = new javax.swing.JButton();
         generateLowStockReportButton = new javax.swing.JButton();
         doneButton = new javax.swing.JButton();
 
@@ -388,6 +389,14 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         });
         ButtonPanel.add(addMedicineButton);
 
+        editMedicineButton.setText("Edit Medicine");
+        editMedicineButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editMedicineButtonActionPerformed(evt);
+            }
+        });
+        ButtonPanel.add(editMedicineButton);
+
         generateLowStockReportButton.setText("Generate Low Stock Report");
         generateLowStockReportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -422,7 +431,7 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_filterFieldActionPerformed
 
     private void addMedicineButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMedicineButtonActionPerformed
-        MedicineDialog dialog = new MedicineDialog(mainFrame, true);
+        MedicineAddDialog dialog = new MedicineAddDialog(mainFrame, true);
         dialog.setVisible(true);
 
         Pair<String, Medicine> newMedicinePair = dialog.getResult();
@@ -465,10 +474,17 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         JOptionPane.showMessageDialog(this, "Low Stock Report generated successfully!");
     }//GEN-LAST:event_generateLowStockReportButtonActionPerformed
 
+    private void editMedicineButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMedicineButtonActionPerformed
+        MedicineEditDialog dialog = new MedicineEditDialog(mainFrame, true, masterMedicineList);
+        dialog.setVisible(true);
+        populateMedicineTable(masterMedicineList);
+    }//GEN-LAST:event_editMedicineButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ButtonPanel;
     private javax.swing.JButton addMedicineButton;
     private javax.swing.JButton doneButton;
+    private javax.swing.JButton editMedicineButton;
     private javax.swing.JComboBox<String> filterBox;
     private javax.swing.JTextField filterField;
     private javax.swing.JLabel filterLabel;

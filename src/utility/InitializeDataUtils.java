@@ -1,30 +1,71 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package utility;
 
 import adt.DoublyLinkedList;
 import adt.Pair;
 import enitity.Doctor;
+import enitity.DutySlot;
 import enitity.Medicine;
 import enitity.Patient;
-import java.io.File;
 
 /**
  *
- * @author deadb
+ * @author Chok Chun Fai, Lim Sze Ping, Lee Wan Ching
  */
 public class InitializeDataUtils {
 
     public static void initializeData() {
 
-        // Ensure doctors exist (kept as before)
+        // Pre-condition to perform reinitialize data
+        boolean initializeAllData = false;
+
+        // Check if data exists in corresponding files
+        try {
+
+            DoublyLinkedList<Pair<String, Doctor>> existingDoctorData = (DoublyLinkedList<Pair<String, Doctor>>) FileUtils.readDataFromFile("doctors");
+            DoublyLinkedList<DutySlot> existingScheduleData = (DoublyLinkedList<DutySlot>) FileUtils.readDataFromFile("this_week_schedule");
+            DoublyLinkedList<Patient> existingPatientData = (DoublyLinkedList<Patient>) FileUtils.readDataFromFile("patients");
+            DoublyLinkedList<Pair<String, Medicine>> existingMedicineData = (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
+
+            // If condition met, perform reinitialize each field data 
+            if (existingDoctorData == null || existingDoctorData.isEmpty()
+                    || existingScheduleData == null || existingScheduleData.isEmpty()
+                    || existingPatientData == null || existingPatientData.isEmpty()
+                    || existingMedicineData == null || existingMedicineData.isEmpty()) {
+                initializeAllData = true;
+            }
+        } catch (Exception e) {
+            initializeAllData = true;
+        }
+
+        // If condition not met, back to normal
+        if (!initializeAllData) {
+            System.out.println("No data is corrupted and from file reading");
+            return;
+        }
+
+        //Initialize the data to List
+        DoublyLinkedList<Pair<String, Doctor>> doctorList = initializeDoctorData();
+        DoublyLinkedList<DutySlot> thisWeekSchedule = initializeScheduleData(doctorList);
+        DoublyLinkedList<Patient> patientList = initializePatientData();
+        DoublyLinkedList<Pair<String, Medicine>> medList = initializeMedicineData();
+
+        // Write the List's data to each file
+        FileUtils.writeDataToFile("doctors", doctorList);
+        FileUtils.writeDataToFile("this_week_schedule", thisWeekSchedule);
+        FileUtils.writeDataToFile("patients", patientList);
+        FileUtils.writeDataToFile("medicine", medList);
+        
+        System.out.println("Doctors Data have been intialized and saved to dao/doctos.bin");
+        System.out.println("This Week Schedule Data have been intialized and saved to dao/this_week_schedule.bin");
+        System.out.println("Patients data have been intialized and saved to dao/patients.bin");
+        System.out.println("Medicines data have been intialized have been saved to dao/medicine.bin");
+    }
+
+    // Initialize Doctor Test Data
+    private static DoublyLinkedList<Pair<String, Doctor>> initializeDoctorData() {
+
         DoublyLinkedList<Pair<String, Doctor>> doctorList = new DoublyLinkedList<>();
-        DoublyLinkedList<Pair<String, Medicine>> medList = new DoublyLinkedList<>();
-        DoublyLinkedList<Patient> patientList = new DoublyLinkedList<>();
-         
-        // Initialize Doctor Test Data
+
         Doctor doc1 = new Doctor("Simon", 20, "01118566866", "Doctor", "Present");
         Doctor doc2 = new Doctor("ZB", 21, "01118566866", "Doctor", "Absent");
         Doctor doc3 = new Doctor("JY", 30, "01118566866", "Consultant", "Resigned");
@@ -40,102 +81,126 @@ public class InitializeDataUtils {
         doctorList.insertLast(doctorPair3);
         doctorList.insertLast(doctorPair4);
 
-        FileUtils.writeDataToFile("doctors", doctorList);
-        
-        // Initialize Patient Test Data
+        return doctorList;
+    }
+
+    // Initialize Schedule Test Data
+    private static DoublyLinkedList<DutySlot> initializeScheduleData(DoublyLinkedList<Pair<String, Doctor>> doctorList) {
+
+        DoublyLinkedList<DutySlot> thisWeekSchedule = new DoublyLinkedList<>();
+
+        DutySlot dataSlot1 = new DutySlot("Monday", "Morning (8am - 2pm)", doctorList.getElement(1).getEntry().getValue());
+        DutySlot dataSlot2 = new DutySlot("Tuesday", "Morning (8am - 2pm)", doctorList.getElement(1).getEntry().getValue());
+        DutySlot dataSlot3 = new DutySlot("Wednesday", "Morning (8am - 2pm)", doctorList.getElement(1).getEntry().getValue());
+        DutySlot dataSlot4 = new DutySlot("Thursday", "Morning (8am - 2pm)", doctorList.getElement(1).getEntry().getValue());
+        DutySlot dataSlot5 = new DutySlot("Friday", "Morning (8am - 2pm)", doctorList.getElement(1).getEntry().getValue());
+        DutySlot dataSlot6 = new DutySlot("Saturday", "Morning (8am - 2pm)", doctorList.getElement(1).getEntry().getValue());
+        DutySlot dataSlot7 = new DutySlot("Monday", "Evening (2pm - 8pm)", doctorList.getElement(4).getEntry().getValue());
+        DutySlot dataSlot8 = new DutySlot("Tuesday", "Evening (2pm - 8pm)", doctorList.getElement(4).getEntry().getValue());
+        DutySlot dataSlot9 = new DutySlot("Wednesday", "Evening (2pm - 8pm)", doctorList.getElement(4).getEntry().getValue());
+        DutySlot dataSlot10 = new DutySlot("Thursday", "Evening (2pm - 8pm)", doctorList.getElement(4).getEntry().getValue());
+        DutySlot dataSlot11 = new DutySlot("Friday", "Evening (2pm - 8pm)", doctorList.getElement(4).getEntry().getValue());
+        DutySlot dataSlot12 = new DutySlot("Saturday", "Evening (2pm - 8pm)", doctorList.getElement(4).getEntry().getValue());
+
+        thisWeekSchedule.insertLast(dataSlot1);
+        thisWeekSchedule.insertLast(dataSlot2);
+        thisWeekSchedule.insertLast(dataSlot3);
+        thisWeekSchedule.insertLast(dataSlot4);
+        thisWeekSchedule.insertLast(dataSlot5);
+        thisWeekSchedule.insertLast(dataSlot6);
+        thisWeekSchedule.insertLast(dataSlot7);
+        thisWeekSchedule.insertLast(dataSlot8);
+        thisWeekSchedule.insertLast(dataSlot9);
+        thisWeekSchedule.insertLast(dataSlot10);
+        thisWeekSchedule.insertLast(dataSlot11);
+        thisWeekSchedule.insertLast(dataSlot12);
+
+        return thisWeekSchedule;
+    }
+
+    // Initialize Patient Test Data
+    private static DoublyLinkedList<Patient> initializePatientData() {
+
+        DoublyLinkedList<Patient> patientList = new DoublyLinkedList<>();
+
         patientList.insertLast(new Patient("P001", "Ali bin Hassan", "900101-14-1122", 35, "Male",
-        "012-1111222", "ali.hassan@gmail.com",
-        "No. 5, Jalan Damai, Taman Desa, Kuala Lumpur", "2025-08-01"));
+                "012-1111222", "ali.hassan@gmail.com",
+                "No. 5, Jalan Damai, Taman Desa, Kuala Lumpur", "2025-08-01"));
         patientList.insertLast(new Patient("P002", "Chong Wei Ling", "980202-10-3344", 27, "Female",
-        "013-2222333", "weiling.chong@yahoo.com",
-        "Condo Sri Hartamas, Blok C-8-15, Mont Kiara, KL", "2025-08-02"));
+                "013-2222333", "weiling.chong@yahoo.com",
+                "Condo Sri Hartamas, Blok C-8-15, Mont Kiara, KL", "2025-08-02"));
         patientList.insertLast(new Patient("P003", "Mohd Faiz bin Rahman", "950315-08-5566", 30, "Male",
-        "014-3333444", "faiz.rahman95@gmail.com",
-        "No. 88, Jalan Anggerik, Seksyen 7, Shah Alam, Selangor", "2025-08-03"));
+                "014-3333444", "faiz.rahman95@gmail.com",
+                "No. 88, Jalan Anggerik, Seksyen 7, Shah Alam, Selangor", "2025-08-03"));
         patientList.insertLast(new Patient("P004", "Anita a/p Subramaniam", "930420-14-7788", 32, "Female",
-        "015-4444555", "anita.suba@gmail.com",
-        "No. 25, Jalan Indah 3, Taman Sri Tebrau, Johor Bahru, Johor", "2025-08-05"));
+                "015-4444555", "anita.suba@gmail.com",
+                "No. 25, Jalan Indah 3, Taman Sri Tebrau, Johor Bahru, Johor", "2025-08-05"));
         patientList.insertLast(new Patient("P005", "Lim Boon Huat", "000519-08-9900", 25, "Male",
-        "016-5555666", "boonhuat.lim@gmail.com",
-        "No. 7, Jalan Rasah Jaya, Seremban, Negeri Sembilan", "2025-08-07"));
+                "016-5555666", "boonhuat.lim@gmail.com",
+                "No. 7, Jalan Rasah Jaya, Seremban, Negeri Sembilan", "2025-08-07"));
         patientList.insertLast(new Patient("P006", "Nur Amirah binti Ismail", "020103-10-2244", 23, "Female",
-        "017-6666777", "amirah.ismail02@gmail.com",
-        "No. 33, Jalan Setia Tropika 5/2, Taman Setia Tropika, Johor Bahru", "2025-08-10"));
+                "017-6666777", "amirah.ismail02@gmail.com",
+                "No. 33, Jalan Setia Tropika 5/2, Taman Setia Tropika, Johor Bahru", "2025-08-10"));
         patientList.insertLast(new Patient("P007", "Raj a/l Manogaran", "970312-08-3355", 28, "Male",
-        "018-7777888", "raj.manogaran@yahoo.com",
-        "No. 19, Jalan Transfer, George Town, Penang", "2025-08-12"));
+                "018-7777888", "raj.manogaran@yahoo.com",
+                "No. 19, Jalan Transfer, George Town, Penang", "2025-08-12"));
         patientList.insertLast(new Patient("P008", "Tan Siew Mei", "890603-14-4466", 36, "Female",
-        "019-8888999", "siewmei.tan@gmail.com",
-        "No. 56, Jalan Kota Laksamana, Melaka City, Melaka", "2025-08-15"));
+                "019-8888999", "siewmei.tan@gmail.com",
+                "No. 56, Jalan Kota Laksamana, Melaka City, Melaka", "2025-08-15"));
         patientList.insertLast(new Patient("P009", "Ahmad Zaki bin Osman", "990927-10-5577", 26, "Male",
-        "011-9999000", "zaki.osman99@yahoo.com",
-        "No. 21, Jalan Raja Dr Nazrin, Taman Jubilee, Ipoh, Perak", "2025-08-20"));
+                "011-9999000", "zaki.osman99@yahoo.com",
+                "No. 21, Jalan Raja Dr Nazrin, Taman Jubilee, Ipoh, Perak", "2025-08-20"));
         patientList.insertLast(new Patient("P010", "Chia Li Xuan", "960512-14-8899", 29, "Female",
-        "012-1212121", "lixuan.chia@yahoo.com",
-        "No. 8, Lorong Taman Alor Akar 3, Kuantan, Pahang", "2025-08-25"));
+                "012-1212121", "lixuan.chia@yahoo.com",
+                "No. 8, Lorong Taman Alor Akar 3, Kuantan, Pahang", "2025-08-25"));
 
-        
-        // Initialize Patient Test Data For Report
-      
         patientList.insertLast(new Patient("P011", "Gan Mei Yee", "850412-10-1234", 40, "Female",
-        "013-8888111", "meiyee.gan@gmail.com",
-        "No. 12, Jalan Damansara Heights, Kuala Lumpur", "2025-08-28"));
+                "013-8888111", "meiyee.gan@gmail.com",
+                "No. 12, Jalan Damansara Heights, Kuala Lumpur", "2025-08-28"));
 
-        patientList.insertLast(new Patient("P012", "Syed Amir bin Jamal", "910727-14-5678", 2, "Male",   // toddler
-        "012-3456789", "amir.jamal91@yahoo.com",
-        "No. 44, Jalan Dato Sheikh Ahmad, Seremban, Negeri Sembilan", "2025-08-28"));
+        patientList.insertLast(new Patient("P012", "Syed Amir bin Jamal", "910727-14-5678", 2, "Male", // toddler
+                "012-3456789", "amir.jamal91@yahoo.com",
+                "No. 44, Jalan Dato Sheikh Ahmad, Seremban, Negeri Sembilan", "2025-08-28"));
 
         patientList.insertLast(new Patient("P013", "Vasanthi a/p Ramesh", "780315-08-2244", 85, "Female", // elderly
-        "016-7777333", "vasanthi.ramesh78@gmail.com",
-        "No. 99, Jalan Raja Chulan, Kuala Lumpur", "2025-08-28"));
+                "016-7777333", "vasanthi.ramesh78@gmail.com",
+                "No. 99, Jalan Raja Chulan, Kuala Lumpur", "2025-08-28"));
 
         patientList.insertLast(new Patient("P014", "Jonathan Lee Wei Sheng", "050909-10-8899", 18, "Male", // teenager
-        "017-6666222", "jonathanlee05@gmail.com",
-        "No. 23, Jalan Song Ban Kheng, Bukit Mertajam, Penang", "2025-08-28"));
+                "017-6666222", "jonathanlee05@gmail.com",
+                "No. 23, Jalan Song Ban Kheng, Bukit Mertajam, Penang", "2025-08-28"));
 
         patientList.insertLast(new Patient("P015", "Nurul Hidayah binti Ahmad", "880214-06-4455", 55, "Female",
-        "018-9999222", "nurul.hidayah88@gmail.com",
-        "No. 17, Jalan Sutera, Taman Sentosa, Johor Bahru", "2025-08-28"));
+                "018-9999222", "nurul.hidayah88@gmail.com",
+                "No. 17, Jalan Sutera, Taman Sentosa, Johor Bahru", "2025-08-28"));
 
         patientList.insertLast(new Patient("P016", "Marcus Tan Wei Jian", "940501-08-3344", 70, "Male",
-        "019-3333222", "marcus.tan94@yahoo.com",
-        "No. 66, Jalan Padungan, Kuching, Sarawak", "2025-08-28"));
+                "019-3333222", "marcus.tan94@yahoo.com",
+                "No. 66, Jalan Padungan, Kuching, Sarawak", "2025-08-28"));
 
         patientList.insertLast(new Patient("P017", "Aisyah binti Salleh", "030725-10-1122", 8, "Female", // child
-        "011-2222334", "aisyah.salleh03@gmail.com",
-        "No. 5, Jalan Pantai Dalam, Kuala Lumpur", "2025-08-28"));
+                "011-2222334", "aisyah.salleh03@gmail.com",
+                "No. 5, Jalan Pantai Dalam, Kuala Lumpur", "2025-08-28"));
 
         patientList.insertLast(new Patient("P018", "Daniel Wong Jun Hao", "990831-14-7788", 33, "Male",
-        "014-5555666", "daniel.wong99@gmail.com",
-        "No. 45, Jalan Kebun Teh, Johor Bahru, Johor", "2025-08-28"));
- 
+                "014-5555666", "daniel.wong99@gmail.com",
+                "No. 45, Jalan Kebun Teh, Johor Bahru, Johor", "2025-08-28"));
+
         patientList.insertLast(new Patient("P019", "Thavamani a/l Krishnan", "760129-10-4466", 90, "Male", // very elderly
-        "015-1212121", "thavamani.krishnan76@gmail.com",
-        "No. 8, Jalan Laksamana, Melaka City, Melaka", "2025-08-28"));
+                "015-1212121", "thavamani.krishnan76@gmail.com",
+                "No. 8, Jalan Laksamana, Melaka City, Melaka", "2025-08-28"));
 
         patientList.insertLast(new Patient("P020", "Cheong Li Fang", "970618-08-5577", 25, "Female",
-        "012-9898989", "lifang.cheong97@yahoo.com",
-        "No. 10, Jalan Pasir Puteh, Ipoh, Perak", "2025-08-28"));
-        
-        FileUtils.writeDataToFile("patients", patientList);
-        System.out.println("10 patients have been saved to dao/patients.bin");
+                "012-9898989", "lifang.cheong97@yahoo.com",
+                "No. 10, Jalan Pasir Puteh, Ipoh, Perak", "2025-08-28"));
 
+        return patientList;
+    }
 
-  
-        // Initialize Medical Test Data (write if file missing OR empty)
-        boolean shouldWriteMedicines = false;
-        try {
-            DoublyLinkedList<Pair<String, Medicine>> existing = (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
-            if (existing == null || existing.isEmpty()) {
-                shouldWriteMedicines = true;
-            }
-        } catch (Exception e) {
-            shouldWriteMedicines = true;
-        }
+    // Initialize Medicine Test Data
+    private static DoublyLinkedList<Pair<String, Medicine>> initializeMedicineData() {
 
-        if (!shouldWriteMedicines) {
-            return; // medicine file already populated
-        }
+        DoublyLinkedList<Pair<String, Medicine>> medList = new DoublyLinkedList<>();
 
         medList.insertLast(new Pair<>("MED001", new Medicine("MED001", "Amoxicillin", "Amoxil", "Antibiotic", "Capsule", "250mg", 160, 12.50)));
         medList.insertLast(new Pair<>("MED002", new Medicine("MED002", "Paracetamol", "Panadol", "Analgesic", "Tablet", "500mg", 300, 0.50)));
@@ -168,10 +233,8 @@ public class InitializeDataUtils {
         medList.insertLast(new Pair<>("MED029", new Medicine("MED029", "Loperamide Capsule", "Imodium", "Gastrointestinal", "Capsule", "2mg", 90, 15.00)));
         medList.insertLast(new Pair<>("MED030", new Medicine("MED030", "Diazepam Suppository", "Valium Suppository", "Antidepressant", "Suppository", "5mg", 120, 32.00)));
 
-        FileUtils.writeDataToFile("medicine", medList);
+        return medList;
 
-        System.out.println("30 medicines have been saved to dao/medicine.bin");
-        
-        
     }
+
 }
