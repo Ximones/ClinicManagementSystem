@@ -298,7 +298,7 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
                 double unit = it.getUnitPrice();
                 double line = it.getTotalCost();
                 m.addRow(new Object[]{
-                    medId, medName, qty, stock, unit, line
+                    medId, medName, qty, stock, it.getDuration(), unit, line
                 });
             }
         }
