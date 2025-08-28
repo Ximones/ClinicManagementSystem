@@ -1,32 +1,35 @@
 package boundary.PharmacyManagementUI;
 
+import adt.DoublyLinkedList;
 import adt.Pair;
 import enitity.Medicine;
-import javax.swing.*;
+import java.awt.Frame;
+import java.text.DecimalFormat;
+import javax.swing.JOptionPane;
+import utility.FileUtils;
 import utility.ImageUtils;
 
 /**
  *
  * @author Lee Wan Ching
  */
-public class MedicineDialog extends javax.swing.JDialog {
+public class MedicineEditDialog extends javax.swing.JDialog {
 
-    private Pair<String, Medicine> result;
+    private DoublyLinkedList<Pair<String, Medicine>> masterMedicineList;
+    private Medicine medicineToEdit = null;
+    private static final DecimalFormat df2 = new DecimalFormat("#0.00");
 
     /**
-     * Creates new form MedicineDialog
+     * Creates new form MedicineEditDialog
      */
-    public MedicineDialog(java.awt.Frame parent, boolean modal) {
+    public MedicineEditDialog(Frame parent, boolean modal, DoublyLinkedList<Pair<String, Medicine>> medicineList) {
         super(parent, modal);
         initComponents();
+        this.masterMedicineList = medicineList;
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
-
-        String newId = "MED" + String.format("%03d", Medicine.getMedicineIndex() + 1);
-        formMedIDfield.setText(newId);
-
         this.setLocationRelativeTo(parent);
 
-        // Category options
+        // load category options
         formCategoryBox.addItem("Select Category");
         formCategoryBox.addItem("Antibiotic");
         formCategoryBox.addItem("Analgesic");
@@ -42,7 +45,7 @@ public class MedicineDialog extends javax.swing.JDialog {
         formCategoryBox.addItem("Vitamin / Supplement");
         formCategoryBox.addItem("Other");
 
-        // Formulation options
+        // load formulation options
         formFormulationBox.addItem("Select Formulation");
         formFormulationBox.addItem("Tablet");
         formFormulationBox.addItem("Capsule");
@@ -58,10 +61,53 @@ public class MedicineDialog extends javax.swing.JDialog {
         formFormulationBox.addItem("Powder");
         formFormulationBox.addItem("Patch");
         formFormulationBox.addItem("Spray");
+
+        setFieldsEditable(false);
     }
 
-    public Pair<String, Medicine> getResult() {
-        return result;
+    public void loadMedicine(String medicineId) {
+        masterMedicineList.sort();
+        Pair<String, Medicine> foundPair = masterMedicineList.binarySearch(new Pair<>(medicineId, null));
+
+        if (foundPair != null) {
+            medicineToEdit = foundPair.getValue();
+
+            formMedIDfield.setText(medicineToEdit.getMedicineId());
+            formNameInput.setText(medicineToEdit.getName());
+            formBrandNameInput.setText(medicineToEdit.getBrandName());
+            formCategoryBox.setSelectedItem(medicineToEdit.getCategory());
+            formFormulationBox.setSelectedItem(medicineToEdit.getFormulation());
+            formDosageInput.setText(medicineToEdit.getDosageForm());
+            formQuantityInput.setText(String.valueOf(medicineToEdit.getQuantity()));
+            formPriceInput.setText(String.valueOf(medicineToEdit.getPrice()));
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Medicine with ID '" + medicineId + "' not found.",
+                    "Not Found", JOptionPane.ERROR_MESSAGE);
+            dispose();
+        }
+    }
+
+    private void setFieldsEditable(boolean editable) {
+        formNameInput.setEditable(editable);
+        formBrandNameInput.setEditable(editable);
+        formCategoryBox.setEnabled(editable);
+        formFormulationBox.setEnabled(editable);
+        formDosageInput.setEditable(editable);
+        formQuantityInput.setEditable(editable);
+        formPriceInput.setEditable(editable);
+        saveButton.setEnabled(editable);
+    }
+
+    private void clearForm() {
+        formMedIDfield.setText("");
+        formNameInput.setText("");
+        formBrandNameInput.setText("");
+        formCategoryBox.setSelectedIndex(0);
+        formFormulationBox.setSelectedIndex(0);
+        formDosageInput.setText("");
+        formQuantityInput.setText("");
+        formPriceInput.setText("");
     }
 
     /**
@@ -76,7 +122,11 @@ public class MedicineDialog extends javax.swing.JDialog {
         logoPanel = new javax.swing.JPanel();
         logoLabel = new javax.swing.JLabel();
         titlePanel = new javax.swing.JPanel();
-        titleLabel = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        searchTextField = new javax.swing.JTextField();
+        searchButton = new javax.swing.JButton();
         formWrapperPanel = new javax.swing.JPanel();
         formGridPanel = new javax.swing.JPanel();
         formMedIDlabel = new javax.swing.JLabel();
@@ -98,25 +148,43 @@ public class MedicineDialog extends javax.swing.JDialog {
         buttonPanel = new javax.swing.JPanel();
         saveButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(700, 600));
-        setPreferredSize(new java.awt.Dimension(700, 600));
+        setMinimumSize(new java.awt.Dimension(700, 640));
+        setPreferredSize(new java.awt.Dimension(700, 640));
 
         logoPanel.setLayout(new java.awt.BorderLayout());
         logoPanel.add(logoLabel, java.awt.BorderLayout.CENTER);
 
         titlePanel.setLayout(new java.awt.BorderLayout());
 
-        titleLabel.setFont(new java.awt.Font("Corbel", 1, 36)); // NOI18N
-        titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        titleLabel.setText("New Medicine Entry");
-        titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
+        jPanel1.setLayout(new java.awt.BorderLayout());
+
+        jLabel1.setText("Search ID to Edit :");
+        jPanel2.add(jLabel1);
+
+        searchTextField.setColumns(15);
+        searchTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchTextFieldActionPerformed(evt);
+            }
+        });
+        jPanel2.add(searchTextField);
+
+        searchButton.setText("Search");
+        searchButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchButtonActionPerformed(evt);
+            }
+        });
+        jPanel2.add(searchButton);
+
+        jPanel1.add(jPanel2, java.awt.BorderLayout.PAGE_START);
 
         formGridPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder(""), "Medicine Information :", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Corbel", 1, 14))); // NOI18N
-        formGridPanel.setMinimumSize(new java.awt.Dimension(400, 350));
-        formGridPanel.setPreferredSize(new java.awt.Dimension(400, 350));
+        formGridPanel.setMinimumSize(new java.awt.Dimension(400, 380));
+        formGridPanel.setPreferredSize(new java.awt.Dimension(400, 380));
         formGridPanel.setLayout(new java.awt.GridLayout(8, 2, 5, 15));
 
         formMedIDlabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -178,7 +246,9 @@ public class MedicineDialog extends javax.swing.JDialog {
 
         formWrapperPanel.add(formGridPanel);
 
-        titlePanel.add(formWrapperPanel, java.awt.BorderLayout.CENTER);
+        jPanel1.add(formWrapperPanel, java.awt.BorderLayout.CENTER);
+
+        titlePanel.add(jPanel1, java.awt.BorderLayout.CENTER);
 
         logoPanel.add(titlePanel, java.awt.BorderLayout.PAGE_END);
 
@@ -201,13 +271,54 @@ public class MedicineDialog extends javax.swing.JDialog {
         buttonPanel.add(cancelButton);
 
         getContentPane().add(buttonPanel, java.awt.BorderLayout.PAGE_END);
+        getContentPane().add(jPanel3, java.awt.BorderLayout.CENTER);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void searchTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_searchTextFieldActionPerformed
+
+    private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
+        String idToFind = searchTextField.getText().trim().toUpperCase();
+        if (idToFind.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter a Medicine ID to find.");
+            return;
+        }
+
+        masterMedicineList.sort();
+        Pair<String, Medicine> keyToFind = new Pair<>(idToFind, null);
+        Pair<String, Medicine> foundPair = masterMedicineList.binarySearch(keyToFind);
+
+        if (foundPair != null) {
+            this.medicineToEdit = foundPair.getValue();
+
+            formMedIDfield.setText(medicineToEdit.getMedicineId());
+            formNameInput.setText(medicineToEdit.getName());
+            formBrandNameInput.setText(medicineToEdit.getBrandName());
+            formCategoryBox.setSelectedItem(medicineToEdit.getCategory());
+            formFormulationBox.setSelectedItem(medicineToEdit.getFormulation());
+            formDosageInput.setText(medicineToEdit.getDosageForm());
+            formQuantityInput.setText(String.valueOf(medicineToEdit.getQuantity()));
+            formPriceInput.setText(df2.format(medicineToEdit.getPrice()));
+
+            setFieldsEditable(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Medicine with ID '" + idToFind + "' not found.");
+            clearForm();
+            this.medicineToEdit = null;
+            setFieldsEditable(false);
+        }
+    }//GEN-LAST:event_searchButtonActionPerformed
+
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+        if (medicineToEdit == null) {
+            JOptionPane.showMessageDialog(this, "Please search for a medicine first.");
+            return;
+        }
+
         try {
-            String id = formMedIDfield.getText().trim();
             String name = formNameInput.getText().trim();
             String brand = formBrandNameInput.getText().trim();
             String category = (String) formCategoryBox.getSelectedItem();
@@ -254,19 +365,27 @@ public class MedicineDialog extends javax.swing.JDialog {
 
             double price;
             try {
-                price = Double.parseDouble(priceText);
+                price = Double.parseDouble(df2.format(Double.parseDouble(priceText)));
                 if (price < 0) {
                     throw new IllegalArgumentException("Price cannot be negative.");
                 }
+
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Price must be a valid number.");
             }
 
-            Medicine newMed = new Medicine(id, name, brand, category, formulation, dosage, quantity, price);
-            result = new Pair<>(id, newMed);
+            // Update existing medicine
+            medicineToEdit.setName(name);
+            medicineToEdit.setBrandName(brand);
+            medicineToEdit.setCategory(category);
+            medicineToEdit.setFormulation(formulation);
+            medicineToEdit.setDosageForm(dosage);
+            medicineToEdit.setQuantity(quantity);
+            medicineToEdit.setPrice(price);
 
-            Medicine.setMedicineIndex(Medicine.getMedicineIndex() + 1);
+            FileUtils.writeDataToFile("medicine", masterMedicineList);
 
+            JOptionPane.showMessageDialog(this, "Medicine information updated successfully.");
             dispose();
 
         } catch (IllegalArgumentException e) {
@@ -277,9 +396,52 @@ public class MedicineDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        this.result = null;
-        dispose();
+        this.dispose(); // Simply close the dialog
     }//GEN-LAST:event_cancelButtonActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(MedicineEditDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(MedicineEditDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(MedicineEditDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(MedicineEditDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the dialog */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                DoublyLinkedList<Pair<String, Medicine>> dummyList = new DoublyLinkedList<>();
+                MedicineEditDialog dialog = new MedicineEditDialog(new javax.swing.JFrame(), true, dummyList);
+                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                        System.exit(0);
+                    }
+                });
+                dialog.setVisible(true);
+            }
+        });
+
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttonPanel;
@@ -302,10 +464,15 @@ public class MedicineDialog extends javax.swing.JDialog {
     private javax.swing.JTextField formQuantityInput;
     private javax.swing.JLabel formQuantityLabel;
     private javax.swing.JPanel formWrapperPanel;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JPanel logoPanel;
     private javax.swing.JButton saveButton;
-    private javax.swing.JLabel titleLabel;
+    private javax.swing.JButton searchButton;
+    private javax.swing.JTextField searchTextField;
     private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables
 }
