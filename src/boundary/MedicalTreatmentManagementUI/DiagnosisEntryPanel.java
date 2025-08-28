@@ -397,7 +397,6 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JTextArea notesInput;
     private javax.swing.JLabel notesLabel;

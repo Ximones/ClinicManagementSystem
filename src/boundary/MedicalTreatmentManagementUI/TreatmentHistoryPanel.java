@@ -9,19 +9,9 @@ import adt.Pair;
 import boundary.MainFrame;
 import control.TreatmentControl;
 import enitity.Treatment;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.time.format.DateTimeFormatter;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import utility.FileUtils;
 import utility.ImageUtils;
@@ -36,11 +26,6 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
     private MainFrame mainFrame;
     private TreatmentControl treatmentControl = new TreatmentControl();
     private DoublyLinkedList<Pair<String, Treatment>> masterTreatmentList;
-    
-    // UI Components declared as instance variables
-    private JTable historyTable;
-    private JTextField searchInput;
-    private JComboBox<String> sortComboBox;
 
     /**
      * Creates new form TreatmentHistoryPanel
@@ -48,84 +33,40 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
      */
     public TreatmentHistoryPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
-        initComponents(); // Keep this for basic panel setup
+        initComponents();
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
-        
-        // Build the UI programmatically
-        initializeHistoryInterface();
-        
-        // Load initial data
+        setupTable();
         loadAndDisplayTreatments();
+        
+        // Add a listener to the search field for real-time filtering
+        searchInput.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { filterTable(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { filterTable(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { filterTable(); }
+        });
     }
     
-    // This method replaces the auto-generated GUI code with a programmatic approach
-    private void initializeHistoryInterface() {
-        // Main content panel that will hold everything
-        JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
-        contentPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        // 1. Controls Panel (Top) for search and sort
-        JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        
-        controlsPanel.add(new JLabel("Search by Patient/Doctor/Diagnosis:"));
-        searchInput = new JTextField(20);
-        controlsPanel.add(searchInput);
-
-        JButton searchButton = new JButton("Search");
-        searchButton.addActionListener(e -> searchButtonActionPerformed(null));
-        controlsPanel.add(searchButton);
-
-        controlsPanel.add(new JLabel("Sort By:"));
-        sortComboBox = new JComboBox<>(new String[]{ "Default", "Date (Newest First)", "Date (Oldest First)", "Cost (Highest First)", "Cost (Lowest First)" });
-        sortComboBox.addActionListener(e -> sortComboBoxActionPerformed(null));
-        controlsPanel.add(sortComboBox);
-
-        contentPanel.add(controlsPanel, BorderLayout.NORTH);
-
-        // 2. Table Panel (Center) - UPDATED with new columns
-        String[] columnNames = {"Treatment ID", "Patient ID", "Patient Name", "Doctor ID", "Doctor Name", "Diagnosis", "Treatment Details", "Cost (RM)", "Date & Time"};
-        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
+    // Sets up the columns for the JTable
+    private void setupTable() {
+        DefaultTableModel model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Table is not editable
+                return false; // Make table non-editable
             }
         };
-        historyTable = new JTable(tableModel);
-        historyTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        historyTable.getTableHeader().setReorderingAllowed(false);
-        JScrollPane tableScrollPane = new JScrollPane(historyTable);
-
-        contentPanel.add(tableScrollPane, BorderLayout.CENTER);
-
-        // 3. Button Panel (Bottom) for actions
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        
-        // NEW "Edit Treatment" button
-        JButton editButton = new JButton("Edit a Treatment");
-        editButton.addActionListener(e -> editButtonActionPerformed(null));
-        buttonPanel.add(editButton);
-        
-        JButton report1Button = new JButton("Common Diagnoses Report");
-        report1Button.addActionListener(e -> report1ButtonActionPerformed(null));
-        buttonPanel.add(report1Button);
-        JButton report2Button = new JButton("Patient History Report");
-        report2Button.addActionListener(e -> report2ButtonActionPerformed(null));
-        buttonPanel.add(report2Button);
-        JButton costReportButton = new JButton("Treatment Cost Analysis");
-        costReportButton.addActionListener(e -> costReportButtonActionPerformed(null));
-        buttonPanel.add(costReportButton);
-        JButton refreshButton = new JButton("Refresh Data");
-        refreshButton.addActionListener(e -> refreshButtonActionPerformed(null));
-        buttonPanel.add(refreshButton);
-        JButton backButton = new JButton("Back to Menu");
-        backButton.addActionListener(e -> backButtonActionPerformed(null));
-        buttonPanel.add(backButton);
-        
-        contentPanel.add(buttonPanel, BorderLayout.SOUTH);
-        titlePanel.add(contentPanel, BorderLayout.CENTER);
-
-        // Add the fully constructed content panel to the main title panel
-        titlePanel.add(contentPanel, BorderLayout.CENTER);
+        historyTable.setModel(model);
+        model.addColumn("Treatment ID");
+        model.addColumn("Patient ID");
+        model.addColumn("Patient Name");
+        model.addColumn("Doctor ID");
+        model.addColumn("Doctor Name");
+        model.addColumn("Diagnosis");
+        model.addColumn("Treatment Details");
+        model.addColumn("Cost (RM)");
+        model.addColumn("Date & Time");
     }
 
     // Loads data from the file and populates the table
@@ -137,6 +78,11 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         populateTable(masterTreatmentList);
     }
     
+    // Public method for MainFrame to call to refresh data
+    public void reloadData() {
+        loadAndDisplayTreatments();
+    }
+    
     // Helper method to populate the table with a given list
     private void populateTable(DoublyLinkedList<Pair<String, Treatment>> listToDisplay) {
         DefaultTableModel model = (DefaultTableModel) historyTable.getModel();
@@ -145,7 +91,6 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         if (listToDisplay != null) {
             for (Pair<String, Treatment> pair : listToDisplay) {
                 Treatment t = pair.getValue();
-                // UPDATED with new data for the ID columns
                 model.addRow(new Object[]{
                     t.getTreatmentID(),
                     t.getConsultation().getPatient().getPatientID(),
@@ -161,27 +106,8 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         }
     }
     
-    // UPDATED ACTION LISTENER
-    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        // Create and show the edit dialog. No need to select a row first.
-        TreatmentEditDialog dialog = new TreatmentEditDialog(mainFrame, true, treatmentControl);
-        dialog.setVisible(true);
-
-        // After the dialog is closed, refresh the table to show any changes
-        loadAndDisplayTreatments();
-    }
-
-    private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {                                           
-        mainFrame.showPanel("medicalManagement");
-    }                                          
-
-    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {                                              
-        searchInput.setText("");
-        sortComboBox.setSelectedIndex(0);
-        loadAndDisplayTreatments();
-    }                                             
-
-    private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {                                             
+    // Filters the table based on the search input
+    private void filterTable() {
         String query = searchInput.getText().trim().toLowerCase();
         if (query.isEmpty()) {
             populateTable(masterTreatmentList);
@@ -199,56 +125,7 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
             }
         }
         populateTable(searchResults);
-    }                                            
-
-    private void sortComboBoxActionPerformed(java.awt.event.ActionEvent evt) {                                             
-        String selection = (String) sortComboBox.getSelectedItem();
-        if ("Default".equals(selection)) {
-            populateTable(masterTreatmentList);
-            return;
-        }
-
-        String sortBy = selection.contains("Date") ? "Date" : "Cost";
-        String order = selection.contains("Oldest") || selection.contains("Lowest") ? "ASC" : "DESC";
-        
-        DoublyLinkedList<Pair<String, Treatment>> sortedList = treatmentControl.bubbleSortTreatments(masterTreatmentList, sortBy, order);
-        populateTable(sortedList);
-    }                                            
-
-    private void report1ButtonActionPerformed(java.awt.event.ActionEvent evt) {                                              
-        DoublyLinkedList<Pair<String, Integer>> frequencyData = treatmentControl.getDiagnosisFrequency();
-        if (frequencyData.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No treatment data available to generate report.", "Report Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        ReportGenerator.generateDiagnosisFrequencyReport(frequencyData);
-        JOptionPane.showMessageDialog(this, "Common Diagnoses Report generated successfully! (Check project folder for PDF)", "Success", JOptionPane.INFORMATION_MESSAGE);
-    }                                             
-
-    private void report2ButtonActionPerformed(java.awt.event.ActionEvent evt) {                                              
-        String patientId = JOptionPane.showInputDialog(this, "Enter Patient ID to generate history report (e.g., P001):");
-        if (patientId == null || patientId.trim().isEmpty()) {
-            return;
-        }
-        
-        DoublyLinkedList<Treatment> patientHistory = treatmentControl.getTreatmentsForPatient(patientId.trim());
-        if (patientHistory.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No treatments found for Patient ID: " + patientId, "Report Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        
-        ReportGenerator.generatePatientHistoryReport(patientHistory);
-        JOptionPane.showMessageDialog(this, "Patient History Report generated successfully! (Check project folder for PDF)", "Success", JOptionPane.INFORMATION_MESSAGE);
-    }                                            
-    
-    private void costReportButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                 
-        if (masterTreatmentList.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No treatment data available to generate report.", "Report Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        ReportGenerator.generateTreatmentCostReport(masterTreatmentList);
-        JOptionPane.showMessageDialog(this, "Treatment Cost Analysis Report generated successfully! (Check project folder for PDF)", "Success", JOptionPane.INFORMATION_MESSAGE);
-    }       
+    }  
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -261,6 +138,20 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         logoLabel = new javax.swing.JLabel();
         titlePanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
+        searchWrapperPanel = new javax.swing.JPanel();
+        searchPanel = new javax.swing.JPanel();
+        filterLabel = new javax.swing.JLabel();
+        searchInput = new javax.swing.JTextField();
+        sortLabel = new javax.swing.JLabel();
+        sortComboBox = new javax.swing.JComboBox<>();
+        historyTablePanel = new javax.swing.JScrollPane();
+        historyTable = new javax.swing.JTable();
+        ButtonPanel = new javax.swing.JPanel();
+        editButton = new javax.swing.JButton();
+        report1Button = new javax.swing.JButton();
+        report2Button = new javax.swing.JButton();
+        costReportButton = new javax.swing.JButton();
+        backButton = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
         add(logoLabel, java.awt.BorderLayout.PAGE_START);
@@ -273,12 +164,172 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
+        searchWrapperPanel.setLayout(new java.awt.BorderLayout());
+
+        filterLabel.setText("Search by Patient/Doctor/Diagnosis:");
+        searchPanel.add(filterLabel);
+
+        searchInput.setColumns(15);
+        searchInput.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchInputActionPerformed(evt);
+            }
+        });
+        searchPanel.add(searchInput);
+
+        sortLabel.setText("Sort By :");
+        searchPanel.add(sortLabel);
+
+        sortComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Default", "Date (Newest First)", "Date (Oldest First)", "Cost (Highest First)", "Cost (Lowest First)" }));
+        sortComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sortComboBoxActionPerformed(evt);
+            }
+        });
+        searchPanel.add(sortComboBox);
+
+        searchWrapperPanel.add(searchPanel, java.awt.BorderLayout.PAGE_START);
+
+        historyTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
+        historyTable.getTableHeader().setReorderingAllowed(false);
+        historyTablePanel.setViewportView(historyTable);
+
+        searchWrapperPanel.add(historyTablePanel, java.awt.BorderLayout.CENTER);
+
+        editButton.setText("Edit a Treatment");
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
+            }
+        });
+        ButtonPanel.add(editButton);
+
+        report1Button.setText("Common Diagnoses Report");
+        report1Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                report1ButtonActionPerformed(evt);
+            }
+        });
+        ButtonPanel.add(report1Button);
+
+        report2Button.setText("Patient History Report");
+        report2Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                report2ButtonActionPerformed(evt);
+            }
+        });
+        ButtonPanel.add(report2Button);
+
+        costReportButton.setText("Treatment Cost Analysis");
+        costReportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                costReportButtonActionPerformed(evt);
+            }
+        });
+        ButtonPanel.add(costReportButton);
+
+        backButton.setText("Back");
+        backButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                backButtonActionPerformed(evt);
+            }
+        });
+        ButtonPanel.add(backButton);
+
+        searchWrapperPanel.add(ButtonPanel, java.awt.BorderLayout.PAGE_END);
+
+        titlePanel.add(searchWrapperPanel, java.awt.BorderLayout.CENTER);
+
         add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void searchInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchInputActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_searchInputActionPerformed
+
+    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+        TreatmentEditDialog dialog = new TreatmentEditDialog(mainFrame, true, treatmentControl);
+        dialog.setVisible(true);
+        loadAndDisplayTreatments(); // Refresh table after edit dialog closes
+    }//GEN-LAST:event_editButtonActionPerformed
+
+    private void report1ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_report1ButtonActionPerformed
+        DoublyLinkedList<Pair<String, Integer>> frequencyData = treatmentControl.getDiagnosisFrequency();
+        if (frequencyData.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No treatment data to generate report.", "Report Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        ReportGenerator.generateDiagnosisFrequencyReport(frequencyData);
+        JOptionPane.showMessageDialog(this, "Common Diagnoses Report generated!", "Success", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_report1ButtonActionPerformed
+
+    private void report2ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_report2ButtonActionPerformed
+        String patientId = JOptionPane.showInputDialog(this, "Enter Patient ID (e.g., P001):");
+        if (patientId == null || patientId.trim().isEmpty()) {
+            return;
+        }
+        
+        DoublyLinkedList<Treatment> patientHistory = treatmentControl.getTreatmentsForPatient(patientId.trim());
+        if (patientHistory.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No treatments found for Patient ID: " + patientId, "Report Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        ReportGenerator.generatePatientHistoryReport(patientHistory);
+        JOptionPane.showMessageDialog(this, "Patient History Report generated!", "Success", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_report2ButtonActionPerformed
+
+    private void sortComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortComboBoxActionPerformed
+        String selection = (String) sortComboBox.getSelectedItem();
+        if ("Default".equals(selection)) {
+            populateTable(masterTreatmentList);
+            return;
+        }
+
+        String sortBy = selection.contains("Date") ? "Date" : "Cost";
+        String order = selection.contains("Oldest") || selection.contains("Lowest") ? "ASC" : "DESC";
+        
+        DoublyLinkedList<Pair<String, Treatment>> sortedList = treatmentControl.bubbleSortTreatments(masterTreatmentList, sortBy, order);
+        populateTable(sortedList);
+    }//GEN-LAST:event_sortComboBoxActionPerformed
+
+    private void costReportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_costReportButtonActionPerformed
+        if (masterTreatmentList.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No treatment data to generate report.", "Report Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        ReportGenerator.generateTreatmentCostReport(masterTreatmentList);
+        JOptionPane.showMessageDialog(this, "Treatment Cost Analysis Report generated!", "Success", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_costReportButtonActionPerformed
+
+    private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
+        mainFrame.showPanel("medicalManagement");
+    }//GEN-LAST:event_backButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel ButtonPanel;
+    private javax.swing.JButton backButton;
+    private javax.swing.JButton costReportButton;
+    private javax.swing.JButton editButton;
+    private javax.swing.JLabel filterLabel;
+    private javax.swing.JTable historyTable;
+    private javax.swing.JScrollPane historyTablePanel;
     private javax.swing.JLabel logoLabel;
+    private javax.swing.JButton report1Button;
+    private javax.swing.JButton report2Button;
+    private javax.swing.JTextField searchInput;
+    private javax.swing.JPanel searchPanel;
+    private javax.swing.JPanel searchWrapperPanel;
+    private javax.swing.JComboBox<String> sortComboBox;
+    private javax.swing.JLabel sortLabel;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables
