@@ -60,51 +60,8 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
                 filterTable();
             }
         });
-
-//        doctorTable.getModel().addTableModelListener((e) -> {
-//            // Make sure the event is an actual cell update
-//            if (e.getType() == javax.swing.event.TableModelEvent.UPDATE) {
-//                // Get the row and column that were edited
-//                int row = e.getFirstRow();
-//                int column = e.getColumn();
-//
-//                // Get the Doctor ID from the first column of the edited row
-//                String doctorId = (String) doctorTable.getValueAt(row, 0);
-//
-//                // Find the corresponding doctor in the master list
-//                Pair<String, Doctor> targetPair = findDoctorPairById(doctorId);
-//
-//                if (targetPair != null) {
-//                    Doctor doctorToUpdate = targetPair.getValue();
-//                    Object newValue = doctorTable.getValueAt(row, column);
-//
-//                    // Check which column was edited and update the object
-//                    if (column == 3) {
-//                        doctorToUpdate.setPhoneNumber((String) newValue);
-//                        System.out.println("Updated " + doctorToUpdate.getName() + "'s phone to " + newValue);
-//                    } else if (column == 4) { // Column 4 is "Position"
-//                        doctorToUpdate.setPosition((String) newValue);
-//                        System.out.println("Updated " + doctorToUpdate.getName() + "'s position to " + newValue);
-//                    } else if (column == 5) { // Column 5 is "Status"
-//                        doctorToUpdate.setStatus((String) newValue);
-//                        System.out.println("Updated " + doctorToUpdate.getName() + "'s status to " + newValue);
-//                    }
-//                }
-//            }
-//        });
     }
 
-//    private Pair<String, Doctor> findDoctorPairById(String id) {
-//        if (id == null || masterDoctorList == null) {
-//            return null;
-//        }
-//        for (Pair<String, Doctor> pair : masterDoctorList) {
-//            if (id.equals(pair.getKey())) {
-//                return pair;
-//            }
-//        }
-//        return null;
-//    }
     private void loadInitialComponent() {
 
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
@@ -125,37 +82,15 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
             filterBox.addItem(i);
         }
 
-//        DoublyLinkedList<String> position = new DoublyLinkedList<>();
-//        position.insertLast("Consultant");
-//        position.insertLast("Doctor");
-//        position.insertLast("Internship");
-//
-//        DoublyLinkedList<String> status = new DoublyLinkedList<>();
-//        status.insertLast("Present");
-//        status.insertLast("Absent");
-//        status.insertLast("Resigned");
-//
-//        JComboBox<String> positionComboBox = new JComboBox<>();
-//
-//        for (String i : position) {
-//            positionComboBox.addItem(i);
-//        }
-//
-//        JComboBox<String> statusComboBox = new JComboBox<>();
-//
-//        for (String i : status) {
-//            statusComboBox.addItem(i);
-//        }
         // Set up for table 
         DefaultTableModel model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                // Allow editing only for columns 3, 4 and 5 (Phone, Position and Status)
-                // The first four columns (0, 1, 2 ) will not be editable.
-//                return column >= 3;
+                // Not allow to edit
                 return false;
             }
         };
+        
         doctorTable.setModel(model);
         model.addColumn("ID");
         model.addColumn("Name");
@@ -163,18 +98,6 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         model.addColumn("Contact");
         model.addColumn("Position");
         model.addColumn("Status");
-
-        // Create a cell editor 
-//        DefaultCellEditor positionEditor = new DefaultCellEditor(positionComboBox);
-//        DefaultCellEditor statusEditor = new DefaultCellEditor(statusComboBox);
-        // Get the column model from table
-//        TableColumnModel columnModel = doctorTable.getColumnModel();
-        // Change the index to match table's column order
-//        TableColumn positionColumn = columnModel.getColumn(4);
-//        TableColumn statusColumn = columnModel.getColumn(5);
-        // Set the custom editor for that column
-//        positionColumn.setCellEditor(positionEditor);
-//        statusColumn.setCellEditor(statusEditor);
     }
 
     private void loadInitialData() {
@@ -299,7 +222,7 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         editDoctorButton = new javax.swing.JButton();
         addDoctorButton = new javax.swing.JButton();
         doneButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        reportButton = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -383,13 +306,13 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         });
         ButtonPanel.add(doneButton);
 
-        jButton1.setText("Generate Report");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        reportButton.setText("Generate Report");
+        reportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                reportButtonActionPerformed(evt);
             }
         });
-        ButtonPanel.add(jButton1);
+        ButtonPanel.add(reportButton);
 
         searchWrapperPanel.add(ButtonPanel, java.awt.BorderLayout.PAGE_END);
 
@@ -434,14 +357,14 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_filterFieldActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void reportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reportButtonActionPerformed
         // Generate the first report
         ReportGenerator.generateSpecializationReport(masterDoctorList);
         // Generate the second report
         ReportGenerator.generateAvailabilityReport(masterDoctorList);
 
         JOptionPane.showMessageDialog(this, "Reports generated successfully!");
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_reportButtonActionPerformed
 
     private void sortBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortBoxActionPerformed
         String selectedSort = (String) sortBox.getSelectedItem();
@@ -482,9 +405,9 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox<String> filterBox;
     private javax.swing.JTextField filterField;
     private javax.swing.JLabel filterLabel;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JPanel logoPanel;
+    private javax.swing.JButton reportButton;
     private javax.swing.JPanel searchPanel;
     private javax.swing.JPanel searchWrapperPanel;
     private javax.swing.JComboBox<String> sortBox;

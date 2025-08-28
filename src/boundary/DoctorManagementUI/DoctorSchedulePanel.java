@@ -67,32 +67,8 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
 //        Initialize Hard-coded Data for this week 
     private void hardCordedData() {
 
-        thisWeekSchedule = new DoublyLinkedList<>();
-        DutySlot dataSlot1 = new DutySlot("Monday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
-        DutySlot dataSlot2 = new DutySlot("Tuesday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
-        DutySlot dataSlot3 = new DutySlot("Wednesday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
-        DutySlot dataSlot4 = new DutySlot("Thursday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
-        DutySlot dataSlot5 = new DutySlot("Friday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
-        DutySlot dataSlot6 = new DutySlot("Saturday", "Morning (8am - 2pm)", masterDoctorList.getElement(1).getEntry().getValue());
-        DutySlot dataSlot7 = new DutySlot("Monday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
-        DutySlot dataSlot8 = new DutySlot("Tuesday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
-        DutySlot dataSlot9 = new DutySlot("Wednesday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
-        DutySlot dataSlot10 = new DutySlot("Thursday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
-        DutySlot dataSlot11 = new DutySlot("Friday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
-        DutySlot dataSlot12 = new DutySlot("Saturday", "Evening (2pm - 8pm)", masterDoctorList.getElement(4).getEntry().getValue());
-
-        thisWeekSchedule.insertLast(dataSlot1);
-        thisWeekSchedule.insertLast(dataSlot2);
-        thisWeekSchedule.insertLast(dataSlot3);
-        thisWeekSchedule.insertLast(dataSlot4);
-        thisWeekSchedule.insertLast(dataSlot5);
-        thisWeekSchedule.insertLast(dataSlot6);
-        thisWeekSchedule.insertLast(dataSlot7);
-        thisWeekSchedule.insertLast(dataSlot8);
-        thisWeekSchedule.insertLast(dataSlot9);
-        thisWeekSchedule.insertLast(dataSlot10);
-        thisWeekSchedule.insertLast(dataSlot11);
-        thisWeekSchedule.insertLast(dataSlot12);
+        
+        
         FileUtils.writeDataToFile("this_week_schedule", thisWeekSchedule);
     }
 
@@ -351,18 +327,16 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jComboBox1 = new javax.swing.JComboBox<>();
         logoPanel = new javax.swing.JPanel();
         logoLabel = new javax.swing.JLabel();
         titlePanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
-        scheduleWrapperPanel = new javax.swing.JPanel();
+        scheduleWrapeprPanel = new javax.swing.JPanel();
+        schedulePanel = new javax.swing.JPanel();
         oldScheduleLabelPanel = new javax.swing.JPanel();
         oldScheduleLabel = new javax.swing.JLabel();
-        oldScheduleBorderPanel = new javax.swing.JPanel();
         oldSchedulePanel = new javax.swing.JScrollPane();
         oldScheduleTable = new javax.swing.JTable();
-        newScheduleWrapperPanel = new javax.swing.JPanel();
         newScheduleLabelPanel = new javax.swing.JPanel();
         newScheduleLabel = new javax.swing.JLabel();
         newSchedulePanel = new javax.swing.JScrollPane();
@@ -372,8 +346,6 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         backButton = new javax.swing.JButton();
         testButton = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
-
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         setLayout(new java.awt.BorderLayout());
 
@@ -388,14 +360,14 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
+        schedulePanel.setLayout(new java.awt.BorderLayout());
+
         oldScheduleLabelPanel.setLayout(new java.awt.BorderLayout());
 
         oldScheduleLabel.setFont(new java.awt.Font("Corbel", 1, 18)); // NOI18N
         oldScheduleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         oldScheduleLabel.setText("This Week : ");
         oldScheduleLabelPanel.add(oldScheduleLabel, java.awt.BorderLayout.PAGE_START);
-
-        oldScheduleBorderPanel.setLayout(new java.awt.BorderLayout());
 
         oldSchedulePanel.setPreferredSize(new java.awt.Dimension(453, 124));
 
@@ -413,24 +385,16 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         oldSchedulePanel.setViewportView(oldScheduleTable);
         oldScheduleTable.getAccessibleContext().setAccessibleName("olsScheduleTable");
 
-        oldScheduleBorderPanel.add(oldSchedulePanel, java.awt.BorderLayout.CENTER);
+        oldScheduleLabelPanel.add(oldSchedulePanel, java.awt.BorderLayout.CENTER);
 
-        newScheduleWrapperPanel.setPreferredSize(new java.awt.Dimension(100, 23));
+        schedulePanel.add(oldScheduleLabelPanel, java.awt.BorderLayout.PAGE_START);
 
         newScheduleLabelPanel.setLayout(new java.awt.BorderLayout());
 
         newScheduleLabel.setFont(new java.awt.Font("Corbel", 1, 18)); // NOI18N
+        newScheduleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         newScheduleLabel.setText("Next Week :");
-        newScheduleLabelPanel.add(newScheduleLabel, java.awt.BorderLayout.CENTER);
-
-        newScheduleWrapperPanel.add(newScheduleLabelPanel);
-
-        oldScheduleBorderPanel.add(newScheduleWrapperPanel, java.awt.BorderLayout.PAGE_END);
-        newScheduleWrapperPanel.getAccessibleContext().setAccessibleName("newScheduleTable");
-
-        oldScheduleLabelPanel.add(oldScheduleBorderPanel, java.awt.BorderLayout.PAGE_END);
-
-        scheduleWrapperPanel.add(oldScheduleLabelPanel);
+        newScheduleLabelPanel.add(newScheduleLabel, java.awt.BorderLayout.PAGE_START);
 
         newSchedulePanel.setPreferredSize(new java.awt.Dimension(453, 124));
 
@@ -447,9 +411,13 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
         newScheduleTable.getTableHeader().setReorderingAllowed(false);
         newSchedulePanel.setViewportView(newScheduleTable);
 
-        scheduleWrapperPanel.add(newSchedulePanel);
+        newScheduleLabelPanel.add(newSchedulePanel, java.awt.BorderLayout.CENTER);
 
-        titlePanel.add(scheduleWrapperPanel, java.awt.BorderLayout.CENTER);
+        schedulePanel.add(newScheduleLabelPanel, java.awt.BorderLayout.CENTER);
+
+        scheduleWrapeprPanel.add(schedulePanel);
+
+        titlePanel.add(scheduleWrapeprPanel, java.awt.BorderLayout.CENTER);
 
         saveButton.setText("Save");
         saveButton.addActionListener(new java.awt.event.ActionListener() {
@@ -543,21 +511,19 @@ public class DoctorSchedulePanel extends javax.swing.JPanel {
     private javax.swing.JButton backButton;
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JButton jButton1;
-    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JPanel logoPanel;
     private javax.swing.JLabel newScheduleLabel;
     private javax.swing.JPanel newScheduleLabelPanel;
     private javax.swing.JScrollPane newSchedulePanel;
     private javax.swing.JTable newScheduleTable;
-    private javax.swing.JPanel newScheduleWrapperPanel;
-    private javax.swing.JPanel oldScheduleBorderPanel;
     private javax.swing.JLabel oldScheduleLabel;
     private javax.swing.JPanel oldScheduleLabelPanel;
     private javax.swing.JScrollPane oldSchedulePanel;
     private javax.swing.JTable oldScheduleTable;
     private javax.swing.JButton saveButton;
-    private javax.swing.JPanel scheduleWrapperPanel;
+    private javax.swing.JPanel schedulePanel;
+    private javax.swing.JPanel scheduleWrapeprPanel;
     private javax.swing.JButton testButton;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;
