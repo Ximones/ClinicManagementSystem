@@ -1,11 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package enitity;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
@@ -14,12 +12,12 @@ import java.util.Date;
  * @author szepi
  */
 public class QueueEntry implements Comparable<QueueEntry>, Serializable {
-
     private Patient patient;
     private String queueNumber;
     private String status;
     private long enqueueTime;       // time in ms when patient joined queue
     private long startConsultTime;  // time in ms when consultation starts
+    private LocalDateTime startTime; // precise time for consulting
 
     public QueueEntry(Patient patient, String queueNumber, String status) {
         this.patient = patient;
@@ -27,27 +25,27 @@ public class QueueEntry implements Comparable<QueueEntry>, Serializable {
         this.status = status;
         this.enqueueTime = System.currentTimeMillis(); // record entry time
         this.startConsultTime = 0; // not started yet
+        this.startTime = null;     // not started yet
     }
 
     // --- Getters ---
     public Patient getPatient() {
         return patient;
     }
-
     public String getQueueNumber() {
         return queueNumber;
     }
-
     public String getStatus() {
         return status;
     }
-
     public long getEnqueueTime() {
         return enqueueTime;
     }
-
     public long getStartConsultTime() {
         return startConsultTime;
+    }
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
 
     // --- Setters ---
@@ -61,6 +59,7 @@ public class QueueEntry implements Comparable<QueueEntry>, Serializable {
     public void markStartConsult() {
         this.status = "In Progress";
         this.startConsultTime = System.currentTimeMillis();
+        this.startTime = LocalDateTime.now();
     }
 
     /**
@@ -71,12 +70,15 @@ public class QueueEntry implements Comparable<QueueEntry>, Serializable {
     }
 
     /**
-     * Marks the patient as consulting, sets status to "Consulting".
+     * Marks the patient as consulting, sets status to "Consulting"
+     * and records LocalDateTime.
      */
     public void markConsulting() {
         this.status = "Consulting";
+        this.startConsultTime = System.currentTimeMillis();
+        this.startTime = LocalDateTime.now();  // <-- required
     }
-    
+
     /**
      * Marks the patient as prescribing after consultation.
      */
@@ -103,12 +105,21 @@ public class QueueEntry implements Comparable<QueueEntry>, Serializable {
         return new SimpleDateFormat("HH:mm:ss").format(new Date(timeMillis));
     }
 
+    private String formatDateTime(LocalDateTime time) {
+        if (time == null) return "-";
+        return time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
+
     public String getFormattedEnqueueTime() {
         return formatTime(enqueueTime);
     }
 
     public String getFormattedStartTime() {
         return formatTime(startConsultTime);
+    }
+
+    public String getFormattedStartDateTime() {
+        return formatDateTime(startTime);
     }
 
     /**
@@ -119,7 +130,6 @@ public class QueueEntry implements Comparable<QueueEntry>, Serializable {
         long totalSeconds = ms / 1000;
         long minutes = totalSeconds / 60;
         long seconds = totalSeconds % 60;
-
         if (minutes > 0) {
             return minutes + "m " + seconds + "s";
         } else {
@@ -134,12 +144,16 @@ public class QueueEntry implements Comparable<QueueEntry>, Serializable {
                 + ", patient=" + (patient != null ? patient.getPatientID() : "null")
                 + ", status='" + status + '\''
                 + ", enqueue=" + getFormattedEnqueueTime()
-                + ", start=" + getFormattedStartTime()
+                + ", start(ms)=" + getFormattedStartTime()
+                + ", startDateTime=" + getFormattedStartDateTime()
                 + ", waiting=" + getFormattedWaitingTime()
                 + '}';
     }
-
-    @Override
+    
+    
+    
+    
+   @Override
     public int compareTo(QueueEntry other) {
 //        // First, compare by day of the week
 //        int dayCompare = this.dayOfWeek.compareTo(other.dayOfWeek);
@@ -150,4 +164,5 @@ public class QueueEntry implements Comparable<QueueEntry>, Serializable {
 //        return this.shift.compareTo(other.shift);
         return 0;
     }
+
 }

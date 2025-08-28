@@ -120,6 +120,19 @@ private void displayQueueData() {
 }
 
 
+public void reloadData() {
+    loadQueueData();      // re-read from file
+    displayQueueData();   // update the table
+}
+
+public void setVisible(boolean aFlag) {
+    super.setVisible(aFlag);
+    if (aFlag) {
+        reloadData();   // refresh every time this panel is displayed
+    }
+}
+
+
 
 
     /**
