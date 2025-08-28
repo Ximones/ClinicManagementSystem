@@ -48,6 +48,39 @@ public class PatientDialog extends javax.swing.JDialog {
         setTitle("Register New Patient");
     }
     
+    
+    // New constructor for editing an existing patient
+    public PatientDialog(java.awt.Frame parent, boolean modal, Patient patientToEdit) {
+    super(parent, modal);
+    initComponents();
+    setLocationRelativeTo(parent);
+
+    this.result = null;
+
+    // Gender options
+    jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{"Male", "Female"}));
+
+    if (patientToEdit != null) {
+        // Pre-fill fields with patient data
+        formNameInput.setText(patientToEdit.getPatientName());
+        formAgeInput.setText(String.valueOf(patientToEdit.getPatientAge()));
+        formICNoInput.setText(patientToEdit.getPatientIC());
+        jComboBox1.setSelectedItem(patientToEdit.getGender());
+        formContactInput.setText(patientToEdit.getContact());
+        formEmailInput.setText(patientToEdit.getEmail());
+        formAddressInput.setText(patientToEdit.getAddress());
+        formDateOfRegInput.setText(patientToEdit.getDateOfRegistration());
+        formDateOfRegInput.setEditable(false); // keep reg date read-only
+
+        // Update dialog title for editing
+        setTitle("Edit Patient");
+
+        // Keep the reference so we can update it on save
+        this.result = new Pair<>(patientToEdit.getPatientID(), patientToEdit);
+    }
+}
+
+    
     /**
      * Public method to retrieve the result (Patient ID and Patient object).
      * @return A Pair<String, Patient> if saved, null if cancelled.
@@ -57,9 +90,8 @@ public class PatientDialog extends javax.swing.JDialog {
 }
     
       
-    
-private void savePatientAction(java.awt.event.ActionEvent evt) {
-    // 1. Get trimmed text from all input fields
+
+    private void savePatientAction(java.awt.event.ActionEvent evt) {
     String name = formNameInput.getText().trim();
     String ageStr = formAgeInput.getText().trim();
     String ic = formICNoInput.getText().trim();
@@ -69,55 +101,61 @@ private void savePatientAction(java.awt.event.ActionEvent evt) {
     String address = formAddressInput.getText().trim();
     String date = formDateOfRegInput.getText().trim();
 
-    // StringBuilder to collect all error messages
     StringBuilder errors = new StringBuilder();
 
-    // 1. Check for empty fields
+    // --- Validation checks ---
     if (name.isEmpty() || ageStr.isEmpty() || ic.isEmpty() ||
         gender == null || gender.isEmpty() || contact.isEmpty() ||
         email.isEmpty() || address.isEmpty() || date.isEmpty()) {
         errors.append("• Please fill in all fields.\n");
     }
-
-    // 2. Name validation (alphabets, spaces, and / allowed)
-    if (!name.matches("^[A-Za-z /]+$")) {
+    if (!name.matches("^[A-Za-z ]+(/[A-Za-z ]+)?$")) {
         errors.append("• Name must contain only alphabets, spaces, or '/'.\n");
     }
-
-    // 3. IC format validation
     if (!ic.matches("^\\d{6}-\\d{2}-\\d{4}$")) {
-        errors.append("• IC must be in format XXXXXX-XX-XXXX with only digits.\n");
+        errors.append("• IC must be in format XXXXXX-XX-XXXX.\n");
     }
 
-    // 4. Age validation
+    int age = -1;
     try {
-        int age = Integer.parseInt(ageStr);
-        if (age <= 0) {
-            errors.append("• Age must be greater than 0.\n");
-        }
+        age = Integer.parseInt(ageStr);
+        if (age <= 0) errors.append("• Age must be greater than 0.\n");
     } catch (NumberFormatException ex) {
         errors.append("• Age must be a valid number.\n");
     }
 
-    // 5. Phone validation (11 digits only)
     if (!contact.matches("^\\d{3}-\\d{7,8}$")) {
-        errors.append("• Phone number must be in format xxx-xxxxxxxx or xxx-xxxxxxxxx (10 or 11 digits total).\n");
+        errors.append("• Phone must be in format xxx-xxxxxxx or xxx-xxxxxxxx.\n");
     }
-
-
-    // 6. Email validation (must end with gmail.com or yahoo.com)
     if (!email.matches("^[A-Za-z0-9._%+-]+@(gmail\\.com|yahoo\\.com)$")) {
         errors.append("• Email must be a valid Gmail or Yahoo address.\n");
     }
+    if (!date.matches("^\\d{4}-\\d{2}-\\d{2}$")) {
+        errors.append("• Date must be in format yyyy-MM-dd.\n");
+    }
 
-    // Show all collected errors if any
     if (errors.length() > 0) {
         JOptionPane.showMessageDialog(this, errors.toString(), "Input Errors", JOptionPane.WARNING_MESSAGE);
         return;
     }
 
-    // 7. If validation passes → create Patient
     try {
+    if (this.result != null) {
+        // Editing existing patient → update fields only
+        Patient existingPatient = this.result.getValue();
+        existingPatient.setPatientName(name);
+        existingPatient.setPatientAge(Integer.parseInt(ageStr));
+        existingPatient.setPatientIC(ic);
+        existingPatient.setGender(gender);
+        existingPatient.setContact(contact);
+        existingPatient.setEmail(email);
+        existingPatient.setAddress(address);
+        existingPatient.setDateOfRegistration(date);
+
+        // No need to create a new Pair, just update value
+        this.result.setValue(existingPatient);
+    } else {
+        // Creating new patient
         Patient newPatient = new Patient();
         newPatient.setPatientName(name);
         newPatient.setPatientAge(Integer.parseInt(ageStr));
@@ -129,11 +167,16 @@ private void savePatientAction(java.awt.event.ActionEvent evt) {
         newPatient.setDateOfRegistration(date);
 
         this.result = new Pair<>(newPatient.getPatientID(), newPatient);
-        dispose();
-    } catch (Exception ex) {
-        JOptionPane.showMessageDialog(this, "Error creating patient data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
+
+    dispose();
+} catch (Exception ex) {
+    JOptionPane.showMessageDialog(this, 
+        "Error creating/updating patient data: " + ex.getMessage(), 
+        "Error", JOptionPane.ERROR_MESSAGE);
 }
+}
+
 
 
    
