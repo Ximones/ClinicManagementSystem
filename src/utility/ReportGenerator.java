@@ -657,22 +657,22 @@ public class ReportGenerator {
             document.add(new Paragraph(" "));
 
             // --- 2. Create the Table ---
-            Table table = new Table(UnitValue.createPercentArray(new float[]{2, 2, 3, 1, 2}));
+            Table table = new Table(UnitValue.createPercentArray(new float[]{2, 2, 3, 2, 3}));
             table.setWidth(UnitValue.createPercentValue(100));
 
             table.addHeaderCell(new Cell().add(new Paragraph("Date")));
             table.addHeaderCell(new Cell().add(new Paragraph("Doctor")));
             table.addHeaderCell(new Cell().add(new Paragraph("Diagnosis")));
-            table.addHeaderCell(new Cell().add(new Paragraph("Cost (RM)")));
             table.addHeaderCell(new Cell().add(new Paragraph("Treatment Details")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Notes")));
 
             // --- 3. Populate the Table ---
             for (Treatment t : patientHistory) {
                 table.addCell(t.getFormattedDateTime());
                 table.addCell(t.getConsultation().getDoctor().getName());
                 table.addCell(t.getDiagnosis());
-                table.addCell(String.format("%.2f", t.getCost()));
                 table.addCell(t.getTreatmentDetails());
+                table.addCell(t.getNotes() != null ? t.getNotes() : "");
             }
 
             document.add(table);
@@ -683,58 +683,60 @@ public class ReportGenerator {
         }
     }
 
-     /**
-     * NEW REPORT: Generates a PDF report analyzing treatment revenue by month.
+    /**
+     * NEW REPORT: Generates a PDF report showing the popularity of different treatment types.
      * @param masterTreatmentList The complete list of all treatments.
      */
-    public static void generateMonthlyRevenueReport(DoublyLinkedList<Pair<String, Treatment>> masterTreatmentList) {
+    public static void generateTreatmentTypePopularityReport(DoublyLinkedList<Pair<String, Treatment>> masterTreatmentList) {
         try {
-            // --- 1. Aggregate Data by Month using a DoublyLinkedList to simulate a map ---
-            DoublyLinkedList<Pair<String, Double>> monthlyRevenue = new DoublyLinkedList<>();
-            DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("yyyy-MM");
+            // --- 1. Aggregate Data by Treatment Type ---
+            DoublyLinkedList<Pair<String, Integer>> treatmentTypeCounts = new DoublyLinkedList<>();
 
             for (Pair<String, Treatment> pair : masterTreatmentList) {
                 Treatment t = pair.getValue();
-                String monthYear = t.getTreatmentDateTime().format(monthFormatter);
+                String treatmentType = t.getTreatmentDetails();
                 boolean found = false;
 
-                // Search for the month in our revenue list
-                for (Pair<String, Double> revenuePair : monthlyRevenue) {
-                    if (revenuePair.getKey().equals(monthYear)) {
-                        revenuePair.setValue(revenuePair.getValue() + t.getCost());
+                // Search for the treatment type in our counts list
+                for (Pair<String, Integer> countPair : treatmentTypeCounts) {
+                    if (countPair.getKey().equals(treatmentType)) {
+                        countPair.setValue(countPair.getValue() + 1);
                         found = true;
                         break;
                     }
                 }
 
-                // If month not found, add a new entry
+                // If treatment type not found, add a new entry
                 if (!found) {
-                    monthlyRevenue.insertLast(new Pair<>(monthYear, t.getCost()));
+                    treatmentTypeCounts.insertLast(new Pair<>(treatmentType, 1));
                 }
             }
 
             // --- 2. Create Bar Chart ---
             DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-            for (Pair<String, Double> entry : monthlyRevenue) {
-                dataset.addValue(entry.getValue(), "Revenue", entry.getKey());
+            for (Pair<String, Integer> entry : treatmentTypeCounts) {
+                dataset.addValue(entry.getValue(), "Count", entry.getKey());
             }
 
             JFreeChart barChart = ChartFactory.createBarChart(
-                "Monthly Treatment Revenue",
-                "Month",
-                "Total Revenue (RM)",
-                dataset
+                "Treatment Type Popularity",
+                "Treatment Type",
+                "Number of Patients",
+                dataset,
+                PlotOrientation.VERTICAL,
+                false, true, false
             );
 
-            File chartFile = new File("monthly_revenue_chart.png");
+            File chartFile = new File("treatment_type_popularity_chart.png");
             ChartUtils.saveChartAsPNG(chartFile, barChart, 700, 400);
 
             // --- 3. Create PDF ---
-            PdfWriter writer = new PdfWriter("Monthly_Revenue_Report.pdf");
+            PdfWriter writer = new PdfWriter("Treatment_Type_Popularity_Report.pdf");
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf);
 
-            document.add(new Paragraph("Monthly Treatment Revenue Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("Treatment Type Popularity Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("This report shows the total number of patients for each treatment type.").setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph(" "));
             
             Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));

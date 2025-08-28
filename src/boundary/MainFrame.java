@@ -43,7 +43,7 @@ public class MainFrame extends javax.swing.JFrame {
         initComponents();
 
         /* Create instances of multiple screen panels
-        *  Pass 'this' Main Frame 
+        * Pass 'this' Main Frame 
          */
         consultationControl = new ConsultationControl();
         ClinicMenuPanel clinicPanel = new ClinicMenuPanel(this);
@@ -76,7 +76,6 @@ public class MainFrame extends javax.swing.JFrame {
         MedicalTreatmentManagementPanel medicalPanel = new MedicalTreatmentManagementPanel(this);
         DiagnosisEntryPanel diagnosisPanel = new DiagnosisEntryPanel(this); 
         TreatmentHistoryPanel historyPanel = new TreatmentHistoryPanel(this); 
-        diagnosisPanel = new DiagnosisEntryPanel(this);
 
         // Add the panels to the cardPanel with unique names
         cardPanel.add(clinicPanel, "clinicMenu");
@@ -137,13 +136,6 @@ public class MainFrame extends javax.swing.JFrame {
 
     // Function to switch different windows
     public void showPanel(String panelName) {
-        // Attempt runtime reloads for panels that expose reloadData()
-        try {
-            for (java.awt.Component c : cardPanel.getComponents()) {
-                if (panelName.equals(c.getName())) { break; }
-            }
-        } catch (Exception ignore) {}
-
         // Targeted refresh based on known panel names
         switch (panelName) {
             case "medicineInformation":
@@ -226,6 +218,26 @@ public class MainFrame extends javax.swing.JFrame {
                 }
                 if (comp instanceof boundary.ConsultationManagementUI.ConsultationReportsPanel) {
                     ((boundary.ConsultationManagementUI.ConsultationReportsPanel) comp).reloadData();
+                }
+                break;
+            }
+            case "treatmentHistory": {
+                java.awt.Component comp = null;
+                for (java.awt.Component c : cardPanel.getComponents()) {
+                    if (c instanceof boundary.MedicalTreatmentManagementUI.TreatmentHistoryPanel) { comp = c; break; }
+                }
+                if (comp instanceof boundary.MedicalTreatmentManagementUI.TreatmentHistoryPanel) {
+                    ((boundary.MedicalTreatmentManagementUI.TreatmentHistoryPanel) comp).reloadData();
+                }
+                break;
+            }
+            case "diagnosisEntry": {
+                java.awt.Component comp = null;
+                for (java.awt.Component c : cardPanel.getComponents()) {
+                    if (c instanceof boundary.MedicalTreatmentManagementUI.DiagnosisEntryPanel) { comp = c; break; }
+                }
+                if (comp instanceof boundary.MedicalTreatmentManagementUI.DiagnosisEntryPanel) {
+                    ((boundary.MedicalTreatmentManagementUI.DiagnosisEntryPanel) comp).reloadData();
                 }
                 break;
             }

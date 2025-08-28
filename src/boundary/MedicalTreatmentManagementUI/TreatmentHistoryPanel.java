@@ -65,7 +65,7 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         model.addColumn("Doctor Name");
         model.addColumn("Diagnosis");
         model.addColumn("Treatment Type");
-        model.addColumn("Cost (RM)");
+        model.addColumn("Notes");
         model.addColumn("Date & Time");
     }
 
@@ -99,7 +99,7 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
                     t.getConsultation().getDoctor().getName(),
                     t.getDiagnosis(),
                     t.getTreatmentDetails(),
-                    String.format("%.2f", t.getCost()),
+                    t.getNotes(),
                     t.getFormattedDateTime()
                 });
             }
@@ -150,8 +150,7 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         editButton = new javax.swing.JButton();
         report1Button = new javax.swing.JButton();
         report2Button = new javax.swing.JButton();
-        revenueReportButton = new javax.swing.JButton();
-        refreshButton = new javax.swing.JButton();
+        popularReportButton = new javax.swing.JButton();
         backButton = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
@@ -228,21 +227,13 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         });
         ButtonPanel.add(report2Button);
 
-        revenueReportButton.setText("Monthly Revenue Report");
-        revenueReportButton.addActionListener(new java.awt.event.ActionListener() {
+        popularReportButton.setText("Popular Treatment Report");
+        popularReportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                revenueReportButtonActionPerformed(evt);
+                popularReportButtonActionPerformed(evt);
             }
         });
-        ButtonPanel.add(revenueReportButton);
-
-        refreshButton.setText("Refresh");
-        refreshButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshButtonActionPerformed(evt);
-            }
-        });
-        ButtonPanel.add(refreshButton);
+        ButtonPanel.add(popularReportButton);
 
         backButton.setText("Back");
         backButton.addActionListener(new java.awt.event.ActionListener() {
@@ -270,13 +261,16 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_editButtonActionPerformed
 
     private void report1ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_report1ButtonActionPerformed
-        DoublyLinkedList<Pair<String, Integer>> frequencyData = treatmentControl.getDiagnosisFrequency();
+        // Create a fresh control instance to load the latest data from the file
+        TreatmentControl freshControl = new TreatmentControl();
+        DoublyLinkedList<Pair<String, Integer>> frequencyData = freshControl.getDiagnosisFrequency();
+        
         if (frequencyData.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No treatment data to generate report.", "Report Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
         ReportGenerator.generateDiagnosisFrequencyReport(frequencyData);
-        JOptionPane.showMessageDialog(this, "Common Diagnoses Report generated!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "Report generated: 'Common_Diagnoses_Report.pdf'", "Success", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_report1ButtonActionPerformed
 
     private void report2ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_report2ButtonActionPerformed
@@ -285,14 +279,19 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
             return;
         }
         
-        DoublyLinkedList<Treatment> patientHistory = treatmentControl.getTreatmentsForPatient(patientId.trim());
+        String finalPatientId = patientId.trim().toUpperCase();
+        
+        // Create a fresh control instance to load the latest data from the file
+        TreatmentControl freshControl = new TreatmentControl();
+        DoublyLinkedList<Treatment> patientHistory = freshControl.getTreatmentsForPatient(finalPatientId);
+        
         if (patientHistory.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No treatments found for Patient ID: " + patientId, "Report Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "No treatments found for Patient ID: " + finalPatientId, "Report Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
         ReportGenerator.generatePatientHistoryReport(patientHistory);
-        JOptionPane.showMessageDialog(this, "Patient History Report generated!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "Report generated: 'Patient_History_" + finalPatientId + ".pdf'", "Success", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_report2ButtonActionPerformed
 
     private void sortComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortComboBoxActionPerformed
@@ -309,24 +308,19 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         populateTable(sortedList);
     }//GEN-LAST:event_sortComboBoxActionPerformed
 
-    private void revenueReportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revenueReportButtonActionPerformed
+    private void popularReportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_popularReportButtonActionPerformed
         loadAndDisplayTreatments(); // Ensure data is fresh before generating report
         if (masterTreatmentList.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No treatment data to generate report.", "Report Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        ReportGenerator.generateMonthlyRevenueReport(masterTreatmentList);
-        JOptionPane.showMessageDialog(this, "Report generated: 'Monthly_Revenue_Report_Report.pdf'", "Success", JOptionPane.INFORMATION_MESSAGE);
-    }//GEN-LAST:event_revenueReportButtonActionPerformed
+        ReportGenerator.generateTreatmentTypePopularityReport(masterTreatmentList);
+        JOptionPane.showMessageDialog(this, "Report generated: 'Treatment_Type_Popularity_Report.pdf'", "Success", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_popularReportButtonActionPerformed
 
     private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
         mainFrame.showPanel("medicalManagement");
     }//GEN-LAST:event_backButtonActionPerformed
-
-    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
-        loadAndDisplayTreatments();
-        JOptionPane.showMessageDialog(this, "Treatment history has been refreshed.", "Refresh Complete", JOptionPane.INFORMATION_MESSAGE);
-    }//GEN-LAST:event_refreshButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -337,10 +331,9 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
     private javax.swing.JTable historyTable;
     private javax.swing.JScrollPane historyTablePanel;
     private javax.swing.JLabel logoLabel;
-    private javax.swing.JButton refreshButton;
+    private javax.swing.JButton popularReportButton;
     private javax.swing.JButton report1Button;
     private javax.swing.JButton report2Button;
-    private javax.swing.JButton revenueReportButton;
     private javax.swing.JTextField searchInput;
     private javax.swing.JPanel searchPanel;
     private javax.swing.JPanel searchWrapperPanel;

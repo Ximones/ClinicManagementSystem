@@ -153,6 +153,9 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
         notesLabel.setText("Notes :");
         formGridPanel.add(notesLabel);
 
+        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane2.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
         notesInput.setColumns(20);
         notesInput.setRows(5);
         jScrollPane2.setViewportView(notesInput);
@@ -195,7 +198,7 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
         if (treatmentToEdit == null) return;
 
         StringBuilder errors = new StringBuilder();
-        String diagnosis = diagnosisInput.getText().trim();
+        String diagnosis = diagnosisInput.getText().trim().toLowerCase();
         int treatmentTypeIndex = treatmentTypeComboBox.getSelectedIndex();
 
         if (diagnosis.isEmpty()) {
@@ -237,6 +240,8 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
             return;
         }
 
+        // **FIX**: Create a new control instance to load the latest data from the file.
+        this.treatmentControl = new TreatmentControl();
         treatmentToEdit = treatmentControl.findTreatmentById(idToSearch);
 
         if (treatmentToEdit != null) {
@@ -257,6 +262,11 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
         } else {
             JOptionPane.showMessageDialog(this, "Treatment with ID '" + idToSearch + "' not found.", "Not Found", JOptionPane.WARNING_MESSAGE);
             setFieldsEditable(false);
+            // Clear fields if not found
+            treatmentIdField.setText("");
+            diagnosisInput.setText("");
+            notesInput.setText("");
+            treatmentTypeComboBox.setSelectedIndex(0);
         }
     }//GEN-LAST:event_searchButtonActionPerformed
 
