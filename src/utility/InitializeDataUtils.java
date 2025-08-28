@@ -9,7 +9,7 @@ import enitity.Patient;
 
 /**
  *
- * @author Chok Chun Fai, Lee Sze Ping, Lee Wan Ching
+ * @author Chok Chun Fai, Lim Sze Ping, Lee Wan Ching
  */
 public class InitializeDataUtils {
 

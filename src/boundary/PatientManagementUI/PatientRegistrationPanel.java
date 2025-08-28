@@ -58,8 +58,8 @@ public class PatientRegistrationPanel extends javax.swing.JPanel {
                 filterPatients();
             }
         });
-        jButton1.addActionListener(e -> addPatient());
-        jButton2.addActionListener(e -> {
+        AddPatient.addActionListener(e -> addPatient());
+        Done.addActionListener(e -> {
         savePatientData();
         JOptionPane.showMessageDialog(this, "Patient data saved.");
     });
@@ -87,8 +87,7 @@ private void setupTable() {
     ) {
         @Override
         public boolean isCellEditable(int row, int column) {
-            // ID (col 0) not editable; others are editable
-            return column != 0;
+            return false;
         }
         @Override
         public Class<?> getColumnClass(int columnIndex) {
@@ -133,6 +132,7 @@ private void setupTable() {
         }
     });
 }
+
 
 
 // Helper: refresh one row from a Patient object
@@ -290,9 +290,10 @@ private void filterPatients() {
         patientTablePanel = new javax.swing.JScrollPane();
         patientTable = new javax.swing.JTable();
         ButtonPanel = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        EditPatient = new javax.swing.JButton();
+        AddPatient = new javax.swing.JButton();
+        GenerateReport = new javax.swing.JButton();
+        Done = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
         add(logoLabel, java.awt.BorderLayout.PAGE_START);
@@ -336,29 +337,37 @@ private void filterPatients() {
 
         searchWrapperPanel.add(patientTablePanel, java.awt.BorderLayout.CENTER);
 
-        jButton1.setText("Add Patient");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        EditPatient.setText("Edit Patient");
+        EditPatient.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                EditPatientActionPerformed(evt);
             }
         });
-        ButtonPanel.add(jButton1);
+        ButtonPanel.add(EditPatient);
 
-        jButton3.setText("Generate Report");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        AddPatient.setText("Add Patient");
+        AddPatient.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                AddPatientActionPerformed(evt);
             }
         });
-        ButtonPanel.add(jButton3);
+        ButtonPanel.add(AddPatient);
 
-        jButton2.setText("Done");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        GenerateReport.setText("Generate Report");
+        GenerateReport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                GenerateReportActionPerformed(evt);
             }
         });
-        ButtonPanel.add(jButton2);
+        ButtonPanel.add(GenerateReport);
+
+        Done.setText("Done");
+        Done.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                DoneActionPerformed(evt);
+            }
+        });
+        ButtonPanel.add(Done);
 
         searchWrapperPanel.add(ButtonPanel, java.awt.BorderLayout.PAGE_END);
 
@@ -371,11 +380,11 @@ private void filterPatients() {
         // TODO add your handling code here:
     }//GEN-LAST:event_filterFieldActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void AddPatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddPatientActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_AddPatientActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void DoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DoneActionPerformed
      // ✅ Make sure last cell edit is committed
     if (patientTable.isEditing()) {
         patientTable.getCellEditor().stopCellEditing();
@@ -402,9 +411,9 @@ private void filterPatients() {
     JOptionPane.showMessageDialog(this, "All patient updates saved!");
     mainFrame.showPanel("patientManagement");
 
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_DoneActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void GenerateReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GenerateReportActionPerformed
           try {
         // Generate the Patient Age Range Report
         ReportGenerator.generatePatientAgeRangeReport(patientList);
@@ -417,16 +426,45 @@ private void filterPatients() {
             "Report Error", JOptionPane.ERROR_MESSAGE);
         ex.printStackTrace();
     }
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_GenerateReportActionPerformed
+
+    private void EditPatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EditPatientActionPerformed
+    int selectedRow = patientTable.getSelectedRow();
+    if (selectedRow == -1) {
+        JOptionPane.showMessageDialog(this, "Please select a patient to edit.");
+        return;
+    }
+
+    // Get patient ID from selected row
+    String patientId = tableModel.getValueAt(selectedRow, 0).toString();
+    Patient selectedPatient = findPatientById(patientId);
+    if (selectedPatient == null) {
+        JOptionPane.showMessageDialog(this, "Patient not found.");
+        return;
+    }
+
+    // Open the PatientDialog in "edit mode"
+    PatientDialog dialog = new PatientDialog(mainFrame, true, selectedPatient);
+    dialog.setVisible(true);
+    Patient updatedPatient = dialog.getResultPatient();
+
+    if (updatedPatient != null) {
+        // Refresh row in table directly (since PatientDialog already updates the object)
+        reloadPatientRow(selectedRow, selectedPatient);
+        savePatientData();
+        JOptionPane.showMessageDialog(this, "Patient updated successfully!");
+    }
+    }//GEN-LAST:event_EditPatientActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton AddPatient;
     private javax.swing.JPanel ButtonPanel;
+    private javax.swing.JButton Done;
+    private javax.swing.JButton EditPatient;
+    private javax.swing.JButton GenerateReport;
     private javax.swing.JComboBox<String> filterBox;
     private javax.swing.JTextField filterField;
     private javax.swing.JLabel filterLabel;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JTable patientTable;
     private javax.swing.JScrollPane patientTablePanel;
