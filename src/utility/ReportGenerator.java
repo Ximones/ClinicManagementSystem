@@ -439,6 +439,80 @@ public class ReportGenerator {
             e.printStackTrace();
         }
     }
+    
+      public static void generatePatientAgeRangeReport(DoublyLinkedList<Patient> patientList) {
+        try {
+            // Step 1: Filter patients by today's date
+            LocalDate today = LocalDate.now();
+            Map<String, Integer> ageRangeCounts = new HashMap<>();
+            ageRangeCounts.put("0-12", 0);
+            ageRangeCounts.put("13-19", 0);
+            ageRangeCounts.put("20-35", 0);
+            ageRangeCounts.put("36-50", 0);
+            ageRangeCounts.put("51+", 0);
+
+            for (Patient p : patientList) {
+                // Assuming dateOfRegistration is stored as String (yyyy-MM-dd)
+                LocalDate regDate = LocalDate.parse(p.getDateOfRegistration());
+                if (regDate.equals(today)) {
+                    int age = p.getPatientAge();
+                    if (age <= 12) {
+                        ageRangeCounts.put("0-12", ageRangeCounts.get("0-12") + 1);
+                    } else if (age <= 19) {
+                        ageRangeCounts.put("13-19", ageRangeCounts.get("13-19") + 1);
+                    } else if (age <= 35) {
+                        ageRangeCounts.put("20-35", ageRangeCounts.get("20-35") + 1);
+                    } else if (age <= 50) {
+                        ageRangeCounts.put("36-50", ageRangeCounts.get("36-50") + 1);
+                    } else {
+                        ageRangeCounts.put("51+", ageRangeCounts.get("51+") + 1);
+                    }
+                }
+            }
+
+            // Step 2: Create Pie Dataset
+            DefaultPieDataset dataset = new DefaultPieDataset();
+            for (Map.Entry<String, Integer> entry : ageRangeCounts.entrySet()) {
+                if (entry.getValue() > 0) { // only include non-zero
+                    dataset.setValue(entry.getKey(), entry.getValue());
+                }
+            }
+
+            // Step 3: Generate Pie Chart
+            JFreeChart pieChart = ChartFactory.createPieChart(
+                    "Patient Age Range Report (" + today + ")", 
+                    dataset, 
+                    true, true, false
+            );
+
+            PiePlot plot = (PiePlot) pieChart.getPlot();
+            plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0}: {1} ({2})"));
+
+            File chartFile = new File("patient_age_chart.png");
+            ChartUtils.saveChartAsPNG(chartFile, pieChart, 500, 350);
+
+            // Step 4: Export PDF
+            PdfWriter writer = new PdfWriter("Patient_AgeRange_Report.pdf");
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            document.add(new Paragraph("Daily Patient Age Range Report").setFontSize(18));
+            document.add(new Paragraph("Generated on: " + today).setFontSize(12));
+            document.add(new Paragraph(" "));
+
+            Image chartImage = new Image(ImageDataFactory.create("patient_age_chart.png"));
+            document.add(chartImage);
+
+            document.close();
+            chartFile.delete();
+
+            System.out.println("Patient Age Range Report generated successfully.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public static void generateQueueStatisticsReport(DoublyLinkedList<QueueEntry> queueList) {
         try {

@@ -14,6 +14,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import utility.FileUtils;
+import utility.ReportGenerator;
 
 /**
  *
@@ -404,7 +405,18 @@ private void filterPatients() {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-      
+          try {
+        // Generate the Patient Age Range Report
+        ReportGenerator.generatePatientAgeRangeReport(patientList);
+
+        JOptionPane.showMessageDialog(this, 
+            "Patient Age Range Report generated successfully!");
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, 
+            "Error generating report: " + ex.getMessage(), 
+            "Report Error", JOptionPane.ERROR_MESSAGE);
+        ex.printStackTrace();
+    }
     }//GEN-LAST:event_jButton3ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
