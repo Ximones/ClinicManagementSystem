@@ -73,13 +73,7 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         treatmentTypeComboBox.setSelectedIndex(0);
         diagnosisInput.setText("");
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
         notesInput.setText("");
-=======
-        treatmentDetailsInput.setText("");
-//        costInput.setText("");
-        jTextArea2.setText("");
->>>>>>> Stashed changes
 =======
         treatmentDetailsInput.setText("");
 //        costInput.setText("");
@@ -124,24 +118,18 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         diagnosisInput = new javax.swing.JTextField();
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
         treatmentDetailsLabel = new javax.swing.JLabel();
         treatmentTypeComboBox = new javax.swing.JComboBox<>();
         notesLabel = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         notesInput = new javax.swing.JTextArea();
 =======
-=======
->>>>>>> Stashed changes
         jPanel10 = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         treatmentDetailsInput = new javax.swing.JTextArea();
         jPanel7 = new javax.swing.JPanel();
         jScrollPane5 = new javax.swing.JScrollPane();
         jTextArea2 = new javax.swing.JTextArea();
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
 >>>>>>> Stashed changes
         recentPanel = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -165,7 +153,6 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
         contentPanel.setLayout(new java.awt.GridLayout(2, 0));
 =======
         jPanel1.setLayout(new java.awt.BorderLayout());
@@ -179,15 +166,6 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         formGridPanel.setAlignmentY(1.0F);
         formGridPanel.setLayout(new java.awt.GridLayout(4, 2, 10, 5));
 =======
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Form ："));
-        jPanel2.setPreferredSize(new java.awt.Dimension(600, 300));
-        jPanel2.setLayout(new java.awt.BorderLayout());
->>>>>>> Stashed changes
-=======
-        jPanel1.setLayout(new java.awt.BorderLayout());
-
-        jPanel4.setPreferredSize(new java.awt.Dimension(700, 300));
-
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Form ："));
         jPanel2.setPreferredSize(new java.awt.Dimension(600, 300));
         jPanel2.setLayout(new java.awt.BorderLayout());
@@ -212,38 +190,8 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         jPanel5.add(consultationComboBox);
 
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
         treatmentDetailsLabel.setText("Treatment Type:");
         formGridPanel.add(treatmentDetailsLabel);
-=======
-        jPanel8.setPreferredSize(new java.awt.Dimension(100, 10));
-        jPanel8.setRequestFocusEnabled(false);
-        jPanel5.add(jPanel8);
-
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("Diagnose :");
-        jLabel2.setMinimumSize(new java.awt.Dimension(100, 100));
-        jLabel2.setPreferredSize(new java.awt.Dimension(70, 30));
-        jPanel5.add(jLabel2);
-
-        diagnosisInput.setText("jTextField1");
-        diagnosisInput.setPreferredSize(new java.awt.Dimension(180, 30));
-        jPanel5.add(diagnosisInput);
-
-        jPanel9.add(jPanel5);
-
-        jPanel2.add(jPanel9, java.awt.BorderLayout.NORTH);
-
-        jPanel10.setMaximumSize(new java.awt.Dimension(300, 300));
-        jPanel10.setMinimumSize(new java.awt.Dimension(300, 300));
-        jPanel10.setPreferredSize(new java.awt.Dimension(200, 200));
-
-        jScrollPane4.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Treatment Details :"));
-        jScrollPane4.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane4.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        jScrollPane4.setOpaque(false);
-        jScrollPane4.setPreferredSize(new java.awt.Dimension(250, 100));
->>>>>>> Stashed changes
 
         formGridPanel.add(treatmentTypeComboBox);
 =======
@@ -290,9 +238,6 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         jScrollPane5.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane5.setOpaque(false);
         jScrollPane5.setPreferredSize(new java.awt.Dimension(250, 100));
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
 >>>>>>> Stashed changes
 
         jTextArea2.setColumns(20);
@@ -305,11 +250,7 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         jPanel2.add(jPanel10, java.awt.BorderLayout.CENTER);
 
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
         recentPanel.setPreferredSize(new java.awt.Dimension(131, 36));
-=======
-        recentPanel.setPreferredSize(new java.awt.Dimension(600, 100));
->>>>>>> Stashed changes
 =======
         recentPanel.setPreferredSize(new java.awt.Dimension(600, 100));
 >>>>>>> Stashed changes
@@ -371,13 +312,10 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
     private void diagnosisInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_diagnosisInputActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_diagnosisInputActionPerformed
 
-=======
->>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
@@ -399,9 +337,6 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         String details = treatmentDetailsInput.getText().trim();
 //        String costStr = costInput.getText().trim();
         String notes = jTextArea2.getText().trim(); // Notes can be optional
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
 >>>>>>> Stashed changes
 
         String diagnosis = diagnosisInput.getText().trim();
@@ -479,7 +414,6 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_refreshButtonActionPerformed
 
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
     private void consultationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consultationComboBoxActionPerformed
         int selectedIndex = consultationComboBox.getSelectedIndex();
         if (selectedIndex <= 0) {
@@ -507,8 +441,6 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
 
 =======
 >>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
         clearForm();
     }//GEN-LAST:event_clearButtonActionPerformed
@@ -521,7 +453,6 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     private javax.swing.JButton clearButton;
     private javax.swing.JComboBox<String> consultationComboBox;
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
     private javax.swing.JLabel consultationLabel;
     private javax.swing.JPanel contentPanel;
     private javax.swing.JTextField diagnosisInput;
@@ -531,9 +462,6 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane2;
 =======
     private javax.swing.JTextField diagnosisInput;
-=======
-    private javax.swing.JTextField diagnosisInput;
->>>>>>> Stashed changes
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
@@ -545,9 +473,6 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
 >>>>>>> Stashed changes
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
@@ -561,12 +486,8 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
     private javax.swing.JLabel treatmentDetailsLabel;
     private javax.swing.JComboBox<String> treatmentTypeComboBox;
-=======
-    private javax.swing.JTextArea treatmentDetailsInput;
->>>>>>> Stashed changes
 =======
     private javax.swing.JTextArea treatmentDetailsInput;
 >>>>>>> Stashed changes
