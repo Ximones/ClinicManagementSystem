@@ -104,7 +104,7 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
             }
             return cb;
         });
-        
+
         medicineTable.getColumnModel().getColumn(0).setPreferredWidth(20);
 
         addDetailsButtonToTable();
@@ -282,7 +282,7 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
                 if (c == 2 || c == 3) {
                     return Integer.class;
                 }
-                if (c == 7 || c == 8) {
+                if (c == 5 || c == 6) {
                     return Double.class;
                 }
                 return String.class;
@@ -323,8 +323,8 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
             }
         };
 
-        t.getColumnModel().getColumn(7).setCellRenderer(priceRenderer);
-        t.getColumnModel().getColumn(8).setCellRenderer(priceRenderer);
+        t.getColumnModel().getColumn(5).setCellRenderer(priceRenderer);
+        t.getColumnModel().getColumn(6).setCellRenderer(priceRenderer);
 
         t.getTableHeader().setReorderingAllowed(false);
         JScrollPane sp = new JScrollPane(t);
@@ -532,7 +532,7 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Unexpected error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-        
+
         FileUtils.writeDataToFile("prescriptions", prescriptionList);
         FileUtils.writeDataToFile("medicine", masterMedicineList);
     }
