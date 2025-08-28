@@ -72,7 +72,13 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         consultationComboBox.setSelectedIndex(0);
         treatmentTypeComboBox.setSelectedIndex(0);
         diagnosisInput.setText("");
+<<<<<<< Updated upstream
         notesInput.setText("");
+=======
+        treatmentDetailsInput.setText("");
+//        costInput.setText("");
+        jTextArea2.setText("");
+>>>>>>> Stashed changes
         diagnosisInput.requestFocus();
     }
     
@@ -101,23 +107,35 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         logoLabel = new javax.swing.JLabel();
         titlePanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
-        contentPanel = new javax.swing.JPanel();
-        formWrapperPanel = new javax.swing.JPanel();
-        formGridPanel = new javax.swing.JPanel();
-        consultationLabel = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jPanel9 = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
         consultationComboBox = new javax.swing.JComboBox<>();
-        diagnosisLabel = new javax.swing.JLabel();
+        jPanel8 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
         diagnosisInput = new javax.swing.JTextField();
+<<<<<<< Updated upstream
         treatmentDetailsLabel = new javax.swing.JLabel();
         treatmentTypeComboBox = new javax.swing.JComboBox<>();
         notesLabel = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         notesInput = new javax.swing.JTextArea();
+=======
+        jPanel10 = new javax.swing.JPanel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        treatmentDetailsInput = new javax.swing.JTextArea();
+        jPanel7 = new javax.swing.JPanel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        jTextArea2 = new javax.swing.JTextArea();
+>>>>>>> Stashed changes
         recentPanel = new javax.swing.JPanel();
-        recentAdded = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
         recentTreatmentsList = new javax.swing.JList<>();
         buttonPanel = new javax.swing.JPanel();
+        jPanel15 = new javax.swing.JPanel();
         saveButton = new javax.swing.JButton();
         clearButton = new javax.swing.JButton();
         refreshButton = new javax.swing.JButton();
@@ -134,68 +152,127 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
+<<<<<<< Updated upstream
         contentPanel.setLayout(new java.awt.GridLayout(2, 0));
+=======
+        jPanel1.setLayout(new java.awt.BorderLayout());
+>>>>>>> Stashed changes
 
-        formWrapperPanel.setLayout(new java.awt.BorderLayout());
+        jPanel4.setPreferredSize(new java.awt.Dimension(700, 300));
 
+<<<<<<< Updated upstream
         formGridPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
         formGridPanel.setAlignmentX(1.0F);
         formGridPanel.setAlignmentY(1.0F);
         formGridPanel.setLayout(new java.awt.GridLayout(4, 2, 10, 5));
+=======
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Form ："));
+        jPanel2.setPreferredSize(new java.awt.Dimension(600, 300));
+        jPanel2.setLayout(new java.awt.BorderLayout());
+>>>>>>> Stashed changes
 
-        consultationLabel.setText("Select Consultation:");
-        formGridPanel.add(consultationLabel);
+        jPanel9.setPreferredSize(new java.awt.Dimension(600, 50));
+        jPanel9.setVerifyInputWhenFocusTarget(false);
 
-        consultationComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                consultationComboBoxActionPerformed(evt);
-            }
-        });
-        formGridPanel.add(consultationComboBox);
+        jPanel5.setMinimumSize(new java.awt.Dimension(50, 100));
+        jPanel5.setPreferredSize(new java.awt.Dimension(600, 600));
 
-        diagnosisLabel.setText("Diagnosis:");
-        formGridPanel.add(diagnosisLabel);
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("Consultation :");
+        jLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jLabel1.setMinimumSize(new java.awt.Dimension(100, 100));
+        jLabel1.setPreferredSize(new java.awt.Dimension(80, 30));
+        jPanel5.add(jLabel1);
 
-        diagnosisInput.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                diagnosisInputActionPerformed(evt);
-            }
-        });
-        formGridPanel.add(diagnosisInput);
+        consultationComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        consultationComboBox.setMinimumSize(new java.awt.Dimension(100, 100));
+        consultationComboBox.setPreferredSize(new java.awt.Dimension(130, 30));
+        jPanel5.add(consultationComboBox);
 
+<<<<<<< Updated upstream
         treatmentDetailsLabel.setText("Treatment Type:");
         formGridPanel.add(treatmentDetailsLabel);
 
         formGridPanel.add(treatmentTypeComboBox);
+=======
+        jPanel8.setPreferredSize(new java.awt.Dimension(100, 10));
+        jPanel8.setRequestFocusEnabled(false);
+        jPanel5.add(jPanel8);
 
-        notesLabel.setText("Notes :");
-        formGridPanel.add(notesLabel);
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setText("Diagnose :");
+        jLabel2.setMinimumSize(new java.awt.Dimension(100, 100));
+        jLabel2.setPreferredSize(new java.awt.Dimension(70, 30));
+        jPanel5.add(jLabel2);
 
-        notesInput.setColumns(20);
-        notesInput.setRows(5);
-        jScrollPane2.setViewportView(notesInput);
+        diagnosisInput.setText("jTextField1");
+        diagnosisInput.setPreferredSize(new java.awt.Dimension(180, 30));
+        jPanel5.add(diagnosisInput);
 
-        formGridPanel.add(jScrollPane2);
+        jPanel9.add(jPanel5);
 
-        formWrapperPanel.add(formGridPanel, java.awt.BorderLayout.CENTER);
+        jPanel2.add(jPanel9, java.awt.BorderLayout.NORTH);
 
-        contentPanel.add(formWrapperPanel);
+        jPanel10.setMaximumSize(new java.awt.Dimension(300, 300));
+        jPanel10.setMinimumSize(new java.awt.Dimension(300, 300));
+        jPanel10.setPreferredSize(new java.awt.Dimension(200, 200));
 
+        jScrollPane4.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Treatment Details :"));
+        jScrollPane4.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane4.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        jScrollPane4.setOpaque(false);
+        jScrollPane4.setPreferredSize(new java.awt.Dimension(250, 100));
+
+        treatmentDetailsInput.setColumns(20);
+        treatmentDetailsInput.setRows(5);
+        treatmentDetailsInput.setPreferredSize(new java.awt.Dimension(300, 75));
+        jScrollPane4.setViewportView(treatmentDetailsInput);
+
+        jPanel10.add(jScrollPane4);
+
+        jPanel7.setPreferredSize(new java.awt.Dimension(75, 100));
+        jPanel10.add(jPanel7);
+
+        jScrollPane5.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder("Note :")));
+        jScrollPane5.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane5.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        jScrollPane5.setOpaque(false);
+        jScrollPane5.setPreferredSize(new java.awt.Dimension(250, 100));
+>>>>>>> Stashed changes
+
+        jTextArea2.setColumns(20);
+        jTextArea2.setRows(5);
+        jTextArea2.setPreferredSize(new java.awt.Dimension(300, 75));
+        jScrollPane5.setViewportView(jTextArea2);
+
+        jPanel10.add(jScrollPane5);
+
+        jPanel2.add(jPanel10, java.awt.BorderLayout.CENTER);
+
+<<<<<<< Updated upstream
         recentPanel.setPreferredSize(new java.awt.Dimension(131, 36));
+=======
+        recentPanel.setPreferredSize(new java.awt.Dimension(600, 100));
+>>>>>>> Stashed changes
         recentPanel.setLayout(new java.awt.BorderLayout());
 
-        recentAdded.setText(" Recently Added (This Session)");
-        recentPanel.add(recentAdded, java.awt.BorderLayout.PAGE_START);
+        jScrollPane3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Recently Added :"));
+        jScrollPane3.setPreferredSize(new java.awt.Dimension(50, 100));
 
-        jScrollPane3.setPreferredSize(new java.awt.Dimension(50, 50));
-
+        recentTreatmentsList.setPreferredSize(new java.awt.Dimension(50, 50));
         jScrollPane3.setViewportView(recentTreatmentsList);
 
         recentPanel.add(jScrollPane3, java.awt.BorderLayout.CENTER);
 
-        contentPanel.add(recentPanel);
+        jPanel2.add(recentPanel, java.awt.BorderLayout.PAGE_END);
 
-        titlePanel.add(contentPanel, java.awt.BorderLayout.CENTER);
+        jPanel4.add(jPanel2);
+
+        jPanel1.add(jPanel4, java.awt.BorderLayout.CENTER);
+
+        titlePanel.add(jPanel1, java.awt.BorderLayout.CENTER);
+
+        buttonPanel.add(jPanel15);
 
         saveButton.setText("Save");
         saveButton.addActionListener(new java.awt.event.ActionListener() {
@@ -234,10 +311,13 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
+<<<<<<< Updated upstream
     private void diagnosisInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_diagnosisInputActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_diagnosisInputActionPerformed
 
+=======
+>>>>>>> Stashed changes
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
        StringBuilder errors = new StringBuilder();
         
@@ -246,16 +326,48 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
             errors.append("- Please select a consultation.\n");
         }
 
+<<<<<<< Updated upstream
         int treatmentTypeIndex = treatmentTypeComboBox.getSelectedIndex();
         if (treatmentTypeIndex <= 0) {
             errors.append("- Please select a treatment type.\n");
         }
+=======
+        // 2. Validate Text Fields
+        String diagnosis = diagnosisInput.getText().trim();
+        String details = treatmentDetailsInput.getText().trim();
+//        String costStr = costInput.getText().trim();
+        String notes = jTextArea2.getText().trim(); // Notes can be optional
+>>>>>>> Stashed changes
 
         String diagnosis = diagnosisInput.getText().trim();
         if (diagnosis.isEmpty()) {
             errors.append("- Diagnosis field cannot be empty.\n");
         }
+<<<<<<< Updated upstream
         
+=======
+        if (details.isEmpty()) {
+            errors.append("- Treatment Details field cannot be empty.\n");
+        }
+//        if (costStr.isEmpty()) {
+//            errors.append("- Cost field cannot be empty.\n");
+//        }
+
+        // 3. Validate Cost Format
+        double cost = 0.0;
+//        if (!costStr.isEmpty()) {
+//            try {
+//                cost = Double.parseDouble(costStr);
+//                if (cost < 0) {
+//                    errors.append("- Cost cannot be a negative number.\n");
+//                }
+//            } catch (NumberFormatException e) {
+//                errors.append("- Cost must be a valid number (e.g., 50.00).\n");
+//            }
+//        }
+
+        // 4. Show errors if any, otherwise proceed to save
+>>>>>>> Stashed changes
         if (errors.length() > 0) {
             JOptionPane.showMessageDialog(this, errors.toString(), "Validation Error", JOptionPane.ERROR_MESSAGE);
             return;
@@ -301,6 +413,7 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         JOptionPane.showMessageDialog(this, "Data has been refreshed.", "Refresh Complete", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_refreshButtonActionPerformed
 
+<<<<<<< Updated upstream
     private void consultationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consultationComboBoxActionPerformed
         int selectedIndex = consultationComboBox.getSelectedIndex();
         if (selectedIndex <= 0) {
@@ -326,6 +439,8 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_consultationComboBoxActionPerformed
 
+=======
+>>>>>>> Stashed changes
     private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
         clearForm();
     }//GEN-LAST:event_clearButtonActionPerformed
@@ -337,6 +452,7 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JButton clearButton;
     private javax.swing.JComboBox<String> consultationComboBox;
+<<<<<<< Updated upstream
     private javax.swing.JLabel consultationLabel;
     private javax.swing.JPanel contentPanel;
     private javax.swing.JTextField diagnosisInput;
@@ -344,18 +460,36 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     private javax.swing.JPanel formGridPanel;
     private javax.swing.JPanel formWrapperPanel;
     private javax.swing.JScrollPane jScrollPane2;
+=======
+    private javax.swing.JTextField diagnosisInput;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel10;
+    private javax.swing.JPanel jPanel15;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
+    private javax.swing.JPanel jPanel9;
+>>>>>>> Stashed changes
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JTextArea jTextArea2;
     private javax.swing.JLabel logoLabel;
-    private javax.swing.JTextArea notesInput;
-    private javax.swing.JLabel notesLabel;
-    private javax.swing.JLabel recentAdded;
     private javax.swing.JPanel recentPanel;
     private javax.swing.JList<String> recentTreatmentsList;
     private javax.swing.JButton refreshButton;
     private javax.swing.JButton saveButton;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;
+<<<<<<< Updated upstream
     private javax.swing.JLabel treatmentDetailsLabel;
     private javax.swing.JComboBox<String> treatmentTypeComboBox;
+=======
+    private javax.swing.JTextArea treatmentDetailsInput;
+>>>>>>> Stashed changes
     // End of variables declaration//GEN-END:variables
 }
