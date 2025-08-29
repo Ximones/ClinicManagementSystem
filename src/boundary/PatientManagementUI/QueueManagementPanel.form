@@ -67,7 +67,7 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="sortLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Sort by:"/>
+                    <Property name="text" type="java.lang.String" value="Sort Queue No by:"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JComboBox" name="sortBox">

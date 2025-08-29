@@ -231,7 +231,7 @@ public void setVisible(boolean aFlag) {
 
         searchWrapperPanel.setLayout(new java.awt.BorderLayout());
 
-        sortLabel.setText("Sort by:");
+        sortLabel.setText("Sort Queue No by:");
         searchPanel.add(sortLabel);
 
         sortBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ASC", "DESC"}));
