@@ -245,25 +245,32 @@ public class InitializeDataUtils {
     }
   
     // Initialize Queue Test Data
+    private static int lastQueueNumber = 1000; // for generating E1001, E1002, ...
+
+    private static String generateQueueNumber() {
+    lastQueueNumber++;
+    return "E" + lastQueueNumber;
+    }
+
     private static DoublyLinkedList<Pair<String, QueueEntry>> initializeQueueData(DoublyLinkedList<Patient> patientList) {
     DoublyLinkedList<Pair<String, QueueEntry>> queueList = new DoublyLinkedList<>();
     if (patientList != null && !patientList.isEmpty()) {
         long baseTime = System.currentTimeMillis(); // reference start time
-
         for (int i = 1; i <= 10 && i <= patientList.getSize(); i++) {
             Patient patient = patientList.getElement(i).getEntry();
-            String queueNumber = "Q" + String.format("%03d", i);
+            String queueNumber = generateQueueNumber();
             String status = "Done";
 
-            // Enqueue time: each patient joins 1-5 minutes apart
-            long enqueueMillis = baseTime - (i * 60_000L); // i minutes ago
+            // Enqueue time: staggered randomly 1-5 minutes apart
+            long enqueueOffset = (long) (Math.random() * 5 * 60_000L + 60_000L); // 1-5 minutes
+            long enqueueMillis = baseTime - enqueueOffset * i;
 
             // Start consultation: 1-10 minutes after enqueue
-            long startOffset = 60_000L + (long)(Math.random() * 9 * 60_000L); // 1-10 minutes
+            long startOffset = (long) (Math.random() * 10 * 60_000L + 60_000L); // 1-10 minutes
             long startMillis = enqueueMillis + startOffset;
 
             // End consultation: 5-15 minutes after start
-            long consultDuration = 5 * 60_000L + (long)(Math.random() * 10 * 60_000L); // 5-15 minutes
+            long consultDuration = (long) (5 * 60_000L + Math.random() * 10 * 60_000L); // 5-15 minutes
             long endMillis = startMillis + consultDuration;
 
             QueueEntry entry = new QueueEntry(patient, queueNumber, status);
@@ -271,14 +278,13 @@ public class InitializeDataUtils {
             entry.setStartConsultTime(startMillis);
             entry.setEndConsultTime(endMillis);
             entry.setConsultDuration(consultDuration);
-            entry.setWaitingTime(startMillis - enqueueMillis); // explicitly set waiting time
 
+            // Insert into queue list
             queueList.insertLast(new Pair<>(queueNumber, entry));
         }
     }
     return queueList;
 }
-
     
 
 }

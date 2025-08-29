@@ -67,12 +67,19 @@ public class QueueManagementPanel extends javax.swing.JPanel {
         // Try to load in new format (Pair<String, QueueEntry>)
         DoublyLinkedList<Pair<String, QueueEntry>> savedQueuePair =
             (DoublyLinkedList<Pair<String, QueueEntry>>) utility.FileUtils.readDataFromFile("queue");
-
         if (savedQueuePair != null && !savedQueuePair.isEmpty()) {
             // Convert Pair format to QueueEntry format for this panel
             queueList = new DoublyLinkedList<>();
             for (Pair<String, QueueEntry> pair : savedQueuePair) {
                 queueList.insertLast(pair.getValue());
+                // Update lastNumber based on existing queue numbers
+                String qNo = pair.getValue().getQueueNumber(); // e.g., "E1010"
+                try {
+                    int num = Integer.parseInt(qNo.substring(1)); // get 1010
+                    if (num > lastNumber) {
+                        lastNumber = num;
+                    }
+                } catch (NumberFormatException ignored) {}
             }
         } else {
             queueList = new DoublyLinkedList<>();
@@ -82,9 +89,16 @@ public class QueueManagementPanel extends javax.swing.JPanel {
         try {
             DoublyLinkedList<QueueEntry> savedQueue =
                 (DoublyLinkedList<QueueEntry>) utility.FileUtils.readDataFromFile("queue");
-
             if (savedQueue != null) {
                 queueList = savedQueue;
+                // update lastNumber
+                for (QueueEntry entry : savedQueue) {
+                    String qNo = entry.getQueueNumber();
+                    try {
+                        int num = Integer.parseInt(qNo.substring(1));
+                        if (num > lastNumber) lastNumber = num;
+                    } catch (NumberFormatException ignored) {}
+                }
             } else {
                 queueList = new DoublyLinkedList<>();
             }
