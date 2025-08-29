@@ -206,6 +206,8 @@ public void setVisible(boolean aFlag) {
         titleLabel = new javax.swing.JLabel();
         searchWrapperPanel = new javax.swing.JPanel();
         searchPanel = new javax.swing.JPanel();
+        sortLabel = new javax.swing.JLabel();
+        sortBox = new javax.swing.JComboBox<>();
         filterLabel = new javax.swing.JLabel();
         filterBox = new javax.swing.JComboBox<>();
         filterField = new javax.swing.JTextField();
@@ -228,6 +230,17 @@ public void setVisible(boolean aFlag) {
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
         searchWrapperPanel.setLayout(new java.awt.BorderLayout());
+
+        sortLabel.setText("Sort by:");
+        searchPanel.add(sortLabel);
+
+        sortBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ASC", "DESC"}));
+        sortBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sortBoxActionPerformed(evt);
+            }
+        });
+        searchPanel.add(sortBox);
 
         filterLabel.setText("Filter By :");
         searchPanel.add(filterLabel);
@@ -345,6 +358,38 @@ if (selectedPatient != null) {
          JOptionPane.showMessageDialog(this, "Queue Statistics Report generated successfully!");
     }//GEN-LAST:event_jButton3ActionPerformed
 
+    private void sortBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortBoxActionPerformed
+
+        if (queueList == null || queueList.isEmpty()) {
+        return; // nothing to sort
+    }
+
+    String selectedSort = (String) sortBox.getSelectedItem();
+
+    // Convert DoublyLinkedList to ArrayList for sorting
+    java.util.List<QueueEntry> list = new java.util.ArrayList<>();
+    for (QueueEntry entry : queueList) {
+        list.add(entry);
+    }
+
+    // Sort by Queue Number (ascending)
+    list.sort(null); // uses compareTo in QueueEntry
+
+    // Reverse if DESC selected
+    if ("DESC".equalsIgnoreCase(selectedSort)) {
+        java.util.Collections.reverse(list);
+    }
+
+    // Update queueList with sorted entries
+    queueList = new adt.DoublyLinkedList<>();
+    for (QueueEntry entry : list) {
+        queueList.insertLast(entry);
+    }
+
+    // Refresh table
+    displayQueueData();
+    }//GEN-LAST:event_sortBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ButtonPanel;
@@ -359,6 +404,8 @@ if (selectedPatient != null) {
     private javax.swing.JScrollPane queueTablePanel;
     private javax.swing.JPanel searchPanel;
     private javax.swing.JPanel searchWrapperPanel;
+    private javax.swing.JComboBox<String> sortBox;
+    private javax.swing.JLabel sortLabel;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables

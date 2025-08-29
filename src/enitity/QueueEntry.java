@@ -162,7 +162,7 @@ public class QueueEntry implements Comparable<QueueEntry>, Serializable {
 //        }
 //        // If days are the same, then compare by shift
 //        return this.shift.compareTo(other.shift);
-        return 0;
+       return this.queueNumber.compareTo(other.queueNumber);
     }
 
 }
