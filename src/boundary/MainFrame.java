@@ -20,6 +20,7 @@ import boundary.PharmacyManagementUI.DispenseMedicinePanel;
 import boundary.MedicalTreatmentManagementUI.MedicalTreatmentManagementPanel;
 import boundary.MedicalTreatmentManagementUI.DiagnosisEntryPanel;
 import boundary.MedicalTreatmentManagementUI.TreatmentHistoryPanel;
+import boundary.PharmacyManagementUI.DispenseHistoryPanel;
 import java.awt.CardLayout;
 
 /**
@@ -30,6 +31,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     private MedicineInformationPanel medInfoPanel;
     private DispenseMedicinePanel dispenseMedPanel;
+    private DispenseHistoryPanel dispenseHistoryPanel;
     private PrescriptionPanel prescriptionPanel;
     private QueuePanel queuePanel; // Reference to queue panel
     private ConsultationPanel consultationPanel; // Reference to consultation panel
@@ -54,6 +56,7 @@ public class MainFrame extends javax.swing.JFrame {
         PharmacyManagementPanel pharPanel = new PharmacyManagementPanel(this);
         medInfoPanel = new MedicineInformationPanel(this);
         dispenseMedPanel = new DispenseMedicinePanel(this);
+        dispenseHistoryPanel = new DispenseHistoryPanel(this);
 
         PatientManagementPanel patientPanel = new PatientManagementPanel(this);
         PatientRegistrationPanel patRegPanel = new PatientRegistrationPanel(this);
@@ -63,19 +66,19 @@ public class MainFrame extends javax.swing.JFrame {
         ConsultationManagementPanel consultationManagementPanel = new ConsultationManagementPanel(this);
         queuePanel = new QueuePanel(this, consultationControl);
         consultationPanel = new ConsultationPanel(this, queuePanel, consultationControl);
-        
+
         // Set the consultation panel reference in the queue panel
         queuePanel.setConsultationPanel(consultationPanel);
-        
+
         AppointmentPanel appointmentPanel = new AppointmentPanel(this, consultationControl);
         prescriptionPanel = new PrescriptionPanel(this);
         ConsultationReportsPanel consultationReportsPanel = new ConsultationReportsPanel(this, consultationControl);
         ConsultationHistoryPanel consultationHistoryPanel = new ConsultationHistoryPanel(this, consultationControl);
-        
+
         // Medical Treatment Management Panels
         MedicalTreatmentManagementPanel medicalPanel = new MedicalTreatmentManagementPanel(this);
-        DiagnosisEntryPanel diagnosisPanel = new DiagnosisEntryPanel(this); 
-        TreatmentHistoryPanel historyPanel = new TreatmentHistoryPanel(this); 
+        DiagnosisEntryPanel diagnosisPanel = new DiagnosisEntryPanel(this);
+        TreatmentHistoryPanel historyPanel = new TreatmentHistoryPanel(this);
 
         // Add the panels to the cardPanel with unique names
         cardPanel.add(clinicPanel, "clinicMenu");
@@ -86,6 +89,7 @@ public class MainFrame extends javax.swing.JFrame {
         cardPanel.add(pharPanel, "pharmacyManagement");
         cardPanel.add(medInfoPanel, "medicineInformation");
         cardPanel.add(dispenseMedPanel, "dispenseMedicine");
+        cardPanel.add(dispenseHistoryPanel, "dispenseHistory");
 
         cardPanel.add(patientPanel, "patientManagement");
         cardPanel.add(patRegPanel, "patientRegistration");
@@ -99,9 +103,9 @@ public class MainFrame extends javax.swing.JFrame {
         cardPanel.add(queuePanel, "queuePanel");
         cardPanel.add(consultationReportsPanel, "consultationReports");
         cardPanel.add(consultationHistoryPanel, "consultationHistory");
-        
+
         cardPanel.add(medicalPanel, "medicalManagement");
-        cardPanel.add(diagnosisPanel, "diagnosisEntry"); 
+        cardPanel.add(diagnosisPanel, "diagnosisEntry");
         cardPanel.add(historyPanel, "treatmentHistory");
 
         // Set frame properties
@@ -113,23 +117,27 @@ public class MainFrame extends javax.swing.JFrame {
     public MedicineInformationPanel getMedicineInformationPanel() {
         return medInfoPanel;
     }
-    
+
     public DispenseMedicinePanel getDispenseMedicinePanel() {
         return dispenseMedPanel;
     }
-    
+
+    public DispenseHistoryPanel getDispenseHistoryPanel() {
+        return dispenseHistoryPanel;
+    }
+
     public PrescriptionPanel getPrescriptionPanel() {
         return prescriptionPanel;
     }
-    
+
     public QueuePanel getQueuePanel() {
         return queuePanel;
     }
-    
+
     public ConsultationPanel getConsultationPanel() {
         return consultationPanel;
     }
-    
+
     public DiagnosisEntryPanel getDiagnosisEntryPanel() {
         return diagnosisPanel;
     }
@@ -139,12 +147,17 @@ public class MainFrame extends javax.swing.JFrame {
         // Targeted refresh based on known panel names
         switch (panelName) {
             case "medicineInformation":
-                if (medInfoPanel != null) medInfoPanel.reloadData();
+                if (medInfoPanel != null) {
+                    medInfoPanel.reloadData();
+                }
                 break;
             case "doctorInformation": {
                 java.awt.Component comp = null;
                 for (java.awt.Component c : cardPanel.getComponents()) {
-                    if (c instanceof boundary.DoctorManagementUI.DoctorInformationPanel) { comp = c; break; }
+                    if (c instanceof boundary.DoctorManagementUI.DoctorInformationPanel) {
+                        comp = c;
+                        break;
+                    }
                 }
                 if (comp instanceof boundary.DoctorManagementUI.DoctorInformationPanel) {
                     ((boundary.DoctorManagementUI.DoctorInformationPanel) comp).reloadData();
@@ -154,7 +167,10 @@ public class MainFrame extends javax.swing.JFrame {
             case "patientRegistration": {
                 java.awt.Component comp = null;
                 for (java.awt.Component c : cardPanel.getComponents()) {
-                    if (c instanceof boundary.PatientManagementUI.PatientRegistrationPanel) { comp = c; break; }
+                    if (c instanceof boundary.PatientManagementUI.PatientRegistrationPanel) {
+                        comp = c;
+                        break;
+                    }
                 }
                 if (comp instanceof boundary.PatientManagementUI.PatientRegistrationPanel) {
                     ((boundary.PatientManagementUI.PatientRegistrationPanel) comp).reloadData();
@@ -164,7 +180,10 @@ public class MainFrame extends javax.swing.JFrame {
             case "prescriptionPanel": {
                 java.awt.Component comp = null;
                 for (java.awt.Component c : cardPanel.getComponents()) {
-                    if (c instanceof boundary.ConsultationManagementUI.PrescriptionPanel) { comp = c; break; }
+                    if (c instanceof boundary.ConsultationManagementUI.PrescriptionPanel) {
+                        comp = c;
+                        break;
+                    }
                 }
                 if (comp instanceof boundary.ConsultationManagementUI.PrescriptionPanel) {
                     ((boundary.ConsultationManagementUI.PrescriptionPanel) comp).reloadData();
@@ -174,7 +193,10 @@ public class MainFrame extends javax.swing.JFrame {
             case "queuePanel": {
                 java.awt.Component comp = null;
                 for (java.awt.Component c : cardPanel.getComponents()) {
-                    if (c instanceof boundary.ConsultationManagementUI.QueuePanel) { comp = c; break; }
+                    if (c instanceof boundary.ConsultationManagementUI.QueuePanel) {
+                        comp = c;
+                        break;
+                    }
                 }
                 if (comp instanceof boundary.ConsultationManagementUI.QueuePanel) {
                     ((boundary.ConsultationManagementUI.QueuePanel) comp).refreshQueueDisplay();
@@ -184,7 +206,10 @@ public class MainFrame extends javax.swing.JFrame {
             case "consultationHistory": {
                 java.awt.Component comp = null;
                 for (java.awt.Component c : cardPanel.getComponents()) {
-                    if (c instanceof boundary.ConsultationManagementUI.ConsultationHistoryPanel) { comp = c; break; }
+                    if (c instanceof boundary.ConsultationManagementUI.ConsultationHistoryPanel) {
+                        comp = c;
+                        break;
+                    }
                 }
                 if (comp instanceof boundary.ConsultationManagementUI.ConsultationHistoryPanel) {
                     ((boundary.ConsultationManagementUI.ConsultationHistoryPanel) comp).reloadData();
@@ -194,7 +219,10 @@ public class MainFrame extends javax.swing.JFrame {
             case "consultationPanel": {
                 java.awt.Component comp = null;
                 for (java.awt.Component c : cardPanel.getComponents()) {
-                    if (c instanceof boundary.ConsultationManagementUI.ConsultationPanel) { comp = c; break; }
+                    if (c instanceof boundary.ConsultationManagementUI.ConsultationPanel) {
+                        comp = c;
+                        break;
+                    }
                 }
                 if (comp instanceof boundary.ConsultationManagementUI.ConsultationPanel) {
                     ((boundary.ConsultationManagementUI.ConsultationPanel) comp).reloadData();
@@ -204,7 +232,10 @@ public class MainFrame extends javax.swing.JFrame {
             case "appointmentPanel": {
                 java.awt.Component comp = null;
                 for (java.awt.Component c : cardPanel.getComponents()) {
-                    if (c instanceof boundary.ConsultationManagementUI.AppointmentPanel) { comp = c; break; }
+                    if (c instanceof boundary.ConsultationManagementUI.AppointmentPanel) {
+                        comp = c;
+                        break;
+                    }
                 }
                 if (comp instanceof boundary.ConsultationManagementUI.AppointmentPanel) {
                     ((boundary.ConsultationManagementUI.AppointmentPanel) comp).reloadData();
@@ -214,7 +245,10 @@ public class MainFrame extends javax.swing.JFrame {
             case "consultationReports": {
                 java.awt.Component comp = null;
                 for (java.awt.Component c : cardPanel.getComponents()) {
-                    if (c instanceof boundary.ConsultationManagementUI.ConsultationReportsPanel) { comp = c; break; }
+                    if (c instanceof boundary.ConsultationManagementUI.ConsultationReportsPanel) {
+                        comp = c;
+                        break;
+                    }
                 }
                 if (comp instanceof boundary.ConsultationManagementUI.ConsultationReportsPanel) {
                     ((boundary.ConsultationManagementUI.ConsultationReportsPanel) comp).reloadData();
@@ -224,7 +258,10 @@ public class MainFrame extends javax.swing.JFrame {
             case "treatmentHistory": {
                 java.awt.Component comp = null;
                 for (java.awt.Component c : cardPanel.getComponents()) {
-                    if (c instanceof boundary.MedicalTreatmentManagementUI.TreatmentHistoryPanel) { comp = c; break; }
+                    if (c instanceof boundary.MedicalTreatmentManagementUI.TreatmentHistoryPanel) {
+                        comp = c;
+                        break;
+                    }
                 }
                 if (comp instanceof boundary.MedicalTreatmentManagementUI.TreatmentHistoryPanel) {
                     ((boundary.MedicalTreatmentManagementUI.TreatmentHistoryPanel) comp).reloadData();
@@ -234,7 +271,10 @@ public class MainFrame extends javax.swing.JFrame {
             case "diagnosisEntry": {
                 java.awt.Component comp = null;
                 for (java.awt.Component c : cardPanel.getComponents()) {
-                    if (c instanceof boundary.MedicalTreatmentManagementUI.DiagnosisEntryPanel) { comp = c; break; }
+                    if (c instanceof boundary.MedicalTreatmentManagementUI.DiagnosisEntryPanel) {
+                        comp = c;
+                        break;
+                    }
                 }
                 if (comp instanceof boundary.MedicalTreatmentManagementUI.DiagnosisEntryPanel) {
                     ((boundary.MedicalTreatmentManagementUI.DiagnosisEntryPanel) comp).reloadData();

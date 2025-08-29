@@ -38,6 +38,7 @@ public class PharmacyManagementPanel extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
         jButton5 = new javax.swing.JButton();
@@ -58,7 +59,7 @@ public class PharmacyManagementPanel extends javax.swing.JPanel {
 
         jPanel4.setLayout(new java.awt.GridLayout(3, 2, 50, 50));
 
-        jButton1.setText("Dispenese Medicine");
+        jButton1.setText("Dispense Medicine Entry");
         jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jButton1.setMinimumSize(new java.awt.Dimension(100, 100));
         jButton1.setPreferredSize(new java.awt.Dimension(200, 50));
@@ -68,6 +69,17 @@ public class PharmacyManagementPanel extends javax.swing.JPanel {
             }
         });
         jPanel4.add(jButton1);
+
+        jButton2.setText("Medicine Dispensed History");
+        jButton2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton2.setMinimumSize(new java.awt.Dimension(100, 100));
+        jButton2.setPreferredSize(new java.awt.Dimension(200, 50));
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+        jPanel4.add(jButton2);
 
         jButton3.setText("Medicine Information");
         jButton3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -129,8 +141,14 @@ public class PharmacyManagementPanel extends javax.swing.JPanel {
         mainFrame.dispose();
     }//GEN-LAST:event_jButton5ActionPerformed
 
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        mainFrame.getDispenseHistoryPanel().loadMedicineTable();
+        mainFrame.showPanel("dispenseHistory");
+    }//GEN-LAST:event_jButton2ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;

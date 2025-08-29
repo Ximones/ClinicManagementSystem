@@ -126,7 +126,7 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         DefaultTableModel model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column != 0;
+                return false;
             }
 
             @Override

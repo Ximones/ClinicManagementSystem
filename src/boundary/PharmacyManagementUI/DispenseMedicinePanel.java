@@ -597,7 +597,6 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
         medicineTable = new javax.swing.JTable();
         ButtonPanel = new javax.swing.JPanel();
         dispenseMedicineButton = new javax.swing.JButton();
-        dispenseLogButton = new javax.swing.JButton();
         doneButton = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(335, 125));
@@ -611,7 +610,7 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
 
         titleLabel.setFont(new java.awt.Font("Corbel", 1, 36)); // NOI18N
         titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        titleLabel.setText("Dispense Medicine");
+        titleLabel.setText("Dispense Medicine Entry");
         titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
@@ -639,14 +638,6 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
         });
         ButtonPanel.add(dispenseMedicineButton);
 
-        dispenseLogButton.setText("Daily Dispensing Log");
-        dispenseLogButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dispenseLogButtonActionPerformed(evt);
-            }
-        });
-        ButtonPanel.add(dispenseLogButton);
-
         doneButton.setText("Done");
         doneButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -673,23 +664,8 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
         mainFrame.showPanel("pharmacyManagement");
     }//GEN-LAST:event_doneButtonActionPerformed
 
-    private void dispenseLogButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dispenseLogButtonActionPerformed
-        DoublyLinkedList<DispenseRecord> dispenseRecords = (DoublyLinkedList<DispenseRecord>) FileUtils.readDataFromFile("dispense");
-
-        if (dispenseRecords == null || dispenseRecords.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No dispensing records found for today.", "Report Generation Failed", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-
-        ReportGenerator.generateDailyDispenseReport(dispenseRecords);
-
-        JOptionPane.showMessageDialog(this, "Daily dispensing log report has been generated.", "Report Generated", JOptionPane.INFORMATION_MESSAGE);
-    }//GEN-LAST:event_dispenseLogButtonActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ButtonPanel;
-    private javax.swing.JButton dispenseLogButton;
     private javax.swing.JButton dispenseMedicineButton;
     private javax.swing.JButton doneButton;
     private javax.swing.JPanel formWrapperPanel;
