@@ -65,6 +65,24 @@
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
               <SubComponents>
+                <Component class="javax.swing.JLabel" name="sortLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Sort ID by:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JComboBox" name="sortBox">
+                  <Properties>
+                    <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                      <Connection code="new javax.swing.DefaultComboBoxModel&lt;&gt;(new String[] { &quot;ASC&quot;, &quot;DESC&quot;&#xa;    + &quot;&quot;})" type="code"/>
+                    </Property>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sortBoxActionPerformed"/>
+                  </Events>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                  </AuxValues>
+                </Component>
                 <Component class="javax.swing.JLabel" name="filterLabel">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Filter By :"/>

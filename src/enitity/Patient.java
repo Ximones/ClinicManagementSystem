@@ -184,6 +184,6 @@ public class Patient implements Comparable<Patient>, Serializable {
 //        }
 //        // If days are the same, then compare by shift
 //        return this.shift.compareTo(other.shift);
-        return 0;
+         return this.patientID.compareTo(other.patientID);
     }
 }

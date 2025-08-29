@@ -284,6 +284,8 @@ private void filterPatients() {
         titleLabel = new javax.swing.JLabel();
         searchWrapperPanel = new javax.swing.JPanel();
         searchPanel = new javax.swing.JPanel();
+        sortLabel = new javax.swing.JLabel();
+        sortBox = new javax.swing.JComboBox<>();
         filterLabel = new javax.swing.JLabel();
         filterBox = new javax.swing.JComboBox<>();
         filterField = new javax.swing.JTextField();
@@ -308,77 +310,89 @@ private void filterPatients() {
 
         searchWrapperPanel.setLayout(new java.awt.BorderLayout());
 
-        filterLabel.setText("Filter By :");
-        searchPanel.add(filterLabel);
+        sortLabel.setText("Sort ID by:");
+        searchPanel.add(sortLabel);
 
-        filterBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Patient ID", "Name", "Age", "IC", "Gender", "Date of Reg" }));
-        filterBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                filterBoxActionPerformed(evt);
-            }
-        });
-        searchPanel.add(filterBox);
+        sortBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ASC", "DESC"
+            + ""}));
+sortBox.addActionListener(new java.awt.event.ActionListener() {
+    public void actionPerformed(java.awt.event.ActionEvent evt) {
+        sortBoxActionPerformed(evt);
+    }
+    });
+    searchPanel.add(sortBox);
 
-        filterField.setColumns(15);
-        filterField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                filterFieldActionPerformed(evt);
-            }
-        });
-        searchPanel.add(filterField);
+    filterLabel.setText("Filter By :");
+    searchPanel.add(filterLabel);
 
-        searchWrapperPanel.add(searchPanel, java.awt.BorderLayout.PAGE_START);
+    filterBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Patient ID", "Name", "Age", "IC", "Gender", "Date of Reg" }));
+    filterBox.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            filterBoxActionPerformed(evt);
+        }
+    });
+    searchPanel.add(filterBox);
 
-        patientTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+    filterField.setColumns(15);
+    filterField.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            filterFieldActionPerformed(evt);
+        }
+    });
+    searchPanel.add(filterField);
 
-            },
-            new String [] {
+    searchWrapperPanel.add(searchPanel, java.awt.BorderLayout.PAGE_START);
 
-            }
-        ));
-        patientTable.getTableHeader().setReorderingAllowed(false);
-        patientTablePanel.setViewportView(patientTable);
+    patientTable.setModel(new javax.swing.table.DefaultTableModel(
+        new Object [][] {
 
-        searchWrapperPanel.add(patientTablePanel, java.awt.BorderLayout.CENTER);
+        },
+        new String [] {
 
-        EditPatient.setText("Edit Patient");
-        EditPatient.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                EditPatientActionPerformed(evt);
-            }
-        });
-        ButtonPanel.add(EditPatient);
+        }
+    ));
+    patientTable.getTableHeader().setReorderingAllowed(false);
+    patientTablePanel.setViewportView(patientTable);
 
-        AddPatient.setText("Add Patient");
-        AddPatient.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                AddPatientActionPerformed(evt);
-            }
-        });
-        ButtonPanel.add(AddPatient);
+    searchWrapperPanel.add(patientTablePanel, java.awt.BorderLayout.CENTER);
 
-        GenerateReport.setText("Generate Report");
-        GenerateReport.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                GenerateReportActionPerformed(evt);
-            }
-        });
-        ButtonPanel.add(GenerateReport);
+    EditPatient.setText("Edit Patient");
+    EditPatient.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            EditPatientActionPerformed(evt);
+        }
+    });
+    ButtonPanel.add(EditPatient);
 
-        Done.setText("Done");
-        Done.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                DoneActionPerformed(evt);
-            }
-        });
-        ButtonPanel.add(Done);
+    AddPatient.setText("Add Patient");
+    AddPatient.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            AddPatientActionPerformed(evt);
+        }
+    });
+    ButtonPanel.add(AddPatient);
 
-        searchWrapperPanel.add(ButtonPanel, java.awt.BorderLayout.PAGE_END);
+    GenerateReport.setText("Generate Report");
+    GenerateReport.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            GenerateReportActionPerformed(evt);
+        }
+    });
+    ButtonPanel.add(GenerateReport);
 
-        titlePanel.add(searchWrapperPanel, java.awt.BorderLayout.CENTER);
+    Done.setText("Done");
+    Done.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            DoneActionPerformed(evt);
+        }
+    });
+    ButtonPanel.add(Done);
 
-        add(titlePanel, java.awt.BorderLayout.CENTER);
+    searchWrapperPanel.add(ButtonPanel, java.awt.BorderLayout.PAGE_END);
+
+    titlePanel.add(searchWrapperPanel, java.awt.BorderLayout.CENTER);
+
+    add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     private void filterFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterFieldActionPerformed
@@ -465,6 +479,39 @@ private void filterPatients() {
         // TODO add your handling code here:
     }//GEN-LAST:event_filterBoxActionPerformed
 
+    private void sortBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortBoxActionPerformed
+        
+        if (patientList == null || patientList.isEmpty()) {
+        return; // nothing to sort
+    }
+
+    String selectedSort = (String) sortBox.getSelectedItem();
+
+    // 1️⃣ Sort patientList by Patient ID (assumes Patient implements Comparable by ID)
+    patientList.sort(); // ascending by default
+
+    // 2️⃣ Reverse if "DESC" is selected
+    if ("DESC".equalsIgnoreCase(selectedSort)) {
+        patientList.reverse();
+    }
+
+    // 3️⃣ Refresh the table with the sorted data
+    tableModel.setRowCount(0);
+    for (Patient p : patientList) {
+        tableModel.addRow(new Object[]{
+            p.getPatientID(),
+            p.getPatientName(),
+            p.getPatientAge(),
+            p.getPatientIC(),
+            p.getGender(),
+            p.getContact(),
+            p.getEmail(),
+            p.getAddress(),
+            p.getDateOfRegistration()
+        });
+    }
+    }//GEN-LAST:event_sortBoxActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton AddPatient;
     private javax.swing.JPanel ButtonPanel;
@@ -479,6 +526,8 @@ private void filterPatients() {
     private javax.swing.JScrollPane patientTablePanel;
     private javax.swing.JPanel searchPanel;
     private javax.swing.JPanel searchWrapperPanel;
+    private javax.swing.JComboBox<String> sortBox;
+    private javax.swing.JLabel sortLabel;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables
