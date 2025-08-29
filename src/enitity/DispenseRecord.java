@@ -154,11 +154,16 @@ public class DispenseRecord implements Serializable, Comparable<DispenseRecord> 
             return 0;
         }
         if (this.dateTime == null) {
-            return -1;
-        }
-        if (other.dateTime == null) {
             return 1;
         }
-        return this.dateTime.compareTo(other.dateTime);
+        if (other.dateTime == null) {
+            return -1;
+        }
+
+        java.time.LocalDateTime thisDate = java.time.LocalDateTime.parse(this.dateTime);
+        java.time.LocalDateTime otherDate = java.time.LocalDateTime.parse(other.dateTime);
+
+        return otherDate.compareTo(thisDate); // DESC
     }
+
 }

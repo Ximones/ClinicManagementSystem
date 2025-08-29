@@ -109,6 +109,13 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
     private void loadInitialComponent() {
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
 
+        DoublyLinkedList<String> sortCriteria = new DoublyLinkedList<>();
+        sortCriteria.insertLast("ASC");
+        sortCriteria.insertLast("DESC");
+        for (String i : sortCriteria) {
+            sortBox.addItem(i);
+        }
+
         DoublyLinkedList<String> filterCriteria = new DoublyLinkedList<>();
         filterCriteria.insertLast("ID");
         filterCriteria.insertLast("Name");
@@ -152,7 +159,7 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         model.addColumn("Price (RM)");
 
         medicineTable.setModel(model);
-        medicineTable.setAutoCreateRowSorter(true);
+        medicineTable.setAutoCreateRowSorter(false);
 
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
         DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer() {
@@ -322,6 +329,8 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         titleLabel = new javax.swing.JLabel();
         searchWrapperPanel = new javax.swing.JPanel();
         searchPanel = new javax.swing.JPanel();
+        sortLabel = new javax.swing.JLabel();
+        sortBox = new javax.swing.JComboBox<>();
         filterLabel = new javax.swing.JLabel();
         filterBox = new javax.swing.JComboBox<>();
         filterField = new javax.swing.JTextField();
@@ -347,6 +356,16 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
         searchWrapperPanel.setLayout(new java.awt.BorderLayout());
+
+        sortLabel.setText("Sort ID By:");
+        searchPanel.add(sortLabel);
+
+        sortBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sortBoxActionPerformed(evt);
+            }
+        });
+        searchPanel.add(sortBox);
 
         filterLabel.setText("Filter By :");
         searchPanel.add(filterLabel);
@@ -480,6 +499,25 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
         populateMedicineTable(masterMedicineList);
     }//GEN-LAST:event_editMedicineButtonActionPerformed
 
+    private void sortBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortBoxActionPerformed
+        String selectedSort = (String) sortBox.getSelectedItem();
+
+        if (masterMedicineList == null) {
+            return;
+        }
+
+        // 1. Always sort in ascending order first
+        masterMedicineList.sort();
+
+        // 2. If "DESC" is selected, reverse the sorted list
+        if ("DESC".equals(selectedSort)) {
+            masterMedicineList.reverse();
+        }
+
+        // 3. Refresh the table with the sorted data
+        populateMedicineTable(masterMedicineList);
+    }//GEN-LAST:event_sortBoxActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ButtonPanel;
     private javax.swing.JButton addMedicineButton;
@@ -495,6 +533,8 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane medicineTablePanel;
     private javax.swing.JPanel searchPanel;
     private javax.swing.JPanel searchWrapperPanel;
+    private javax.swing.JComboBox<String> sortBox;
+    private javax.swing.JLabel sortLabel;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables

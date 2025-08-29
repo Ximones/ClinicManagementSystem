@@ -32,12 +32,18 @@ public class DispenseHistoryPanel extends javax.swing.JPanel {
 
         medicineTable.getTableHeader().setReorderingAllowed(false);
         medicineTable.setRowHeight(24);
+        medicineTable.setAutoCreateRowSorter(false);
     }
 
     public void loadMedicineTable() {
         // Read data from file
         DoublyLinkedList<DispenseRecord> dispenseRecords
                 = (DoublyLinkedList<DispenseRecord>) FileUtils.readDataFromFile("dispense");
+
+        // Sort before displaying
+        if (dispenseRecords != null && !dispenseRecords.isEmpty()) {
+            dispenseRecords.sort();   // Uses compareTo from DispenseRecord
+        }
 
         // Define column names
         String[] columnNames = {
@@ -54,7 +60,7 @@ public class DispenseHistoryPanel extends javax.swing.JPanel {
             }
         };
 
-        // Populate with records
+        // Populate with sorted records
         if (dispenseRecords != null && !dispenseRecords.isEmpty()) {
             for (DispenseRecord record : dispenseRecords) {
                 Object[] rowData = {
