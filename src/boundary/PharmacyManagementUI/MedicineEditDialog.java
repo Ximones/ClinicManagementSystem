@@ -349,7 +349,10 @@ public class MedicineEditDialog extends javax.swing.JDialog {
                 throw new IllegalArgumentException("Please select a valid Formulation.");
             }
 
-            if (!dosage.isEmpty() && !dosage.matches("[a-zA-Z0-9\\s/]+")) {
+            if (dosage.isEmpty()) {
+                throw new IllegalArgumentException("Dosage cannot be empty.");
+            }
+            if (!dosage.matches("[a-zA-Z0-9\\s/]+")) {
                 throw new IllegalArgumentException("Dosage contains invalid characters.");
             }
 

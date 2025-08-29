@@ -281,7 +281,7 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
                 case "Formulation":
                     match = med.getFormulation().toLowerCase().contains(searchText);
                     break;
-                case "Dosage Form":
+                case "Dosage":
                     match = med.getDosageForm().toLowerCase().contains(searchText);
                     break;
                 case "Quantity":
