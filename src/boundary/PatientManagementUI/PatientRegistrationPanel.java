@@ -312,6 +312,11 @@ private void filterPatients() {
         searchPanel.add(filterLabel);
 
         filterBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Patient ID", "Name", "Age", "IC", "Gender", "Date of Reg" }));
+        filterBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterBoxActionPerformed(evt);
+            }
+        });
         searchPanel.add(filterBox);
 
         filterField.setColumns(15);
@@ -455,6 +460,10 @@ private void filterPatients() {
         JOptionPane.showMessageDialog(this, "Patient updated successfully!");
     }
     }//GEN-LAST:event_EditPatientActionPerformed
+
+    private void filterBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_filterBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton AddPatient;

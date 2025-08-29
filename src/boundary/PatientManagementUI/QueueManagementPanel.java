@@ -33,6 +33,26 @@ public class QueueManagementPanel extends javax.swing.JPanel {
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
         loadQueueData();
         displayQueueData();
+        
+         filterField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+        @Override
+        public void insertUpdate(javax.swing.event.DocumentEvent e) {
+            filterQueueTable();
+        }
+
+        @Override
+        public void removeUpdate(javax.swing.event.DocumentEvent e) {
+            filterQueueTable();
+        }
+
+        @Override
+        public void changedUpdate(javax.swing.event.DocumentEvent e) {
+            filterQueueTable();
+        }
+    });
+
+    // Add listener to filterBox to update filter when selection changes
+    filterBox.addActionListener(evt -> filterQueueTable());
     }
 
     private int lastNumber = 1000; // starting number
@@ -120,6 +140,43 @@ private void displayQueueData() {
 }
 
 
+private void filterQueueTable() {
+    String keyword = filterField.getText().trim().toLowerCase();
+    String filterBy = filterBox.getSelectedItem().toString();
+
+    DefaultTableModel model = (DefaultTableModel) queueTable.getModel();
+    model.setRowCount(0); // clear table
+
+    for (QueueEntry entry : queueList) {
+        Patient p = entry.getPatient();
+        boolean matches = false;
+
+        switch (filterBy) {
+            case "Queue No":
+                matches = entry.getQueueNumber().toLowerCase().contains(keyword);
+                break;
+            case "Status":
+                matches = entry.getStatus().toLowerCase().contains(keyword);
+                break;
+        }
+
+        if (matches) {
+            model.addRow(new Object[]{
+                p.getPatientID(),
+                p.getPatientName(),
+                p.getPatientIC(),
+                entry.getQueueNumber(),
+                entry.getStatus(),
+                entry.getFormattedEnqueueTime(),
+                entry.getFormattedStartTime(),
+                entry.getFormattedWaitingTime()
+            });
+        }
+    }
+}
+
+
+
 public void reloadData() {
     loadQueueData();      // re-read from file
     displayQueueData();   // update the table
@@ -175,7 +232,7 @@ public void setVisible(boolean aFlag) {
         filterLabel.setText("Filter By :");
         searchPanel.add(filterLabel);
 
-        filterBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Queue No", "Status", " " }));
+        filterBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Queue No", "Status"}));
         filterBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterBoxActionPerformed(evt);
