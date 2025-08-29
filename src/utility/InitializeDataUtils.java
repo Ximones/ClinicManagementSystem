@@ -6,6 +6,7 @@ import enitity.Doctor;
 import enitity.DutySlot;
 import enitity.Medicine;
 import enitity.Patient;
+import enitity.QueueEntry;
 
 /**
  *
@@ -25,12 +26,14 @@ public class InitializeDataUtils {
             DoublyLinkedList<DutySlot> existingScheduleData = (DoublyLinkedList<DutySlot>) FileUtils.readDataFromFile("this_week_schedule");
             DoublyLinkedList<Patient> existingPatientData = (DoublyLinkedList<Patient>) FileUtils.readDataFromFile("patients");
             DoublyLinkedList<Pair<String, Medicine>> existingMedicineData = (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
-
+            DoublyLinkedList<Pair<String, QueueEntry>> existingQueueData = (DoublyLinkedList<Pair<String, QueueEntry>>) FileUtils.readDataFromFile("queue");
+            
             // If condition met, perform reinitialize each field data 
             if (existingDoctorData == null || existingDoctorData.isEmpty()
                     || existingScheduleData == null || existingScheduleData.isEmpty()
                     || existingPatientData == null || existingPatientData.isEmpty()
-                    || existingMedicineData == null || existingMedicineData.isEmpty()) {
+                    || existingMedicineData == null || existingMedicineData.isEmpty()
+                    || existingQueueData == null || existingQueueData.isEmpty()) {
                 initializeAllData = true;
             }
         } catch (Exception e) {
@@ -48,17 +51,21 @@ public class InitializeDataUtils {
         DoublyLinkedList<DutySlot> thisWeekSchedule = initializeScheduleData(doctorList);
         DoublyLinkedList<Patient> patientList = initializePatientData();
         DoublyLinkedList<Pair<String, Medicine>> medList = initializeMedicineData();
-
+        DoublyLinkedList<Pair<String, QueueEntry>> queueList = initializeQueueData(patientList);
+        
+        
         // Write the List's data to each file
         FileUtils.writeDataToFile("doctors", doctorList);
         FileUtils.writeDataToFile("this_week_schedule", thisWeekSchedule);
         FileUtils.writeDataToFile("patients", patientList);
         FileUtils.writeDataToFile("medicine", medList);
+        FileUtils.writeDataToFile("queue", queueList);
         
         System.out.println("Doctors Data have been intialized and saved to dao/doctos.bin");
         System.out.println("This Week Schedule Data have been intialized and saved to dao/this_week_schedule.bin");
         System.out.println("Patients data have been intialized and saved to dao/patients.bin");
         System.out.println("Medicines data have been intialized have been saved to dao/medicine.bin");
+        System.out.println("Queue data have been initialized and saved to dao/queue.bin");
     }
 
     // Initialize Doctor Test Data
@@ -236,5 +243,42 @@ public class InitializeDataUtils {
         return medList;
 
     }
+  
+    // Initialize Queue Test Data
+    private static DoublyLinkedList<Pair<String, QueueEntry>> initializeQueueData(DoublyLinkedList<Patient> patientList) {
+    DoublyLinkedList<Pair<String, QueueEntry>> queueList = new DoublyLinkedList<>();
+    if (patientList != null && !patientList.isEmpty()) {
+        long baseTime = System.currentTimeMillis(); // reference start time
+
+        for (int i = 1; i <= 10 && i <= patientList.getSize(); i++) {
+            Patient patient = patientList.getElement(i).getEntry();
+            String queueNumber = "Q" + String.format("%03d", i);
+            String status = "Done";
+
+            // Enqueue time: each patient joins 1-5 minutes apart
+            long enqueueMillis = baseTime - (i * 60_000L); // i minutes ago
+
+            // Start consultation: 1-10 minutes after enqueue
+            long startOffset = 60_000L + (long)(Math.random() * 9 * 60_000L); // 1-10 minutes
+            long startMillis = enqueueMillis + startOffset;
+
+            // End consultation: 5-15 minutes after start
+            long consultDuration = 5 * 60_000L + (long)(Math.random() * 10 * 60_000L); // 5-15 minutes
+            long endMillis = startMillis + consultDuration;
+
+            QueueEntry entry = new QueueEntry(patient, queueNumber, status);
+            entry.setEnqueueTime(enqueueMillis);
+            entry.setStartConsultTime(startMillis);
+            entry.setEndConsultTime(endMillis);
+            entry.setConsultDuration(consultDuration);
+            entry.setWaitingTime(startMillis - enqueueMillis); // explicitly set waiting time
+
+            queueList.insertLast(new Pair<>(queueNumber, entry));
+        }
+    }
+    return queueList;
+}
+
+    
 
 }

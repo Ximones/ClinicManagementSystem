@@ -18,7 +18,11 @@ public class QueueEntry implements Comparable<QueueEntry>, Serializable {
     private long enqueueTime;       // time in ms when patient joined queue
     private long startConsultTime;  // time in ms when consultation starts
     private LocalDateTime startTime; // precise time for consulting
+    private long endConsultTime;    // time in ms when consultation ends
+    private long consultDuration;   // duration in ms
+    private long waitingTime;
 
+    
     public QueueEntry(Patient patient, String queueNumber, String status) {
         this.patient = patient;
         this.queueNumber = queueNumber;
@@ -47,11 +51,25 @@ public class QueueEntry implements Comparable<QueueEntry>, Serializable {
     public LocalDateTime getStartTime() {
         return startTime;
     }
-
+    public long getWaitingTime() {
+    return waitingTime;
+}
     // --- Setters ---
     public void setStatus(String status) {
         this.status = status;
     }
+    
+    public void setEnqueueTime(long enqueueTime) {
+    this.enqueueTime = enqueueTime;
+    }
+
+    public void setStartConsultTime(long startConsultTime) {
+    this.startConsultTime = startConsultTime;
+    }
+    public void setWaitingTime(long waitingTime) {
+    this.waitingTime = waitingTime;
+}
+
 
     /**
      * Marks the start of consultation, sets status to "In Progress".
@@ -135,6 +153,23 @@ public class QueueEntry implements Comparable<QueueEntry>, Serializable {
         } else {
             return seconds + "s";
         }
+    }
+    
+    
+    public void setEndConsultTime(long endConsultTime) {
+    this.endConsultTime = endConsultTime;
+    }
+
+    public long getEndConsultTime() {
+    return endConsultTime;
+    }
+
+    public void setConsultDuration(long consultDuration) {
+    this.consultDuration = consultDuration;
+    }
+
+    public long getConsultDuration() {
+    return consultDuration;
     }
 
     @Override
