@@ -71,21 +71,29 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
         searchLabel = new javax.swing.JLabel();
         searchInput = new javax.swing.JTextField();
         searchButton = new javax.swing.JButton();
-        formWrapperPanel = new javax.swing.JPanel();
-        formGridPanel = new javax.swing.JPanel();
-        treatmentIdLabel = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jPanel9 = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
+        jPanel12 = new javax.swing.JPanel();
+        treatmentLabel = new javax.swing.JLabel();
         treatmentIdField = new javax.swing.JTextField();
+        jPanel13 = new javax.swing.JPanel();
+        jPanel6 = new javax.swing.JPanel();
         diagnosisLabel = new javax.swing.JLabel();
         diagnosisInput = new javax.swing.JTextField();
+        jPanel7 = new javax.swing.JPanel();
+        jPanel11 = new javax.swing.JPanel();
         treatmentDetailsLabel = new javax.swing.JLabel();
         treatmentTypeComboBox = new javax.swing.JComboBox<>();
-        notesLabel = new javax.swing.JLabel();
+        jPanel8 = new javax.swing.JPanel();
+        jPanel10 = new javax.swing.JPanel();
+        diagnosisLabel1 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         notesInput = new javax.swing.JTextArea();
         buttonPanel = new javax.swing.JPanel();
         saveButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
-        jPanel3 = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(600, 500));
@@ -118,59 +126,107 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
 
         getContentPane.add(searchPanel, java.awt.BorderLayout.PAGE_START);
 
-        formGridPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder(""), "Treatment Information :", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Corbel", 1, 14))); // NOI18N
-        formGridPanel.setMinimumSize(new java.awt.Dimension(350, 228));
-        formGridPanel.setPreferredSize(new java.awt.Dimension(300, 270));
-        formGridPanel.setLayout(new java.awt.GridLayout(4, 2, 5, 15));
+        jPanel1.setLayout(new java.awt.BorderLayout(5, 0));
 
-        treatmentIdLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        treatmentIdLabel.setText("ID :");
-        formGridPanel.add(treatmentIdLabel);
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Treatment："));
+        jPanel2.setPreferredSize(new java.awt.Dimension(600, 280));
+        jPanel2.setLayout(new java.awt.BorderLayout());
 
-        treatmentIdField.setEditable(false);
-        treatmentIdField.setColumns(15);
+        jPanel9.setPreferredSize(new java.awt.Dimension(600, 250));
+        jPanel9.setVerifyInputWhenFocusTarget(false);
+
+        jPanel5.setMinimumSize(new java.awt.Dimension(50, 100));
+        jPanel5.setPreferredSize(new java.awt.Dimension(600, 500));
+        jPanel5.setLayout(new java.awt.BorderLayout());
+
+        treatmentLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        treatmentLabel.setText("ID :");
+        treatmentLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        treatmentLabel.setMinimumSize(new java.awt.Dimension(100, 100));
+        treatmentLabel.setPreferredSize(new java.awt.Dimension(150, 30));
+        jPanel12.add(treatmentLabel);
+
+        treatmentIdField.setPreferredSize(new java.awt.Dimension(150, 30));
         treatmentIdField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 treatmentIdFieldActionPerformed(evt);
             }
         });
-        formGridPanel.add(treatmentIdField);
+        jPanel12.add(treatmentIdField);
+
+        jPanel5.add(jPanel12, java.awt.BorderLayout.NORTH);
+
+        jPanel13.setMinimumSize(new java.awt.Dimension(300, 500));
+        jPanel13.setLayout(new java.awt.BorderLayout());
 
         diagnosisLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        diagnosisLabel.setText("Diagnosis :");
-        formGridPanel.add(diagnosisLabel);
+        diagnosisLabel.setText("Diagnose :");
+        diagnosisLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        diagnosisLabel.setMinimumSize(new java.awt.Dimension(100, 100));
+        diagnosisLabel.setPreferredSize(new java.awt.Dimension(150, 30));
+        diagnosisLabel.setRequestFocusEnabled(false);
+        jPanel6.add(diagnosisLabel);
 
-        diagnosisInput.setColumns(15);
-        formGridPanel.add(diagnosisInput);
+        diagnosisInput.setPreferredSize(new java.awt.Dimension(150, 30));
+        jPanel6.add(diagnosisInput);
+
+        jPanel13.add(jPanel6, java.awt.BorderLayout.PAGE_START);
+
+        jPanel7.setPreferredSize(new java.awt.Dimension(100, 200));
+        jPanel7.setLayout(new java.awt.BorderLayout());
 
         treatmentDetailsLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        treatmentDetailsLabel.setText("Type :");
-        formGridPanel.add(treatmentDetailsLabel);
+        treatmentDetailsLabel.setText("Treatment Type :");
+        treatmentDetailsLabel.setPreferredSize(new java.awt.Dimension(150, 30));
+        jPanel11.add(treatmentDetailsLabel);
 
-        formGridPanel.add(treatmentTypeComboBox);
+        treatmentTypeComboBox.setPreferredSize(new java.awt.Dimension(150, 30));
+        treatmentTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                treatmentTypeComboBoxActionPerformed(evt);
+            }
+        });
+        jPanel11.add(treatmentTypeComboBox);
 
-        notesLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        notesLabel.setText("Notes :");
-        formGridPanel.add(notesLabel);
+        jPanel7.add(jPanel11, java.awt.BorderLayout.NORTH);
 
-        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane2.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        jPanel8.setLayout(new java.awt.BorderLayout());
 
-        notesInput.setColumns(20);
+        jPanel10.setMaximumSize(new java.awt.Dimension(300, 300));
+        jPanel10.setMinimumSize(new java.awt.Dimension(300, 300));
+        jPanel10.setPreferredSize(new java.awt.Dimension(200, 130));
+
+        diagnosisLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        diagnosisLabel1.setText("Notes :");
+        diagnosisLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        diagnosisLabel1.setMinimumSize(new java.awt.Dimension(100, 100));
+        diagnosisLabel1.setPreferredSize(new java.awt.Dimension(150, 30));
+        diagnosisLabel1.setRequestFocusEnabled(false);
+        jPanel10.add(diagnosisLabel1);
+
+        notesInput.setColumns(14);
         notesInput.setRows(5);
         jScrollPane2.setViewportView(notesInput);
 
-        formGridPanel.add(jScrollPane2);
+        jPanel10.add(jScrollPane2);
 
-        formWrapperPanel.add(formGridPanel);
+        jPanel8.add(jPanel10, java.awt.BorderLayout.NORTH);
 
-        getContentPane.add(formWrapperPanel, java.awt.BorderLayout.CENTER);
+        jPanel7.add(jPanel8, java.awt.BorderLayout.CENTER);
+
+        jPanel13.add(jPanel7, java.awt.BorderLayout.CENTER);
+
+        jPanel5.add(jPanel13, java.awt.BorderLayout.CENTER);
+
+        jPanel9.add(jPanel5);
+
+        jPanel2.add(jPanel9, java.awt.BorderLayout.NORTH);
+
+        jPanel1.add(jPanel2, java.awt.BorderLayout.PAGE_START);
+
+        getContentPane.add(jPanel1, java.awt.BorderLayout.CENTER);
 
         titlePanel.add(getContentPane, java.awt.BorderLayout.CENTER);
-
-        logoPanel.add(titlePanel, java.awt.BorderLayout.PAGE_END);
-
-        getContentPane().add(logoPanel, java.awt.BorderLayout.PAGE_START);
 
         saveButton.setText("Save");
         saveButton.addActionListener(new java.awt.event.ActionListener() {
@@ -188,8 +244,11 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
         });
         buttonPanel.add(cancelButton);
 
-        getContentPane().add(buttonPanel, java.awt.BorderLayout.PAGE_END);
-        getContentPane().add(jPanel3, java.awt.BorderLayout.CENTER);
+        titlePanel.add(buttonPanel, java.awt.BorderLayout.PAGE_END);
+
+        logoPanel.add(titlePanel, java.awt.BorderLayout.PAGE_END);
+
+        getContentPane().add(logoPanel, java.awt.BorderLayout.PAGE_START);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -278,21 +337,33 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_treatmentIdFieldActionPerformed
 
+    private void treatmentTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_treatmentTypeComboBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_treatmentTypeComboBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JTextField diagnosisInput;
     private javax.swing.JLabel diagnosisLabel;
-    private javax.swing.JPanel formGridPanel;
-    private javax.swing.JPanel formWrapperPanel;
+    private javax.swing.JLabel diagnosisLabel1;
     private javax.swing.JPanel getContentPane;
-    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel10;
+    private javax.swing.JPanel jPanel11;
+    private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel13;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
+    private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JPanel logoPanel;
     private javax.swing.JTextArea notesInput;
-    private javax.swing.JLabel notesLabel;
     private javax.swing.JButton saveButton;
     private javax.swing.JButton searchButton;
     private javax.swing.JTextField searchInput;
@@ -301,7 +372,7 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
     private javax.swing.JPanel titlePanel;
     private javax.swing.JLabel treatmentDetailsLabel;
     private javax.swing.JTextField treatmentIdField;
-    private javax.swing.JLabel treatmentIdLabel;
+    private javax.swing.JLabel treatmentLabel;
     private javax.swing.JComboBox<String> treatmentTypeComboBox;
     // End of variables declaration//GEN-END:variables
 }
