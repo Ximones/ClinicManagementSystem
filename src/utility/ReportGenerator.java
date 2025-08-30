@@ -4,6 +4,8 @@ import adt.DoublyLinkedList;
 import adt.Pair;
 import enitity.Doctor;
 import enitity.Treatment;
+import enitity.Consultation;
+import enitity.Appointment;
 import java.io.File;
 
 // Core PDF creation classes for iText 7
@@ -27,6 +29,7 @@ import enitity.Patient;
 import enitity.QueueEntry;
 import java.awt.Color;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -757,6 +760,402 @@ public class ReportGenerator {
 
             document.close();
             chartFile.delete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ===== CONSULTATION MANAGEMENT PDF REPORTS =====
+
+    /**
+     * Generates a PDF report for consultation statistics with charts.
+     * @param consultationList The list of all consultations.
+     * @param fromDate Start date for the report period.
+     * @param toDate End date for the report period.
+     */
+    public static void generateConsultationStatisticsPDF(DoublyLinkedList<Pair<String, Consultation>> consultationList, 
+                                                       LocalDateTime fromDate, LocalDateTime toDate) {
+        try {
+            // --- 1. Aggregate Data ---
+            int totalConsultations = 0;
+            int completedConsultations = 0;
+            int scheduledConsultations = 0;
+            int cancelledConsultations = 0;
+            int inProgressConsultations = 0;
+
+            for (Pair<String, Consultation> pair : consultationList) {
+                Consultation consultation = pair.getValue();
+                if (consultation.getConsultationDateTime() != null &&
+                    !consultation.getConsultationDateTime().isBefore(fromDate) &&
+                    !consultation.getConsultationDateTime().isAfter(toDate)) {
+                    
+                    totalConsultations++;
+                    
+                    switch (consultation.getStatus()) {
+                        case "Completed":
+                            completedConsultations++;
+                            break;
+                        case "Scheduled":
+                            scheduledConsultations++;
+                            break;
+                        case "Cancelled":
+                            cancelledConsultations++;
+                            break;
+                        case "In Progress":
+                            inProgressConsultations++;
+                            break;
+                    }
+                }
+            }
+
+            // --- 2. Create Pie Chart ---
+            DefaultPieDataset pieDataset = new DefaultPieDataset();
+            if (completedConsultations > 0) pieDataset.setValue("Completed", completedConsultations);
+            if (scheduledConsultations > 0) pieDataset.setValue("Scheduled", scheduledConsultations);
+            if (cancelledConsultations > 0) pieDataset.setValue("Cancelled", cancelledConsultations);
+            if (inProgressConsultations > 0) pieDataset.setValue("In Progress", inProgressConsultations);
+
+            JFreeChart pieChart = ChartFactory.createPieChart("Consultation Status Distribution", pieDataset, true, true, false);
+            PiePlot plot = (PiePlot) pieChart.getPlot();
+            plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0}: {1} ({2})"));
+
+            File chartFile = new File("consultation_statistics_chart.png");
+            ChartUtils.saveChartAsPNG(chartFile, pieChart, 500, 400);
+
+            // --- 3. Create PDF ---
+            String fileName = "Consultation_Statistics_Report.pdf";
+            PdfWriter writer = new PdfWriter(fileName);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            document.add(new Paragraph("Consultation Statistics Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("Period: " + fromDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + 
+                                     " to " + toDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph(" "));
+
+            // Add chart
+            Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
+            document.add(chartImage);
+            document.add(new Paragraph(" "));
+
+            // Add summary table
+            Table table = new Table(UnitValue.createPercentArray(new float[]{3, 2}));
+            table.setWidth(UnitValue.createPercentValue(100));
+
+            table.addHeaderCell(new Cell().add(new Paragraph("Metric")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Count")));
+
+            table.addCell(new Cell().add(new Paragraph("Total Consultations")));
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(totalConsultations))));
+
+            table.addCell(new Cell().add(new Paragraph("Completed")));
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(completedConsultations))));
+
+            table.addCell(new Cell().add(new Paragraph("Scheduled")));
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(scheduledConsultations))));
+
+            table.addCell(new Cell().add(new Paragraph("In Progress")));
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(inProgressConsultations))));
+
+            table.addCell(new Cell().add(new Paragraph("Cancelled")));
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(cancelledConsultations))));
+
+            if (totalConsultations > 0) {
+                double completionRate = (double) completedConsultations / totalConsultations * 100;
+                table.addCell(new Cell().add(new Paragraph("Completion Rate")));
+                table.addCell(new Cell().add(new Paragraph(String.format("%.1f%%", completionRate))));
+            }
+
+            document.add(table);
+            document.close();
+            chartFile.delete();
+
+            System.out.println("Consultation Statistics Report generated successfully.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Generates a PDF report for appointment summary with charts.
+     * @param appointmentList The list of all appointments.
+     * @param fromDate Start date for the report period.
+     * @param toDate End date for the report period.
+     */
+    public static void generateAppointmentSummaryPDF(DoublyLinkedList<Pair<String, Appointment>> appointmentList,
+                                                   LocalDateTime fromDate, LocalDateTime toDate) {
+        try {
+            // --- 1. Aggregate Data ---
+            int totalAppointments = 0;
+            int confirmedAppointments = 0;
+            int completedAppointments = 0;
+            int cancelledAppointments = 0;
+            int noShowAppointments = 0;
+
+            for (Pair<String, Appointment> pair : appointmentList) {
+                Appointment appointment = pair.getValue();
+                if (appointment.getAppointmentDateTime() != null &&
+                    !appointment.getAppointmentDateTime().isBefore(fromDate) &&
+                    !appointment.getAppointmentDateTime().isAfter(toDate)) {
+                    
+                    totalAppointments++;
+                    
+                    switch (appointment.getStatus()) {
+                        case "Confirmed":
+                            confirmedAppointments++;
+                            break;
+                        case "Completed":
+                            completedAppointments++;
+                            break;
+                        case "Cancelled":
+                            cancelledAppointments++;
+                            break;
+                        case "No-show":
+                            noShowAppointments++;
+                            break;
+                    }
+                }
+            }
+
+            // --- 2. Create Bar Chart ---
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+            if (confirmedAppointments > 0) dataset.addValue(confirmedAppointments, "Count", "Confirmed");
+            if (completedAppointments > 0) dataset.addValue(completedAppointments, "Count", "Completed");
+            if (cancelledAppointments > 0) dataset.addValue(cancelledAppointments, "Count", "Cancelled");
+            if (noShowAppointments > 0) dataset.addValue(noShowAppointments, "Count", "No-show");
+
+            JFreeChart barChart = ChartFactory.createBarChart(
+                "Appointment Status Distribution",
+                "Status",
+                "Number of Appointments",
+                dataset,
+                PlotOrientation.VERTICAL,
+                false, true, false
+            );
+
+            File chartFile = new File("appointment_summary_chart.png");
+            ChartUtils.saveChartAsPNG(chartFile, barChart, 600, 400);
+
+            // --- 3. Create PDF ---
+            String fileName = "Appointment_Summary_Report.pdf";
+            PdfWriter writer = new PdfWriter(fileName);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            document.add(new Paragraph("Appointment Summary Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("Period: " + fromDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + 
+                                     " to " + toDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph(" "));
+
+            // Add chart
+            Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
+            document.add(chartImage);
+            document.add(new Paragraph(" "));
+
+            // Add summary table
+            Table table = new Table(UnitValue.createPercentArray(new float[]{3, 2}));
+            table.setWidth(UnitValue.createPercentValue(100));
+
+            table.addHeaderCell(new Cell().add(new Paragraph("Metric")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Count")));
+
+            table.addCell(new Cell().add(new Paragraph("Total Appointments")));
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(totalAppointments))));
+
+            table.addCell(new Cell().add(new Paragraph("Confirmed")));
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(confirmedAppointments))));
+
+            table.addCell(new Cell().add(new Paragraph("Completed")));
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(completedAppointments))));
+
+            table.addCell(new Cell().add(new Paragraph("Cancelled")));
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(cancelledAppointments))));
+
+            table.addCell(new Cell().add(new Paragraph("No-show")));
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(noShowAppointments))));
+
+            if (totalAppointments > 0) {
+                double attendanceRate = (double) completedAppointments / totalAppointments * 100;
+                table.addCell(new Cell().add(new Paragraph("Attendance Rate")));
+                table.addCell(new Cell().add(new Paragraph(String.format("%.1f%%", attendanceRate))));
+            }
+
+            document.add(table);
+            document.close();
+            chartFile.delete();
+
+            System.out.println("Appointment Summary Report generated successfully.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Generates a PDF report for doctor performance analysis.
+     * @param consultationList The list of all consultations.
+     * @param fromDate Start date for the report period.
+     * @param toDate End date for the report period.
+     */
+    public static void generateDoctorPerformancePDF(DoublyLinkedList<Pair<String, Consultation>> consultationList,
+                                                  LocalDateTime fromDate, LocalDateTime toDate) {
+        try {
+            // --- 1. Aggregate Data by Doctor ---
+            java.util.Map<String, Integer> doctorConsultations = new java.util.HashMap<>();
+            java.util.Map<String, Integer> doctorCompleted = new java.util.HashMap<>();
+
+            for (Pair<String, Consultation> pair : consultationList) {
+                Consultation consultation = pair.getValue();
+                if (consultation.getConsultationDateTime() != null &&
+                    !consultation.getConsultationDateTime().isBefore(fromDate) &&
+                    !consultation.getConsultationDateTime().isAfter(toDate) &&
+                    consultation.getDoctor() != null) {
+                    
+                    String doctorName = consultation.getDoctor().getName();
+                    doctorConsultations.put(doctorName, doctorConsultations.getOrDefault(doctorName, 0) + 1);
+                    
+                    if ("Completed".equals(consultation.getStatus())) {
+                        doctorCompleted.put(doctorName, doctorCompleted.getOrDefault(doctorName, 0) + 1);
+                    }
+                }
+            }
+
+            // --- 2. Create Bar Chart ---
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+            for (String doctorName : doctorConsultations.keySet()) {
+                int total = doctorConsultations.get(doctorName);
+                int completed = doctorCompleted.getOrDefault(doctorName, 0);
+                double completionRate = total > 0 ? (double) completed / total * 100 : 0;
+                dataset.addValue(completionRate, "Completion Rate (%)", doctorName);
+            }
+
+            JFreeChart barChart = ChartFactory.createBarChart(
+                "Doctor Performance - Completion Rates",
+                "Doctor",
+                "Completion Rate (%)",
+                dataset,
+                PlotOrientation.VERTICAL,
+                false, true, false
+            );
+
+            File chartFile = new File("doctor_performance_chart.png");
+            ChartUtils.saveChartAsPNG(chartFile, barChart, 700, 400);
+
+            // --- 3. Create PDF ---
+            String fileName = "Doctor_Performance_Report.pdf";
+            PdfWriter writer = new PdfWriter(fileName);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            document.add(new Paragraph("Doctor Performance Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("Period: " + fromDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + 
+                                     " to " + toDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph(" "));
+
+            // Add chart
+            Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
+            document.add(chartImage);
+            document.add(new Paragraph(" "));
+
+            // Add detailed table
+            Table table = new Table(UnitValue.createPercentArray(new float[]{3, 2, 2, 2}));
+            table.setWidth(UnitValue.createPercentValue(100));
+
+            table.addHeaderCell(new Cell().add(new Paragraph("Doctor")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Total")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Completed")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Rate (%)")));
+
+            for (String doctorName : doctorConsultations.keySet()) {
+                int total = doctorConsultations.get(doctorName);
+                int completed = doctorCompleted.getOrDefault(doctorName, 0);
+                double completionRate = total > 0 ? (double) completed / total * 100 : 0;
+
+                table.addCell(new Cell().add(new Paragraph(doctorName)));
+                table.addCell(new Cell().add(new Paragraph(String.valueOf(total))));
+                table.addCell(new Cell().add(new Paragraph(String.valueOf(completed))));
+                table.addCell(new Cell().add(new Paragraph(String.format("%.1f", completionRate))));
+            }
+
+            document.add(table);
+            document.close();
+            chartFile.delete();
+
+            System.out.println("Doctor Performance Report generated successfully.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Generates a PDF report for monthly consultation summary.
+     * @param consultationList The list of all consultations.
+     */
+    public static void generateMonthlyConsultationPDF(DoublyLinkedList<Pair<String, Consultation>> consultationList) {
+        try {
+            // --- 1. Aggregate Data by Month ---
+            java.util.Map<String, Integer> monthlyConsultations = new java.util.HashMap<>();
+
+            for (Pair<String, Consultation> pair : consultationList) {
+                Consultation consultation = pair.getValue();
+                if (consultation.getConsultationDateTime() != null) {
+                    String monthYear = consultation.getConsultationDateTime().format(DateTimeFormatter.ofPattern("MMMM yyyy"));
+                    monthlyConsultations.put(monthYear, monthlyConsultations.getOrDefault(monthYear, 0) + 1);
+                }
+            }
+
+            // --- 2. Create Bar Chart ---
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+            for (String monthYear : monthlyConsultations.keySet()) {
+                dataset.addValue(monthlyConsultations.get(monthYear), "Consultations", monthYear);
+            }
+
+            JFreeChart barChart = ChartFactory.createBarChart(
+                "Monthly Consultation Summary",
+                "Month",
+                "Number of Consultations",
+                dataset,
+                PlotOrientation.VERTICAL,
+                false, true, false
+            );
+
+            File chartFile = new File("monthly_consultation_chart.png");
+            ChartUtils.saveChartAsPNG(chartFile, barChart, 700, 400);
+
+            // --- 3. Create PDF ---
+            String fileName = "Monthly_Consultation_Summary.pdf";
+            PdfWriter writer = new PdfWriter(fileName);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            document.add(new Paragraph("Monthly Consultation Summary Report").setFontSize(18).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph(" "));
+
+            // Add chart
+            Image chartImage = new Image(ImageDataFactory.create(chartFile.getAbsolutePath()));
+            document.add(chartImage);
+            document.add(new Paragraph(" "));
+
+            // Add summary table
+            Table table = new Table(UnitValue.createPercentArray(new float[]{3, 2}));
+            table.setWidth(UnitValue.createPercentValue(100));
+
+            table.addHeaderCell(new Cell().add(new Paragraph("Month")));
+            table.addHeaderCell(new Cell().add(new Paragraph("Consultations")));
+
+            for (String monthYear : monthlyConsultations.keySet()) {
+                table.addCell(new Cell().add(new Paragraph(monthYear)));
+                table.addCell(new Cell().add(new Paragraph(String.valueOf(monthlyConsultations.get(monthYear)))));
+            }
+
+            document.add(table);
+            document.close();
+            chartFile.delete();
+
+            System.out.println("Monthly Consultation Summary Report generated successfully.");
 
         } catch (Exception e) {
             e.printStackTrace();

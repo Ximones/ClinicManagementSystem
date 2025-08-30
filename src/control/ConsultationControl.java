@@ -52,6 +52,8 @@ public class ConsultationControl {
                 = (DoublyLinkedList<Pair<String, Consultation>>) FileUtils.readDataFromFile("consultations");
         if (loadedConsultations != null) {
             this.consultationList = loadedConsultations;
+            // Update consultation index to prevent duplicate IDs
+            updateConsultationIndex();
         }
 
         // Load appointments
@@ -680,6 +682,32 @@ public class ConsultationControl {
     }
 
     /**
+     * Updates the consultation index to prevent duplicate IDs
+     */
+    private void updateConsultationIndex() {
+        if (consultationList.isEmpty()) {
+            Consultation.setConsultationIndex(0);
+            return;
+        }
+        
+        int maxIndex = 0;
+        for (Pair<String, Consultation> pair : consultationList) {
+            String consultationID = pair.getKey();
+            if (consultationID.startsWith("C")) {
+                try {
+                    int index = Integer.parseInt(consultationID.substring(1));
+                    if (index > maxIndex) {
+                        maxIndex = index;
+                    }
+                } catch (NumberFormatException e) {
+                    // Skip invalid IDs
+                }
+            }
+        }
+        Consultation.setConsultationIndex(maxIndex);
+    }
+
+    /**
      * Reloads consultations from storage to reflect external changes
      */
     public void reloadConsultations() {
@@ -687,6 +715,8 @@ public class ConsultationControl {
                 = (DoublyLinkedList<Pair<String, Consultation>>) FileUtils.readDataFromFile("consultations");
         if (loadedConsultations != null) {
             this.consultationList = loadedConsultations;
+            // Update consultation index to prevent duplicate IDs
+            updateConsultationIndex();
         }
     }
 

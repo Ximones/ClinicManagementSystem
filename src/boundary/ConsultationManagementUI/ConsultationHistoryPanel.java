@@ -83,7 +83,7 @@ public class ConsultationHistoryPanel extends javax.swing.JPanel {
         historyTable.getTableHeader().setReorderingAllowed(false);
         
         tableScrollPane = new JScrollPane(historyTable);
-        tableScrollPane.setPreferredSize(new Dimension(900, 400));
+        tableScrollPane.setPreferredSize(new Dimension(700, 300));
         
         // Create filter panel
         JPanel filterPanel = createFilterPanel();
@@ -97,16 +97,13 @@ public class ConsultationHistoryPanel extends javax.swing.JPanel {
         mainContentPanel.add(tableScrollPane, BorderLayout.CENTER);
         mainContentPanel.add(buttonPanel, BorderLayout.SOUTH);
         
-        // Wrap main content in scroll pane
-        JScrollPane mainScrollPane = new JScrollPane(mainContentPanel);
-        mainScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        mainScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        // Add main content directly (no global scrolling)
+        dataPanel.add(mainContentPanel, BorderLayout.CENTER);
         
-        // Add scrollable content to data panel
-        dataPanel.add(mainScrollPane, BorderLayout.CENTER);
-        
+        // Ensure content panel fills small windows nicely
+        contentPanel.setLayout(new java.awt.BorderLayout());
         // Add data panel to content panel
-        contentPanel.add(dataPanel);
+        contentPanel.add(dataPanel, java.awt.BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
     }
@@ -116,6 +113,8 @@ public class ConsultationHistoryPanel extends javax.swing.JPanel {
         panel.setBorder(BorderFactory.createTitledBorder("Filter Options"));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.weightx = 0;
         
         // Initialize components
         patientFilterComboBox = new JComboBox<>();
@@ -127,40 +126,73 @@ public class ConsultationHistoryPanel extends javax.swing.JPanel {
         // Setup date spinners
         setupDateSpinners();
         
-        // Add components to panel
+        // Search field spans full width at top
         gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridwidth = 4;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Search:"), gbc);
         gbc.gridx = 1;
+        gbc.gridwidth = 3;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(searchField, gbc);
         
+        // Left column: Patient, Doctor, Status
         gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Patient:"), gbc);
         gbc.gridx = 1;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(patientFilterComboBox, gbc);
         
         gbc.gridx = 0; gbc.gridy = 2;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Doctor:"), gbc);
         gbc.gridx = 1;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(doctorFilterComboBox, gbc);
         
         gbc.gridx = 0; gbc.gridy = 3;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Status:"), gbc);
         gbc.gridx = 1;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(statusFilterComboBox, gbc);
         
-        gbc.gridx = 0; gbc.gridy = 4;
+        // Right column: Type, From Date, To Date
+        gbc.gridx = 2; gbc.gridy = 1;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Type:"), gbc);
-        gbc.gridx = 1;
+        gbc.gridx = 3;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(typeFilterComboBox, gbc);
         
-        gbc.gridx = 0; gbc.gridy = 5;
+        gbc.gridx = 2; gbc.gridy = 2;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("From Date:"), gbc);
-        gbc.gridx = 1;
+        gbc.gridx = 3;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(fromDateSpinner, gbc);
         
-        gbc.gridx = 0; gbc.gridy = 6;
+        gbc.gridx = 2; gbc.gridy = 3;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("To Date:"), gbc);
-        gbc.gridx = 1;
+        gbc.gridx = 3;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(toDateSpinner, gbc);
         
         // Populate filter combo boxes

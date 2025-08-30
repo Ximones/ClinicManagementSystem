@@ -30,8 +30,6 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
     private JTable reportTable;
     private JScrollPane tableScrollPane;
     private JPanel dataPanel;
-    private JTextArea reportTextArea;
-    private JScrollPane textScrollPane;
     private JComboBox<String> reportTypeComboBox;
     private JSpinner fromDateSpinner;
     private JSpinner toDateSpinner;
@@ -79,14 +77,7 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         reportTable.getTableHeader().setReorderingAllowed(false);
         
         tableScrollPane = new JScrollPane(reportTable);
-        tableScrollPane.setPreferredSize(new Dimension(400, 200));
-        
-        // Create text area for report preview
-        reportTextArea = new JTextArea();
-        reportTextArea.setEditable(false);
-        reportTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        textScrollPane = new JScrollPane(reportTextArea);
-        textScrollPane.setPreferredSize(new Dimension(500, 300));
+        tableScrollPane.setPreferredSize(new Dimension(600, 400));
         
         // Create control panel
         JPanel controlPanel = createControlPanel();
@@ -94,26 +85,19 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         // Create button panel
         JPanel buttonPanel = createButtonPanel();
         
-        // Create split pane for table and text area
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tableScrollPane, textScrollPane);
-        splitPane.setDividerLocation(400);
-        
         // Create main content panel
         JPanel mainContentPanel = new JPanel(new BorderLayout());
         mainContentPanel.add(controlPanel, BorderLayout.NORTH);
-        mainContentPanel.add(splitPane, BorderLayout.CENTER);
+        mainContentPanel.add(tableScrollPane, BorderLayout.CENTER);
         mainContentPanel.add(buttonPanel, BorderLayout.SOUTH);
         
-        // Wrap main content in scroll pane
-        JScrollPane mainScrollPane = new JScrollPane(mainContentPanel);
-        mainScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        mainScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        // Add main content directly (no global scrolling)
+        dataPanel.add(mainContentPanel, BorderLayout.CENTER);
         
-        // Add scrollable content to data panel
-        dataPanel.add(mainScrollPane, BorderLayout.CENTER);
-        
+        // Ensure content panel fills small windows nicely
+        contentPanel.setLayout(new java.awt.BorderLayout());
         // Add data panel to content panel
-        contentPanel.add(dataPanel);
+        contentPanel.add(dataPanel, java.awt.BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
     }
@@ -154,21 +138,15 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         JPanel panel = new JPanel(new FlowLayout());
         
         JButton generateButton = new JButton("Generate Report");
-        JButton previewButton = new JButton("Preview Report");
         JButton exportButton = new JButton("Export Report");
-        JButton clearButton = new JButton("Clear Preview");
         JButton backButton = new JButton("Back");
         
         generateButton.addActionListener(e -> generateReport());
-        previewButton.addActionListener(e -> previewReport());
         exportButton.addActionListener(e -> exportReport());
-        clearButton.addActionListener(e -> clearPreview());
         backButton.addActionListener(e -> mainFrame.showPanel("consultationManagement"));
         
         panel.add(generateButton);
-        panel.add(previewButton);
         panel.add(exportButton);
-        panel.add(clearButton);
         panel.add(backButton);
         
         return panel;
@@ -204,8 +182,6 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         
         reportTypeComboBox.addItem("Consultation Statistics Report");
         reportTypeComboBox.addItem("Appointment Summary Report");
-        reportTypeComboBox.addItem("Queue Statistics Report");
-        reportTypeComboBox.addItem("Doctor Performance Report");
         reportTypeComboBox.addItem("Patient Consultation History");
         reportTypeComboBox.addItem("Monthly Consultation Summary");
     }
@@ -222,119 +198,56 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         
         try {
             String reportContent = "";
+            LocalDateTime fromDateTime = fromDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime toDateTime = toDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
             
             switch (selectedReport) {
                 case "Consultation Statistics Report":
                     reportContent = generateConsultationStatisticsReport(fromDate, toDate);
+                    // Generate PDF
+                    ReportGenerator.generateConsultationStatisticsPDF(consultationControl.getConsultationList(), fromDateTime, toDateTime);
                     break;
                 case "Appointment Summary Report":
                     reportContent = generateAppointmentSummaryReport(fromDate, toDate);
-                    break;
-                case "Queue Statistics Report":
-                    reportContent = generateQueueStatisticsReport();
-                    break;
-                case "Doctor Performance Report":
-                    reportContent = generateDoctorPerformanceReport(fromDate, toDate);
+                    // Generate PDF
+                    ReportGenerator.generateAppointmentSummaryPDF(consultationControl.getAppointmentList(), fromDateTime, toDateTime);
                     break;
                 case "Patient Consultation History":
                     reportContent = generatePatientConsultationHistory();
+                    // This is a text-based report, no PDF needed
                     break;
                 case "Monthly Consultation Summary":
                     reportContent = generateMonthlyConsultationSummary();
+                    // Generate PDF
+                    ReportGenerator.generateMonthlyConsultationPDF(consultationControl.getConsultationList());
                     break;
                 default:
                     reportContent = "Report type not implemented.";
             }
             
-            // Display report in text area
-            reportTextArea.setText(reportContent);
-            
             // Add to report table
             addReportToTable(selectedReport, "Generated");
             
-            JOptionPane.showMessageDialog(this, "Report generated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            // Show success message with PDF info
+            String message = "Report generated successfully!";
+            if (!selectedReport.equals("Patient Consultation History")) {
+                message += "\nPDF file has been created in the project directory.";
+            }
+            JOptionPane.showMessageDialog(this, message, "Success", JOptionPane.INFORMATION_MESSAGE);
             
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error generating report: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
     
-    private void previewReport() {
-        String selectedReport = (String) reportTypeComboBox.getSelectedItem();
-        Date fromDate = (Date) fromDateSpinner.getValue();
-        Date toDate = (Date) toDateSpinner.getValue();
-        
-        if (selectedReport == null) {
-            JOptionPane.showMessageDialog(this, "Please select a report type.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        
-        try {
-            String reportContent = "";
-            
-            switch (selectedReport) {
-                case "Consultation Statistics Report":
-                    reportContent = generateConsultationStatisticsReport(fromDate, toDate);
-                    break;
-                case "Appointment Summary Report":
-                    reportContent = generateAppointmentSummaryReport(fromDate, toDate);
-                    break;
-                case "Queue Statistics Report":
-                    reportContent = generateQueueStatisticsReport();
-                    break;
-                case "Doctor Performance Report":
-                    reportContent = generateDoctorPerformanceReport(fromDate, toDate);
-                    break;
-                case "Patient Consultation History":
-                    reportContent = generatePatientConsultationHistory();
-                    break;
-                case "Monthly Consultation Summary":
-                    reportContent = generateMonthlyConsultationSummary();
-                    break;
-                default:
-                    reportContent = "Report type not implemented.";
-            }
-            
-            // Display report in text area
-            reportTextArea.setText(reportContent);
-            
-            JOptionPane.showMessageDialog(this, "Report preview generated!", "Preview", JOptionPane.INFORMATION_MESSAGE);
-            
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error generating preview: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
+
     
     private void exportReport() {
-        if (reportTextArea.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No report to export. Please generate a report first.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Export Report");
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        fileChooser.setSelectedFile(new java.io.File("consultation_report.txt"));
-        
-        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            java.io.File file = fileChooser.getSelectedFile();
-            try {
-                try (java.io.PrintWriter writer = new java.io.PrintWriter(file)) {
-                    writer.print(reportTextArea.getText());
-                }
-                JOptionPane.showMessageDialog(this, "Report exported successfully to " + file.getName(), 
-                                            "Export Successful", JOptionPane.INFORMATION_MESSAGE);
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Error exporting report: " + e.getMessage(), 
-                                            "Export Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
+        JOptionPane.showMessageDialog(this, "Export functionality is not available without preview.", 
+                                    "Info", JOptionPane.INFORMATION_MESSAGE);
     }
     
-    private void clearPreview() {
-        reportTextArea.setText("");
-        JOptionPane.showMessageDialog(this, "Preview cleared.", "Cleared", JOptionPane.INFORMATION_MESSAGE);
-    }
+
     
     private void addReportToTable(String reportType, String status) {
         DefaultTableModel model = (DefaultTableModel) reportTable.getModel();
@@ -453,99 +366,9 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         return report.toString();
     }
     
-    private String generateQueueStatisticsReport() {
-        StringBuilder report = new StringBuilder();
-        report.append("QUEUE STATISTICS REPORT\n");
-        report.append("=======================\n\n");
-        
-        List<QueueEntry> queueEntries = consultationControl.getAllQueueEntries();
-        
-        int totalPatients = queueEntries.size();
-        int waitingPatients = 0;
-        int consultingPatients = 0;
-        int completedPatients = 0;
-        int prescribingPatients = 0;
-        long totalWaitingTime = 0;
-        
-        for (QueueEntry entry : queueEntries) {
-            switch (entry.getStatus()) {
-                case "Waiting":
-                    waitingPatients++;
-                    break;
-                case "Consulting":
-                    consultingPatients++;
-                    break;
-                case "Done":
-                    completedPatients++;
-                    break;
-                case "Prescribing":
-                    prescribingPatients++;
-                    break;
-            }
-            totalWaitingTime += entry.getWaitingTimeMillis();
-        }
-        
-        report.append("Total Patients in Queue: ").append(totalPatients).append("\n");
-        report.append("Currently Waiting: ").append(waitingPatients).append("\n");
-        report.append("Currently Consulting: ").append(consultingPatients).append("\n");
-        report.append("Currently Prescribing: ").append(prescribingPatients).append("\n");
-        report.append("Completed: ").append(completedPatients).append("\n\n");
-        
-        if (totalPatients > 0) {
-            long averageWaitingTime = totalWaitingTime / totalPatients;
-            long minutes = averageWaitingTime / (1000 * 60);
-            long seconds = (averageWaitingTime % (1000 * 60)) / 1000;
-            report.append("Average Waiting Time: ").append(minutes).append("m ").append(seconds).append("s\n");
-        }
-        
-        return report.toString();
-    }
+
     
-    private String generateDoctorPerformanceReport(Date fromDate, Date toDate) {
-        StringBuilder report = new StringBuilder();
-        report.append("DOCTOR PERFORMANCE REPORT\n");
-        report.append("==========================\n\n");
-        
-        LocalDateTime fromDateTime = fromDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
-        LocalDateTime toDateTime = toDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
-        
-        List<Consultation> consultations = consultationControl.getAllConsultations();
-        
-        // Count consultations by doctor
-        java.util.Map<String, Integer> doctorConsultations = new java.util.HashMap<>();
-        java.util.Map<String, Integer> doctorCompleted = new java.util.HashMap<>();
-        
-        for (Consultation consultation : consultations) {
-            if (consultation.getConsultationDateTime() != null &&
-                !consultation.getConsultationDateTime().isBefore(fromDateTime) &&
-                !consultation.getConsultationDateTime().isAfter(toDateTime) &&
-                consultation.getDoctor() != null) {
-                
-                String doctorName = consultation.getDoctor().getName();
-                doctorConsultations.put(doctorName, doctorConsultations.getOrDefault(doctorName, 0) + 1);
-                
-                if ("Completed".equals(consultation.getStatus())) {
-                    doctorCompleted.put(doctorName, doctorCompleted.getOrDefault(doctorName, 0) + 1);
-                }
-            }
-        }
-        
-        report.append("Date Range: ").append(fromDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-        report.append(" to ").append(toDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).append("\n\n");
-        
-        for (String doctorName : doctorConsultations.keySet()) {
-            int total = doctorConsultations.get(doctorName);
-            int completed = doctorCompleted.getOrDefault(doctorName, 0);
-            double completionRate = total > 0 ? (double) completed / total * 100 : 0;
-            
-            report.append("Doctor: ").append(doctorName).append("\n");
-            report.append("  Total Consultations: ").append(total).append("\n");
-            report.append("  Completed: ").append(completed).append("\n");
-            report.append("  Completion Rate: ").append(String.format("%.1f%%", completionRate)).append("\n\n");
-        }
-        
-        return report.toString();
-    }
+
     
     private String generatePatientConsultationHistory() {
         StringBuilder report = new StringBuilder();

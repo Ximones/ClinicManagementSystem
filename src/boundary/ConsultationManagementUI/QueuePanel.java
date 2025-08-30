@@ -5,10 +5,14 @@ import control.ConsultationControl;
 import enitity.QueueEntry;
 import enitity.Patient;
 import java.util.List;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
 import utility.ImageUtils;
 
@@ -28,6 +32,7 @@ public class QueuePanel extends javax.swing.JPanel {
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
         buildTable();
         buildButtons();
+        buildLayout();
         refreshQueueDisplay();
     }
 
@@ -68,7 +73,6 @@ public class QueuePanel extends javax.swing.JPanel {
             public boolean isCellEditable(int row, int column) { return false; }
         });
         queueTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        contentPanel.add(new JScrollPane(queueTable));
     }
     
     private void buildButtons() {
@@ -78,10 +82,27 @@ public class QueuePanel extends javax.swing.JPanel {
         startConsultationButton.addActionListener(e -> startConsultation());
         completeConsultationButton.addActionListener(e -> completeConsultation());
         
-        contentPanel.add(startConsultationButton);
-        contentPanel.add(completeConsultationButton);
-        
         updateButtonStates();
+    }
+    
+    private void buildLayout() {
+        // Create table scroll pane
+        JScrollPane tableScrollPane = new JScrollPane(queueTable);
+        tableScrollPane.setPreferredSize(new Dimension(600, 300));
+        
+        // Setup back button
+        backButton.setText("Back");
+        backButton.addActionListener(e -> mainFrame.showPanel("consultationManagement"));
+        
+        // Create button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        buttonPanel.add(startConsultationButton);
+        buttonPanel.add(completeConsultationButton);
+        buttonPanel.add(backButton);
+        
+        // Add components to content panel
+        contentPanel.add(tableScrollPane, BorderLayout.CENTER);
+        contentPanel.add(buttonPanel, BorderLayout.SOUTH);
     }
     
     private void updateButtonStates() {
@@ -200,15 +221,7 @@ public class QueuePanel extends javax.swing.JPanel {
         titleLabel.setText(" Consultation Queue");
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
-        contentPanel.setLayout(new java.awt.FlowLayout());
-
-        backButton.setText("Back");
-        backButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                backButtonActionPerformed(evt);
-            }
-        });
-        contentPanel.add(backButton);
+        contentPanel.setLayout(new java.awt.BorderLayout());
 
         titlePanel.add(contentPanel, java.awt.BorderLayout.CENTER);
 

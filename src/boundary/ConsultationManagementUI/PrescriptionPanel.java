@@ -38,10 +38,10 @@ public class PrescriptionPanel extends javax.swing.JPanel {
     private JComboBox<String> medicineComboBox;
     private JTextField diagnosisField;
     private JTextField instructionsField;
-    private JTextField quantityField;
+    private JSpinner quantitySpinner;
     private JTextField dosageField;
     private JTextField frequencyField;
-    private JTextField durationField;
+    private JSpinner durationSpinner;
     private DoublyLinkedList<Pair<String, PrescriptionItem>> currentPrescriptionItems;
     
     /**
@@ -92,7 +92,7 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         prescriptionTable.getTableHeader().setReorderingAllowed(false);
         
         prescriptionScrollPane = new JScrollPane(prescriptionTable);
-        prescriptionScrollPane.setPreferredSize(new Dimension(800, 200));
+        prescriptionScrollPane.setPreferredSize(new Dimension(600, 80));
         
         // Create items table
         String[] itemsColumns = {"Medicine", "Quantity", "Duration", "Unit Price", "Total"};
@@ -107,7 +107,7 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         itemsTable.getTableHeader().setReorderingAllowed(false);
         
         itemsScrollPane = new JScrollPane(itemsTable);
-        itemsScrollPane.setPreferredSize(new Dimension(800, 150));
+        itemsScrollPane.setPreferredSize(new Dimension(600, 80));
         
         // Create input panels
         JPanel prescriptionInputPanel = createPrescriptionInputPanel();
@@ -131,16 +131,13 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         mainContentPanel.add(tablesPanel, BorderLayout.CENTER);
         mainContentPanel.add(buttonPanel, BorderLayout.SOUTH);
         
-        // Wrap main content in scroll pane
-        JScrollPane mainScrollPane = new JScrollPane(mainContentPanel);
-        mainScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        mainScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        // Add main content directly (no global scrolling)
+        dataPanel.add(mainContentPanel, BorderLayout.CENTER);
         
-        // Add scrollable content to data panel
-        dataPanel.add(mainScrollPane, BorderLayout.CENTER);
-        
+        // Ensure content panel fills small windows nicely
+        contentPanel.setLayout(new java.awt.BorderLayout());
         // Add data panel to content panel
-        contentPanel.add(dataPanel);
+        contentPanel.add(dataPanel, java.awt.BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
     }
@@ -150,26 +147,42 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         panel.setBorder(BorderFactory.createTitledBorder("Prescription Details"));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.weightx = 0;
         
         // Initialize components
         consultationComboBox = new JComboBox<>();
         diagnosisField = new JTextField(20);
         instructionsField = new JTextField(20);
+        diagnosisField.setPreferredSize(new Dimension(150, 25));
+        instructionsField.setPreferredSize(new Dimension(150, 25));
         
         // Add components to panel
         gbc.gridx = 0; gbc.gridy = 0;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Consultation:"), gbc);
         gbc.gridx = 1;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(consultationComboBox, gbc);
         
         gbc.gridx = 0; gbc.gridy = 1;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Diagnosis:"), gbc);
         gbc.gridx = 1;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(diagnosisField, gbc);
         
         gbc.gridx = 0; gbc.gridy = 2;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Instructions:"), gbc);
         gbc.gridx = 1;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(instructionsField, gbc);
         
         // Populate consultation combo box
@@ -183,27 +196,45 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         panel.setBorder(BorderFactory.createTitledBorder("Add Medicine Item"));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.weightx = 0;
         
         // Initialize components (dosage and frequency removed)
         medicineComboBox = new JComboBox<>();
-        quantityField = new JTextField(10);
-        durationField = new JTextField(10);
+        quantitySpinner = new JSpinner(new SpinnerNumberModel(1, 1, 9999, 1));
+        durationSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 365, 1));
+        // Ensure inputs render at a usable width in small windows
+        medicineComboBox.setPreferredSize(new Dimension(200, 25));
+        quantitySpinner.setPreferredSize(new Dimension(70, 25));
+        durationSpinner.setPreferredSize(new Dimension(70, 25));
         
         // Add components to panel
         gbc.gridx = 0; gbc.gridy = 0;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Medicine:"), gbc);
         gbc.gridx = 1;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(medicineComboBox, gbc);
         
         gbc.gridx = 0; gbc.gridy = 1;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Quantity:"), gbc);
         gbc.gridx = 1;
-        panel.add(quantityField, gbc);
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        panel.add(quantitySpinner, gbc);
         
         gbc.gridx = 0; gbc.gridy = 2;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Duration (days):"), gbc);
         gbc.gridx = 1;
-        panel.add(durationField, gbc);
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        panel.add(durationSpinner, gbc);
         
         // Populate medicine combo box
         populateMedicineComboBox();
@@ -246,7 +277,7 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         
         int choice = JOptionPane.showConfirmDialog(this, 
             "Complete consultation and prescription for " + currentPrescriptioning.getPatient().getPatientName() + "?\n" +
-            "This will remove the patient from the queue and mark the process as complete.", 
+            "This will mark the consultation and prescription process as complete.", 
             "Complete Process", JOptionPane.YES_NO_OPTION);
             
         if (choice == JOptionPane.YES_OPTION) {
@@ -442,16 +473,8 @@ public class PrescriptionPanel extends javax.swing.JPanel {
                 return;
             }
             
-            String quantityStr = quantityField.getText().trim();
-            String durationStr = durationField.getText().trim();
-            
-            if (quantityStr.isEmpty() || durationStr.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please fill in required fields (quantity and duration).", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            
-            int quantity = Integer.parseInt(quantityStr);
-            int duration = Integer.parseInt(durationStr);
+            int quantity = (Integer) quantitySpinner.getValue();
+            int duration = (Integer) durationSpinner.getValue();
             
             if (quantity <= 0 || duration <= 0) {
                 JOptionPane.showMessageDialog(this, "Quantity and duration must be positive numbers.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -469,8 +492,8 @@ public class PrescriptionPanel extends javax.swing.JPanel {
             loadPrescriptionItems();
             
             // Clear input fields
-            quantityField.setText("");
-            durationField.setText("");
+            quantitySpinner.setValue(1);
+            durationSpinner.setValue(1);
             
             JOptionPane.showMessageDialog(this, "Medicine item added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             

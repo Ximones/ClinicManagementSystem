@@ -131,7 +131,7 @@ public class ConsultationPanel extends javax.swing.JPanel {
         consultationTable.getTableHeader().setReorderingAllowed(false);
         
         tableScrollPane = new JScrollPane(consultationTable);
-        tableScrollPane.setPreferredSize(new Dimension(800, 300));
+        tableScrollPane.setPreferredSize(new Dimension(600, 250));
         
         // Create input panel
         JPanel inputPanel = createInputPanel();
@@ -145,16 +145,13 @@ public class ConsultationPanel extends javax.swing.JPanel {
         mainContentPanel.add(tableScrollPane, BorderLayout.CENTER);
         mainContentPanel.add(buttonPanel, BorderLayout.SOUTH);
         
-        // Wrap main content in scroll pane
-        JScrollPane mainScrollPane = new JScrollPane(mainContentPanel);
-        mainScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        mainScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        // Add main content directly (no global scrolling)
+        dataPanel.add(mainContentPanel, BorderLayout.CENTER);
         
-        // Add scrollable content to data panel
-        dataPanel.add(mainScrollPane, BorderLayout.CENTER);
-        
+        // Ensure content panel fills small windows nicely
+        contentPanel.setLayout(new java.awt.BorderLayout());
         // Add data panel to content panel
-        contentPanel.add(dataPanel);
+        contentPanel.add(dataPanel, java.awt.BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
     }
@@ -164,6 +161,8 @@ public class ConsultationPanel extends javax.swing.JPanel {
         panel.setBorder(BorderFactory.createTitledBorder("Consultation Details"));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.weightx = 0;
         
         // Initialize components
         patientComboBox = new JComboBox<>();
@@ -175,35 +174,60 @@ public class ConsultationPanel extends javax.swing.JPanel {
         // Setup date/time spinners
         setupDateTimeSpinners();
         
-        // Add components to panel
+        // Left column: Patient, Doctor, Date
         gbc.gridx = 0; gbc.gridy = 0;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Patient:"), gbc);
         gbc.gridx = 1;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(patientComboBox, gbc);
         
         gbc.gridx = 0; gbc.gridy = 1;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Doctor:"), gbc);
         gbc.gridx = 1;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(doctorComboBox, gbc);
         
         gbc.gridx = 0; gbc.gridy = 2;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Date:"), gbc);
         gbc.gridx = 1;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(dateSpinner, gbc);
         
-        gbc.gridx = 0; gbc.gridy = 3;
+        // Right column: Type, Symptoms, Status
+        gbc.gridx = 2; gbc.gridy = 0;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Type:"), gbc);
-        gbc.gridx = 1;
+        gbc.gridx = 3;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(consultationTypeComboBox, gbc);
         
-        gbc.gridx = 0; gbc.gridy = 4;
+        gbc.gridx = 2; gbc.gridy = 1;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Symptoms:"), gbc);
-        gbc.gridx = 1;
+        gbc.gridx = 3;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(symptomsField, gbc);
         
-        gbc.gridx = 0; gbc.gridy = 5;
+        gbc.gridx = 2; gbc.gridy = 2;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel("Status:"), gbc);
-        gbc.gridx = 1;
+        gbc.gridx = 3;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(statusComboBox, gbc);
         
         // Populate combo boxes
