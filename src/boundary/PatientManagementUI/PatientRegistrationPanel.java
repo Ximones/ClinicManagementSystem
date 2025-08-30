@@ -8,12 +8,11 @@ import utility.ImageUtils;
 import boundary.MainFrame;
 import enitity.Patient;
 import adt.DoublyLinkedList;
-import adt.Pair; // Assuming Pair is in adt package
+import control.PatientControl;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
-import utility.FileUtils;
 import utility.ReportGenerator;
 
 /**
@@ -21,205 +20,72 @@ import utility.ReportGenerator;
  * @author szepi
  */
 public class PatientRegistrationPanel extends javax.swing.JPanel {
+    private MainFrame mainFrame;
+    private PatientControl patientControl;   
+    private DefaultTableModel tableModel;
 
-     private MainFrame mainFrame;
-     private DoublyLinkedList<Patient> patientList = new DoublyLinkedList<>();
-     private DefaultTableModel tableModel;
-     
-     
-    /**
-     * Creates new form PatientRegistrationPanel
-     */
     public PatientRegistrationPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
- 
-        
+        this.patientControl = new PatientControl(); 
+
         initComponents();
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
         setupTable();
         loadAndDisplayPatients();
-        
+
         filterField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                // Called when a character is inserted
-                filterPatients();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                // Called when a character is removed
-                filterPatients();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                // Not typically used for plain text fields, but good to include
-                filterPatients();
-            }
+            @Override public void insertUpdate(DocumentEvent e) { filterPatients(); }
+            @Override public void removeUpdate(DocumentEvent e) { filterPatients(); }
+            @Override public void changedUpdate(DocumentEvent e) { filterPatients(); }
         });
-        AddPatient.addActionListener(e -> addPatient());
-        Done.addActionListener(e -> {
-        savePatientData();
-        JOptionPane.showMessageDialog(this, "Patient data saved.");
-    });
 
-            
+        AddPatient.addActionListener(e -> addPatient());
+        Done.addActionListener(e -> saveAllChanges());
     }
-    
-    // Public method to re-read from disk and refresh table when panel is shown
+
+    // Refresh from controller
     public void reloadData() {
         loadAndDisplayPatients();
     }
 
-    private Patient findPatientById(String id) {
-    for (Patient p : patientList) {
-        if (id.equals(p.getPatientID())) {
-            return p;
-        }
-    }
-    return null;
-}
-    
-private void setupTable() {
-    DefaultTableModel model = new DefaultTableModel(
-        new Object[]{"Patient ID", "Name", "Age", "IC", "Gender", "Contact", "Email", "Address", "Date of Reg"}, 0
-    ) {
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return false;
-        }
-        @Override
-        public Class<?> getColumnClass(int columnIndex) {
-            return (columnIndex == 2) ? Integer.class : String.class; // Age as Integer
-        }
-    };
-
-    tableModel = model;
-    patientTable.setModel(tableModel);
-    patientTable.setAutoCreateRowSorter(true); // optional but handy
-
-    // Push table edits back into the underlying list
-    tableModel.addTableModelListener(e -> {
-        if (e.getType() != javax.swing.event.TableModelEvent.UPDATE) return;
-
-        int row = e.getFirstRow();
-        int col = e.getColumn();
-        if (row < 0 || col < 0) return;
-
-        String id = tableModel.getValueAt(row, 0).toString(); // stable key
-        Patient p = findPatientById(id);
-        if (p == null) return;
-
-        Object newValue = tableModel.getValueAt(row, col);
-
-        try {
-            switch (col) {
-                case 1: p.setPatientName(newValue.toString()); break;
-                case 2: p.setPatientAge(Integer.parseInt(newValue.toString())); break;
-                case 3: p.setPatientIC(newValue.toString()); break;
-                case 4: p.setGender(newValue.toString()); break;
-                case 5: p.setContact(newValue.toString()); break;
-                case 6: p.setEmail(newValue.toString()); break;
-                case 7: p.setAddress(newValue.toString()); break;
-                case 8: p.setDateOfRegistration(newValue.toString()); break;
+    private void setupTable() {
+        DefaultTableModel model = new DefaultTableModel(
+            new Object[]{"Patient ID", "Name", "Age", "IC", "Gender", "Contact", "Email", "Address", "Date of Reg"}, 0
+        ) {
+            @Override public boolean isCellEditable(int row, int column) { return false; }
+            @Override public Class<?> getColumnClass(int columnIndex) {
+                return (columnIndex == 2) ? Integer.class : String.class;
             }
-            savePatientData(); // persist after each edit (or only on Done)
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Invalid number for Age.", "Input Error", JOptionPane.ERROR_MESSAGE);
-            // reload the table row from the object to revert the bad edit
-            reloadPatientRow(row, p);
-        }
-    });
-}
+        };
+        tableModel = model;
+        patientTable.setModel(tableModel);
+        patientTable.setAutoCreateRowSorter(true);
+    }
 
-
-
-// Helper: refresh one row from a Patient object
-private void reloadPatientRow(int row, Patient p) {
-    tableModel.setValueAt(p.getPatientID(), row, 0);
-    tableModel.setValueAt(p.getPatientName(), row, 1);
-    tableModel.setValueAt(p.getPatientAge(), row, 2);
-    tableModel.setValueAt(p.getPatientIC(), row, 3);
-    tableModel.setValueAt(p.getGender(), row, 4);
-    tableModel.setValueAt(p.getContact(), row, 5);
-    tableModel.setValueAt(p.getEmail(), row, 6);
-    tableModel.setValueAt(p.getAddress(), row, 7);
-    tableModel.setValueAt(p.getDateOfRegistration(), row, 8);
-}
-
-    
-    
-private void loadAndDisplayPatients() {
-    int maxId = 0;
-    tableModel.setRowCount(0);
-
-    // Initialize as Patient list, not Pair
-    patientList = new DoublyLinkedList<>();
-
-    // Load data
-    DoublyLinkedList<Patient> loadedList =
-        (DoublyLinkedList<Patient>) FileUtils.readDataFromFile("patients");
-
-    if (loadedList != null) {
-        patientList = loadedList;
-
-        // Loop through patients directly
-        for (Patient p : patientList) {
-            tableModel.addRow(new Object[]{
-                p.getPatientID(),
-                p.getPatientName(),
-                p.getPatientAge(),
-                p.getPatientIC(),
-                p.getGender(),
-                p.getContact(),
-                p.getEmail(),
-                p.getAddress(),
-                p.getDateOfRegistration()
-            });
-
-            // Track max patient ID number
-            try {
-                String idNumStr = p.getPatientID().substring(1); // assumes format P###
-                int currentIdNum = Integer.parseInt(idNumStr);
-                if (currentIdNum > maxId) maxId = currentIdNum;
-            } catch (NumberFormatException | StringIndexOutOfBoundsException ex) {
-                System.err.println("Warning: Could not parse patient ID: " + p.getPatientID());
+    private void loadAndDisplayPatients() {
+        tableModel.setRowCount(0);
+        DoublyLinkedList<Patient> list = patientControl.getAllPatients();
+        if (list != null) {
+            for (Patient p : list) {
+                tableModel.addRow(new Object[]{
+                    p.getPatientID(), p.getPatientName(), p.getPatientAge(),
+                    p.getPatientIC(), p.getGender(), p.getContact(),
+                    p.getEmail(), p.getAddress(), p.getDateOfRegistration()
+                });
             }
         }
-
-        // Update static patient index
-        Patient.setPatientIndex(maxId);
-    } else {
-        System.out.println("No patient data found or unable to read file. Starting with empty list.");
     }
-}
-     
-    private void savePatientData() {
-    utility.FileUtils.writeDataToFile("patients", patientList);
-}
 
-    
-    private void addPatient() {
-    PatientDialog dialog = new PatientDialog(mainFrame, true);
-    dialog.setVisible(true);
+        private void addPatient() {
+        
+             PatientDialog dialog = new PatientDialog(mainFrame, true, patientControl);
+             dialog.setVisible(true);
 
-    Patient newPatient = dialog.getResultPatient(); // ✅ should return a Patient, not Pair
-    if (newPatient != null) {
-        patientList.insertLast(newPatient);
-        tableModel.addRow(new Object[]{
-            newPatient.getPatientID(),
-            newPatient.getPatientName(),
-            newPatient.getPatientAge(),
-            newPatient.getPatientIC(),
-            newPatient.getGender(),
-            newPatient.getContact(),
-            newPatient.getEmail(),
-            newPatient.getAddress(),
-            newPatient.getDateOfRegistration()
-        });
-        savePatientData();
-        JOptionPane.showMessageDialog(this,
+             Patient newPatient = dialog.getResultPatient();
+             if (newPatient != null) {
+              patientControl.addPatient(newPatient);   
+              loadAndDisplayPatients();
+              JOptionPane.showMessageDialog(this,
             "Patient " + newPatient.getPatientName() +
             " (ID: " + newPatient.getPatientID() + ") added successfully!");
     } else {
@@ -227,14 +93,12 @@ private void loadAndDisplayPatients() {
     }
 }
 
-    
 private void filterPatients() {
     String selectedFilter = (String) filterBox.getSelectedItem();
     String keyword = filterField.getText().trim().toLowerCase();
-
     tableModel.setRowCount(0);
 
-    for (Patient p : patientList) {
+    for (Patient p : patientControl.getAllPatients()) {
         String valueToCheck = "";
         switch (selectedFilter) {
             case "Patient ID": valueToCheck = p.getPatientID(); break;
@@ -245,29 +109,32 @@ private void filterPatients() {
             case "Date of Reg": valueToCheck = p.getDateOfRegistration(); break;
         }
 
-        // Normalize both sides
-        if (valueToCheck != null && valueToCheck.trim().toLowerCase().contains(keyword)) {
-            tableModel.addRow(new Object[]{
-                p.getPatientID(),
-                p.getPatientName(),
-                p.getPatientAge(),
-                p.getPatientIC(),
-                p.getGender(),
-                p.getContact(),
-                p.getEmail(),
-                p.getAddress(),
-                p.getDateOfRegistration()
-            });
+        if (valueToCheck != null) {
+            String normalizedValue = valueToCheck.trim().toLowerCase();
+
+            // Special handling for gender short forms
+            if (selectedFilter.equals("Gender")) {
+                if (keyword.equals("m")) keyword = "male";
+                else if (keyword.equals("f")) keyword = "female";
+            }
+
+            if (normalizedValue.contains(keyword)) {
+                tableModel.addRow(new Object[]{
+                    p.getPatientID(), p.getPatientName(), p.getPatientAge(),
+                    p.getPatientIC(), p.getGender(), p.getContact(),
+                    p.getEmail(), p.getAddress(), p.getDateOfRegistration()
+                });
+            }
         }
     }
 }
 
 
-    
-    
-    
-    
-
+    private void saveAllChanges() {
+        patientControl.savePatients(); 
+        JOptionPane.showMessageDialog(this, "All patient updates saved!");
+        mainFrame.showPanel("patientManagement");
+    }
     
     
     /**
@@ -404,15 +271,14 @@ sortBox.addActionListener(new java.awt.event.ActionListener() {
     }//GEN-LAST:event_AddPatientActionPerformed
 
     private void DoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DoneActionPerformed
-     // ✅ Make sure last cell edit is committed
+
     if (patientTable.isEditing()) {
         patientTable.getCellEditor().stopCellEditing();
     }
 
-    // ✅ Sync all table rows back into patientList
     for (int row = 0; row < tableModel.getRowCount(); row++) {
         String id = tableModel.getValueAt(row, 0).toString();
-        Patient p = findPatientById(id);
+        Patient p = patientControl.searchPatientById(id); // use control instead of local helper
         if (p == null) continue;
 
         p.setPatientName(tableModel.getValueAt(row, 1).toString());
@@ -424,55 +290,42 @@ sortBox.addActionListener(new java.awt.event.ActionListener() {
         p.setAddress(tableModel.getValueAt(row, 7).toString());
         p.setDateOfRegistration(tableModel.getValueAt(row, 8).toString());
     }
-
-    // ✅ Save updated list once
-    FileUtils.writeDataToFile("patients", patientList);
-    JOptionPane.showMessageDialog(this, "All patient updates saved!");
     mainFrame.showPanel("patientManagement");
 
     }//GEN-LAST:event_DoneActionPerformed
 
     private void GenerateReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GenerateReportActionPerformed
-          try {
-        // Generate the Patient Age Range Report
-        ReportGenerator.generatePatientAgeRangeReport(patientList);
-
-        JOptionPane.showMessageDialog(this, 
-            "Patient Age Range Report generated successfully!");
-    } catch (Exception ex) {
-        JOptionPane.showMessageDialog(this, 
-            "Error generating report: " + ex.getMessage(), 
-            "Report Error", JOptionPane.ERROR_MESSAGE);
-        ex.printStackTrace();
-    }
+        try {
+            ReportGenerator.generatePatientAgeRangeReport(patientControl.getAllPatients());
+            JOptionPane.showMessageDialog(this, "Patient Age Range Report generated successfully!");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                "Error generating report: " + ex.getMessage(),
+                "Report Error", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
     }//GEN-LAST:event_GenerateReportActionPerformed
 
     private void EditPatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EditPatientActionPerformed
     int selectedRow = patientTable.getSelectedRow();
-    if (selectedRow == -1) {
-        JOptionPane.showMessageDialog(this, "Please select a patient to edit.");
-        return;
-    }
-
-    // Get patient ID from selected row
-    String patientId = tableModel.getValueAt(selectedRow, 0).toString();
-    Patient selectedPatient = findPatientById(patientId);
-    if (selectedPatient == null) {
-        JOptionPane.showMessageDialog(this, "Patient not found.");
-        return;
-    }
-
-    // Open the PatientDialog in "edit mode"
-    PatientDialog dialog = new PatientDialog(mainFrame, true, selectedPatient);
-    dialog.setVisible(true);
-    Patient updatedPatient = dialog.getResultPatient();
-
-    if (updatedPatient != null) {
-        // Refresh row in table directly (since PatientDialog already updates the object)
-        reloadPatientRow(selectedRow, selectedPatient);
-        savePatientData();
-        JOptionPane.showMessageDialog(this, "Patient updated successfully!");
-    }
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a patient to edit.");
+            return;
+        }
+        String patientId = tableModel.getValueAt(selectedRow, 0).toString();
+        Patient selectedPatient = patientControl.searchPatientById(patientId);
+        if (selectedPatient == null) {
+            JOptionPane.showMessageDialog(this, "Patient not found.");
+            return;
+        }
+        PatientDialog dialog = new PatientDialog(mainFrame, true, selectedPatient);
+        dialog.setVisible(true);
+        Patient updatedPatient = dialog.getResultPatient();
+        if (updatedPatient != null) {
+            patientControl.updatePatient(updatedPatient);  // ✅ controller updates
+            loadAndDisplayPatients();
+            JOptionPane.showMessageDialog(this, "Patient updated successfully!");
+        }
     }//GEN-LAST:event_EditPatientActionPerformed
 
     private void filterBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterBoxActionPerformed
@@ -480,36 +333,10 @@ sortBox.addActionListener(new java.awt.event.ActionListener() {
     }//GEN-LAST:event_filterBoxActionPerformed
 
     private void sortBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortBoxActionPerformed
-        
-        if (patientList == null || patientList.isEmpty()) {
-        return; // nothing to sort
-    }
-
-    String selectedSort = (String) sortBox.getSelectedItem();
-
-    // 1️⃣ Sort patientList by Patient ID (assumes Patient implements Comparable by ID)
-    patientList.sort(); // ascending by default
-
-    // 2️⃣ Reverse if "DESC" is selected
-    if ("DESC".equalsIgnoreCase(selectedSort)) {
-        patientList.reverse();
-    }
-
-    // 3️⃣ Refresh the table with the sorted data
-    tableModel.setRowCount(0);
-    for (Patient p : patientList) {
-        tableModel.addRow(new Object[]{
-            p.getPatientID(),
-            p.getPatientName(),
-            p.getPatientAge(),
-            p.getPatientIC(),
-            p.getGender(),
-            p.getContact(),
-            p.getEmail(),
-            p.getAddress(),
-            p.getDateOfRegistration()
-        });
-    }
+         String selectedSort = (String) sortBox.getSelectedItem();
+        boolean asc = "ASC".equalsIgnoreCase(selectedSort);
+        patientControl.sortById(asc);   // ✅ delegate sorting
+        loadAndDisplayPatients();
     }//GEN-LAST:event_sortBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

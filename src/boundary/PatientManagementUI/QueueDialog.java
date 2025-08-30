@@ -8,6 +8,10 @@ import adt.DoublyLinkedList;
 import enitity.Patient;
 import enitity.QueueEntry;
 import javax.swing.JOptionPane;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 
 /**
@@ -26,7 +30,32 @@ public class QueueDialog extends javax.swing.JDialog {
         initComponents();
         
         ICNoInput.setText("");
+        setICFieldLimit(); 
+        
+        
     }
+    
+     private void setICFieldLimit() {
+        ((AbstractDocument) ICNoInput.getDocument())
+            .setDocumentFilter(new DocumentFilter() {
+                @Override
+                public void insertString(FilterBypass fb, int offset, String string,
+                                         AttributeSet attr) throws BadLocationException {
+                    if ((fb.getDocument().getLength() + string.length()) <= 14) {
+                        super.insertString(fb, offset, string, attr);
+                    }
+                }
+                @Override
+                public void replace(FilterBypass fb, int offset, int length, String text,
+                                    AttributeSet attrs) throws BadLocationException {
+                    if ((fb.getDocument().getLength() - length + text.length()) <= 14) {
+                        super.replace(fb, offset, length, text, attrs);
+                    }
+                }
+            });
+    }
+    
+    
     
  private void savePatientAction(java.awt.event.ActionEvent evt) {
     String icNumber = ICNoInput.getText().trim();

@@ -114,8 +114,15 @@ public class Patient implements Comparable<Patient>, Serializable {
     }
 
     public void setGender(String gender) {
-        this.gender = gender;
+    if (gender == null) {
+        this.gender = null;
+    } else {
+        String g = gender.trim().toLowerCase();
+        if (g.startsWith("m")) this.gender = "Male";
+        else if (g.startsWith("f")) this.gender = "Female";
+        else this.gender = gender.trim(); 
     }
+}
 
     public String getContact() {
         return contact;

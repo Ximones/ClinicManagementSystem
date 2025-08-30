@@ -6,6 +6,7 @@ package boundary.PatientManagementUI;
 
 import enitity.Patient;
 import adt.Pair;
+import control.PatientControl;
 import javax.swing.*;
 import java.time.LocalDate;
 
@@ -18,16 +19,18 @@ import java.time.LocalDate;
 public class PatientDialog extends javax.swing.JDialog {
 
       private Pair<String, Patient> result;
+      private PatientControl patientControl;
       
     /**
      * Creates new form PatientDialog
      */
-    public PatientDialog(java.awt.Frame parent, boolean modal) {
+    public PatientDialog(java.awt.Frame parent, boolean modal, PatientControl patientControl) {
         
-        super(parent, modal);
-        initComponents();
-        setLocationRelativeTo(parent); // Center the dialog on the screen
-        this.result = null; // Initialize result to null (implies cancellation if not set)
+            super(parent, modal);
+            initComponents();
+            this.patientControl = patientControl;
+            setLocationRelativeTo(parent);
+            setTitle("Register New Patient");
       
         
           // Initialize the JComboBox with appropriate gender options
@@ -156,7 +159,9 @@ public class PatientDialog extends javax.swing.JDialog {
         this.result.setValue(existingPatient);
     } else {
         // Creating new patient
+        String newId = patientControl.generateNextPatientId(); 
         Patient newPatient = new Patient();
+        newPatient.setPatientID(newId);  
         newPatient.setPatientName(name);
         newPatient.setPatientAge(Integer.parseInt(ageStr));
         newPatient.setPatientIC(ic);
@@ -407,44 +412,124 @@ public class PatientDialog extends javax.swing.JDialog {
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
+public static void main(String args[]) {
+    /* Set the Nimbus look and feel */
+    try {
+        for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            if ("Nimbus".equals(info.getName())) {
+                javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                break;
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(PatientDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(PatientDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(PatientDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(PatientDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
-
-        /* Create and display the dialog */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                PatientDialog dialog = new PatientDialog(new javax.swing.JFrame(), true);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
+    } catch (Exception ex) {
+        ex.printStackTrace();
     }
+
+    /* Create and display the dialog */
+    java.awt.EventQueue.invokeLater(new Runnable() {
+        public void run() {
+            // Make sure you have a PatientControl instance
+            PatientControl patientControl = new PatientControl();
+
+            // Create the dialog for registering a new patient
+            PatientDialog dialog = new PatientDialog(new javax.swing.JFrame(), true, patientControl);
+            
+            dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent e) {
+                    System.exit(0);
+                }
+            });
+            dialog.setVisible(true);
+
+            // After dialog closes, you can retrieve the patient
+            Patient newPatient = dialog.getResultPatient();
+            if (newPatient != null) {
+                System.out.println("Patient created: " + newPatient.getPatientName());
+            } else {
+                System.out.println("Dialog cancelled.");
+            }
+        }
+    });
+}
+
+    
+    
+        // ===== Helper methods for PatientEditControl =====
+    
+    public void displayPatientInfo(Patient patient) {
+        if (patient != null) {
+            formNameInput.setText(patient.getPatientName());
+            formAgeInput.setText(String.valueOf(patient.getPatientAge()));
+            formICNoInput.setText(patient.getPatientIC());
+            jComboBox1.setSelectedItem(patient.getGender());
+            formContactInput.setText(patient.getContact());
+            formEmailInput.setText(patient.getEmail());
+            formAddressInput.setText(patient.getAddress());
+            formDateOfRegInput.setText(patient.getDateOfRegistration());
+        }
+    }
+
+    public void setFieldsEditable(boolean editable) {
+        formNameInput.setEditable(editable);
+        formAgeInput.setEditable(editable);
+        formICNoInput.setEditable(editable);
+        jComboBox1.setEnabled(editable);
+        formContactInput.setEditable(editable);
+        formEmailInput.setEditable(editable);
+        formAddressInput.setEditable(editable);
+        // Registration date stays non-editable
+    }
+
+    public void clearForm() {
+        formNameInput.setText("");
+        formAgeInput.setText("");
+        formICNoInput.setText("");
+        jComboBox1.setSelectedIndex(0);
+        formContactInput.setText("");
+        formEmailInput.setText("");
+        formAddressInput.setText("");
+        formDateOfRegInput.setText("");
+    }
+
+    public String getPatientName() {
+        return formNameInput.getText().trim();
+    }
+
+    public int getPatientAge() {
+        try {
+            return Integer.parseInt(formAgeInput.getText().trim());
+        } catch (NumberFormatException e) {
+            return -1; // invalid age
+        }
+    }
+
+    public String getPatientIC() {
+        return formICNoInput.getText().trim();
+    }
+
+    public String getPatientGender() {
+        return (String) jComboBox1.getSelectedItem();
+    }
+
+    public String getPatientContact() {
+        return formContactInput.getText().trim();
+    }
+
+    public String getPatientEmail() {
+        return formEmailInput.getText().trim();
+    }
+
+    public String getPatientAddress() {
+        return formAddressInput.getText().trim();
+    }
+
+    public String getDateOfRegistration() {
+        return formDateOfRegInput.getText().trim();
+    }
+
+    
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttonPanel;

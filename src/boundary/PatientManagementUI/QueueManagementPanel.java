@@ -228,9 +228,9 @@ public void setVisible(boolean aFlag) {
         queueTablePanel = new javax.swing.JScrollPane();
         queueTable = new javax.swing.JTable();
         ButtonPanel = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        AddPatientQueue = new javax.swing.JButton();
+        GenerateReport = new javax.swing.JButton();
+        Done = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
         add(logoLabel, java.awt.BorderLayout.PAGE_START);
@@ -278,58 +278,60 @@ public void setVisible(boolean aFlag) {
         searchWrapperPanel.add(searchPanel, java.awt.BorderLayout.PAGE_START);
 
         queueTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-
+            new Object [][] {},
+            new String [] {}
+        ){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
             }
-        ));
-        queueTablePanel.setViewportView(queueTable);
+        }
+    );
+    queueTablePanel.setViewportView(queueTable);
 
-        searchWrapperPanel.add(queueTablePanel, java.awt.BorderLayout.CENTER);
+    searchWrapperPanel.add(queueTablePanel, java.awt.BorderLayout.CENTER);
 
-        jButton1.setText("Add Patient Queue");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-        ButtonPanel.add(jButton1);
+    AddPatientQueue.setText("Add Patient Queue");
+    AddPatientQueue.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            AddPatientQueueActionPerformed(evt);
+        }
+    });
+    ButtonPanel.add(AddPatientQueue);
 
-        jButton3.setText("Generate Report");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
-        ButtonPanel.add(jButton3);
+    GenerateReport.setText("Generate Report");
+    GenerateReport.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            GenerateReportActionPerformed(evt);
+        }
+    });
+    ButtonPanel.add(GenerateReport);
 
-        jButton2.setText("Done");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-        ButtonPanel.add(jButton2);
+    Done.setText("Done");
+    Done.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            DoneActionPerformed(evt);
+        }
+    });
+    ButtonPanel.add(Done);
 
-        searchWrapperPanel.add(ButtonPanel, java.awt.BorderLayout.PAGE_END);
+    searchWrapperPanel.add(ButtonPanel, java.awt.BorderLayout.PAGE_END);
 
-        titlePanel.add(searchWrapperPanel, java.awt.BorderLayout.CENTER);
+    titlePanel.add(searchWrapperPanel, java.awt.BorderLayout.CENTER);
 
-        add(titlePanel, java.awt.BorderLayout.CENTER);
+    add(titlePanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     private void filterFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterFieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_filterFieldActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void AddPatientQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddPatientQueueActionPerformed
        QueueDialog dialog = new QueueDialog(mainFrame, true);
-dialog.setLocationRelativeTo(this);
-dialog.setVisible(true);
+       dialog.setLocationRelativeTo(this);
+       dialog.setVisible(true);
 
-Patient selectedPatient = dialog.getResult();
+       Patient selectedPatient = dialog.getResult();
 
 if (selectedPatient != null) {
     String queueNo = generateQueueNumber();
@@ -356,21 +358,21 @@ if (selectedPatient != null) {
     });
 }
 
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_AddPatientQueueActionPerformed
 
     private void filterBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterBoxActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_filterBoxActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        saveQueueData();
+    private void DoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DoneActionPerformed
+        JOptionPane.showMessageDialog(this, "Queue updates applied!");
         mainFrame.showPanel("patientManagement");
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_DoneActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void GenerateReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GenerateReportActionPerformed
         ReportGenerator.generateQueueStatisticsReport(queueList);
          JOptionPane.showMessageDialog(this, "Queue Statistics Report generated successfully!");
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_GenerateReportActionPerformed
 
     private void sortBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortBoxActionPerformed
 
@@ -406,13 +408,13 @@ if (selectedPatient != null) {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton AddPatientQueue;
     private javax.swing.JPanel ButtonPanel;
+    private javax.swing.JButton Done;
+    private javax.swing.JButton GenerateReport;
     private javax.swing.JComboBox<String> filterBox;
     private javax.swing.JTextField filterField;
     private javax.swing.JLabel filterLabel;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JTable queueTable;
     private javax.swing.JScrollPane queueTablePanel;

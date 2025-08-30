@@ -161,45 +161,47 @@ public class InitializeDataUtils {
                 "012-1212121", "lixuan.chia@yahoo.com",
                 "No. 8, Lorong Taman Alor Akar 3, Kuantan, Pahang", "2025-08-25"));
 
+        
+        // Initialize Patient Test Data for report
         patientList.insertLast(new Patient("P011", "Gan Mei Yee", "850412-10-1234", 40, "Female",
                 "013-8888111", "meiyee.gan@gmail.com",
-                "No. 12, Jalan Damansara Heights, Kuala Lumpur", "2025-08-28"));
+                "No. 12, Jalan Damansara Heights, Kuala Lumpur", "2025-08-29"));
 
         patientList.insertLast(new Patient("P012", "Syed Amir bin Jamal", "910727-14-5678", 2, "Male", // toddler
                 "012-3456789", "amir.jamal91@yahoo.com",
-                "No. 44, Jalan Dato Sheikh Ahmad, Seremban, Negeri Sembilan", "2025-08-28"));
+                "No. 44, Jalan Dato Sheikh Ahmad, Seremban, Negeri Sembilan", "2025-08-29"));
 
         patientList.insertLast(new Patient("P013", "Vasanthi a/p Ramesh", "780315-08-2244", 85, "Female", // elderly
                 "016-7777333", "vasanthi.ramesh78@gmail.com",
-                "No. 99, Jalan Raja Chulan, Kuala Lumpur", "2025-08-28"));
+                "No. 99, Jalan Raja Chulan, Kuala Lumpur", "2025-08-29"));
 
         patientList.insertLast(new Patient("P014", "Jonathan Lee Wei Sheng", "050909-10-8899", 18, "Male", // teenager
                 "017-6666222", "jonathanlee05@gmail.com",
-                "No. 23, Jalan Song Ban Kheng, Bukit Mertajam, Penang", "2025-08-28"));
+                "No. 23, Jalan Song Ban Kheng, Bukit Mertajam, Penang", "2025-08-29"));
 
         patientList.insertLast(new Patient("P015", "Nurul Hidayah binti Ahmad", "880214-06-4455", 55, "Female",
                 "018-9999222", "nurul.hidayah88@gmail.com",
-                "No. 17, Jalan Sutera, Taman Sentosa, Johor Bahru", "2025-08-28"));
+                "No. 17, Jalan Sutera, Taman Sentosa, Johor Bahru", "2025-08-29"));
 
         patientList.insertLast(new Patient("P016", "Marcus Tan Wei Jian", "940501-08-3344", 70, "Male",
                 "019-3333222", "marcus.tan94@yahoo.com",
-                "No. 66, Jalan Padungan, Kuching, Sarawak", "2025-08-28"));
+                "No. 66, Jalan Padungan, Kuching, Sarawak", "2025-08-29"));
 
         patientList.insertLast(new Patient("P017", "Aisyah binti Salleh", "030725-10-1122", 8, "Female", // child
                 "011-2222334", "aisyah.salleh03@gmail.com",
-                "No. 5, Jalan Pantai Dalam, Kuala Lumpur", "2025-08-28"));
+                "No. 5, Jalan Pantai Dalam, Kuala Lumpur", "2025-08-29"));
 
         patientList.insertLast(new Patient("P018", "Daniel Wong Jun Hao", "990831-14-7788", 33, "Male",
                 "014-5555666", "daniel.wong99@gmail.com",
-                "No. 45, Jalan Kebun Teh, Johor Bahru, Johor", "2025-08-28"));
+                "No. 45, Jalan Kebun Teh, Johor Bahru, Johor", "2025-08-29"));
 
         patientList.insertLast(new Patient("P019", "Thavamani a/l Krishnan", "760129-10-4466", 90, "Male", // very elderly
                 "015-1212121", "thavamani.krishnan76@gmail.com",
-                "No. 8, Jalan Laksamana, Melaka City, Melaka", "2025-08-28"));
+                "No. 8, Jalan Laksamana, Melaka City, Melaka", "2025-08-29"));
 
         patientList.insertLast(new Patient("P020", "Cheong Li Fang", "970618-08-5577", 25, "Female",
                 "012-9898989", "lifang.cheong97@yahoo.com",
-                "No. 10, Jalan Pasir Puteh, Ipoh, Perak", "2025-08-28"));
+                "No. 10, Jalan Pasir Puteh, Ipoh, Perak", "2025-08-29"));
 
         return patientList;
     }
