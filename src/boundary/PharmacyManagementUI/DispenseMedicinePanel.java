@@ -10,6 +10,7 @@ import enitity.PrescriptionItem;
 import utility.FileUtils;
 import utility.ImageUtils;
 import control.ConsultationControl;
+import control.MedicineControl;
 import java.awt.Color;
 
 import javax.swing.*;
@@ -25,6 +26,7 @@ import utility.ReportGenerator;
 public class DispenseMedicinePanel extends javax.swing.JPanel {
 
     private MainFrame mainFrame;
+    private MedicineControl medicineControl;
     private DoublyLinkedList<Pair<String, Medicine>> masterMedicineList;
     private String patientName;
     private String doctorName;
@@ -37,6 +39,7 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
      */
     public DispenseMedicinePanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
+        medicineControl = new MedicineControl();
 
         initComponents();
         loadInitialComponent();
@@ -134,12 +137,7 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
     }
 
     private void loadInitialData() {
-        DoublyLinkedList<Pair<String, Medicine>> medicineList
-                = (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
-        if (medicineList == null) {
-            medicineList = new DoublyLinkedList<>();
-        }
-        masterMedicineList = medicineList;
+        masterMedicineList = medicineControl.getAllMedicines();
 
         consultationControl = new ConsultationControl();
         DoublyLinkedList<Pair<String, Prescription>> pList = consultationControl.getAllPrescriptions();
@@ -246,12 +244,7 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
 
     public void reloadData() {
         // Reload master medicine list
-        DoublyLinkedList<Pair<String, Medicine>> medicineList
-                = (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
-        if (medicineList == null) {
-            medicineList = new DoublyLinkedList<>();
-        }
-        masterMedicineList = medicineList;
+        masterMedicineList = medicineControl.getAllMedicines();
 
         // Reload prescription list
         consultationControl = new ConsultationControl();
@@ -347,15 +340,7 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
     }
 
     private int getStockForMedicineId(String id) {
-        if (id == null) {
-            return 0;
-        }
-        for (Pair<String, Medicine> pair : masterMedicineList) {
-            if (id.equals(pair.getKey())) {
-                return pair.getValue().getQuantity();
-            }
-        }
-        return 0;
+        return medicineControl.getMedicineStock(id, masterMedicineList);
     }
 
     private void handleDispense() {
@@ -491,10 +476,9 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
                     String medName = it.getMedicineName();
                     int qty = safeInt(it.getQuantity());
 
-                    Pair<String, Medicine> mp = findMedicinePairById(medId);
-                    if (mp != null) {
-                        Medicine med = mp.getValue();
-                        med.setQuantity(med.getQuantity() - qty);
+                    if (!medicineControl.updateMedicineStock(medId, -qty, masterMedicineList)) {
+                        // This shouldn't happen as we validated stock earlier
+                        throw new RuntimeException("Failed to update stock for medicine: " + medId);
                     }
 
                     newDispenses.insertLast(new DispenseRecord(
@@ -538,12 +522,7 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
     }
 
     private Pair<String, Medicine> findMedicinePairById(String id) {
-        for (Pair<String, Medicine> pair : masterMedicineList) {
-            if (pair.getKey().equals(id)) {
-                return pair;
-            }
-        }
-        return null;
+        return medicineControl.findMedicineById(id, masterMedicineList);
     }
 
     private class SelectCheckboxEditor extends DefaultCellEditor {
@@ -660,7 +639,7 @@ public class DispenseMedicinePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_dispenseMedicineButtonActionPerformed
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
-        FileUtils.writeDataToFile("medicine", masterMedicineList);
+        medicineControl.saveMedicines(masterMedicineList);
         mainFrame.showPanel("pharmacyManagement");
     }//GEN-LAST:event_doneButtonActionPerformed
 

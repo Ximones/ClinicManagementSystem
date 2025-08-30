@@ -2,11 +2,11 @@ package boundary.PharmacyManagementUI;
 
 import adt.DoublyLinkedList;
 import adt.Pair;
+import control.MedicineControl;
 import enitity.Medicine;
 import java.awt.Frame;
 import java.text.DecimalFormat;
 import javax.swing.JOptionPane;
-import utility.FileUtils;
 import utility.ImageUtils;
 
 /**
@@ -15,6 +15,7 @@ import utility.ImageUtils;
  */
 public class MedicineEditDialog extends javax.swing.JDialog {
 
+    private MedicineControl medicineControl;
     private DoublyLinkedList<Pair<String, Medicine>> masterMedicineList;
     private Medicine medicineToEdit = null;
     private static final DecimalFormat df2 = new DecimalFormat("#0.00");
@@ -22,10 +23,12 @@ public class MedicineEditDialog extends javax.swing.JDialog {
     /**
      * Creates new form MedicineEditDialog
      */
-    public MedicineEditDialog(Frame parent, boolean modal, DoublyLinkedList<Pair<String, Medicine>> medicineList) {
+    public MedicineEditDialog(Frame parent, boolean modal,
+            DoublyLinkedList<Pair<String, Medicine>> medicineList) {
         super(parent, modal);
         initComponents();
         this.masterMedicineList = medicineList;
+        this.medicineControl = new MedicineControl();
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
         this.setLocationRelativeTo(parent);
 
@@ -287,9 +290,7 @@ public class MedicineEditDialog extends javax.swing.JDialog {
             return;
         }
 
-        masterMedicineList.sort();
-        Pair<String, Medicine> keyToFind = new Pair<>(idToFind, null);
-        Pair<String, Medicine> foundPair = masterMedicineList.binarySearch(keyToFind);
+        Pair<String, Medicine> foundPair = medicineControl.findMedicineById(idToFind, masterMedicineList);
 
         if (foundPair != null) {
             this.medicineToEdit = foundPair.getValue();
@@ -324,82 +325,69 @@ public class MedicineEditDialog extends javax.swing.JDialog {
             String category = (String) formCategoryBox.getSelectedItem();
             String formulation = (String) formFormulationBox.getSelectedItem();
             String dosage = formDosageInput.getText().trim();
-            String quantityText = formQuantityInput.getText().trim();
-            String priceText = formPriceInput.getText().trim();
 
-            if (name.isEmpty()) {
-                throw new IllegalArgumentException("Medicine Name cannot be empty.");
-            }
-            if (!name.matches("[a-zA-Z\\s]+")) {
-                throw new IllegalArgumentException("Medicine Name cannot include numbers or special characters.");
-            }
-
-            if (brand.isEmpty()) {
-                throw new IllegalArgumentException("Brand Name cannot be empty.");
-            }
-            if (!brand.matches("[a-zA-Z\\s]+")) {
-                throw new IllegalArgumentException("Brand Name cannot include numbers or special characters.");
-            }
-
-            if (category == null || category.equals("Select Category")) {
-                throw new IllegalArgumentException("Please select a valid Category.");
-            }
-
-            if (formulation == null || formulation.equals("Select Formulation")) {
-                throw new IllegalArgumentException("Please select a valid Formulation.");
-            }
-
-            if (dosage.isEmpty()) {
-                throw new IllegalArgumentException("Dosage cannot be empty.");
-            }
-            if (!dosage.matches("[a-zA-Z0-9\\s/]+")) {
-                throw new IllegalArgumentException("Dosage contains invalid characters.");
-            }
-
+            // Quantity validation
             int quantity;
             try {
-                quantity = Integer.parseInt(quantityText);
-                if (quantity < 0) {
-                    throw new IllegalArgumentException("Quantity cannot be negative.");
-                }
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Quantity must be a valid integer.");
+                quantity = Integer.parseInt(formQuantityInput.getText().trim());
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please enter a valid number for quantity.",
+                        "Input Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return; // stop execution
             }
 
+            // Price validation
             double price;
             try {
-                price = Double.parseDouble(df2.format(Double.parseDouble(priceText)));
-                if (price < 0) {
-                    throw new IllegalArgumentException("Price cannot be negative.");
-                }
-
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Price must be a valid number.");
+                price = Double.parseDouble(formPriceInput.getText().trim());
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please enter a valid number for price.",
+                        "Input Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return; // stop execution
             }
 
-            // Update existing medicine
-            medicineToEdit.setName(name);
-            medicineToEdit.setBrandName(brand);
-            medicineToEdit.setCategory(category);
-            medicineToEdit.setFormulation(formulation);
-            medicineToEdit.setDosageForm(dosage);
-            medicineToEdit.setQuantity(quantity);
-            medicineToEdit.setPrice(price);
+            // Build updated medicine
+            Medicine updatedMedicine = new Medicine(
+                    "", name, brand, category, formulation, dosage, quantity, price
+            );
 
-            FileUtils.writeDataToFile("medicine", masterMedicineList);
-
-            JOptionPane.showMessageDialog(this, "Medicine information updated successfully.");
-            dispose();
+            if (medicineControl.updateMedicine(medicineToEdit.getMedicineId(), updatedMedicine, masterMedicineList)) {
+                medicineControl.saveMedicines(masterMedicineList);
+                JOptionPane.showMessageDialog(this, "Medicine information updated successfully.");
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(
+                        this, "Failed to update medicine.", "Update Error", JOptionPane.ERROR_MESSAGE
+                );
+            }
 
         } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Input Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Unexpected error occurred.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Unexpected error occurred.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        this.dispose(); // Simply close the dialog
+        this.dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     /**

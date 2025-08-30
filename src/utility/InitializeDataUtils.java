@@ -230,7 +230,7 @@ public class InitializeDataUtils {
         medList.insertLast(new Pair<>("MED017", new Medicine("MED017", "Paracetamol Syrup", "Tylenol", "Analgesic", "Syrup", "120mg/5mL", 130, 0.30)));
         medList.insertLast(new Pair<>("MED018", new Medicine("MED018", "Clotrimazole Cream", "Canesten", "Antifungal", "Cream", "1%", 85, 4.00)));
         medList.insertLast(new Pair<>("MED019", new Medicine("MED019", "Hydrocortisone Ointment", "Cortef Oint", "Steroid", "Ointment", "1%", 45, 5.50)));
-        medList.insertLast(new Pair<>("MED020", new Medicine("MED020", "Zinc Oxide Paste", "Sudocrem", "Dermatological", "Paste", "", 70, 3.20)));
+        medList.insertLast(new Pair<>("MED020", new Medicine("MED020", "Zinc Oxide Paste", "Sudocrem", "Dermatological", "Paste", "N/A", 70, 3.20)));
         medList.insertLast(new Pair<>("MED021", new Medicine("MED021", "Vitamin D Drops", "Colecalciferol", "Supplement", "Drops", "400IU", 90, 2.20)));
         medList.insertLast(new Pair<>("MED022", new Medicine("MED022", "Loratadine Syrup", "Claritin", "Antihistamine", "Syrup", "5mg/5mL", 95, 2.00)));
         medList.insertLast(new Pair<>("MED023", new Medicine("MED023", "Amoxicillin Powder", "Amoxil Powder", "Antibiotic", "Powder", "250mg/5mL", 110, 6.50)));
