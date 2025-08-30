@@ -14,7 +14,7 @@ import utility.ImageUtils;
 
 /**
  * A dialog for editing an existing treatment record.
- * @author User
+ * @author Tan Jun Yew
  */
 public class TreatmentEditDialog extends javax.swing.JDialog {
 

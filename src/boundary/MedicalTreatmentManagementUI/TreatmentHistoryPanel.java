@@ -19,7 +19,7 @@ import utility.ReportGenerator;
 
 /**
  *
- * @author User
+ * @author Tan Jun Yew
  */
 public class TreatmentHistoryPanel extends javax.swing.JPanel {
     

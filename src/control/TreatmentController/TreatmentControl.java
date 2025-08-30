@@ -12,7 +12,7 @@ import utility.FileUtils;
 
 /**
  *
- * @author User
+ * @author Tan Jun Yew
  */
 public class TreatmentControl {
 

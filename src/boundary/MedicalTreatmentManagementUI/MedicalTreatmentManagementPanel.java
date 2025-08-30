@@ -9,7 +9,7 @@ import utility.ImageUtils; // Import the ImageUtils class
 
 /**
  *
- * @author User
+ * @author Tan Jun Yew
  */
 public class MedicalTreatmentManagementPanel extends javax.swing.JPanel {
 

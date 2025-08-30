@@ -19,7 +19,7 @@ import utility.ImageUtils;
 
 /**
  *
- * @author User
+ * @author Tan Jun Yew
  */
 public class DiagnosisEntryPanel extends javax.swing.JPanel {
     private MainFrame mainFrame;

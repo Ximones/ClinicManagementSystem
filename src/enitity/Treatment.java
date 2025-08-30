@@ -11,7 +11,7 @@ import java.util.Objects;
 
 /**
  *
- * @author deadb
+ * @author Tan Jun Yew
  */
 public class Treatment implements Serializable, Comparable<Treatment> {
 
