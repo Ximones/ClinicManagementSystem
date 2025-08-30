@@ -4,6 +4,9 @@ import adt.DoublyLinkedList;
 import boundary.MainFrame;
 import enitity.DispenseRecord;
 import javax.swing.JOptionPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
 import utility.FileUtils;
 import utility.ImageUtils;
 import utility.ReportGenerator;
@@ -15,6 +18,7 @@ import utility.ReportGenerator;
 public class DispenseHistoryPanel extends javax.swing.JPanel {
 
     private MainFrame mainFrame;
+    private DoublyLinkedList<DispenseRecord> masterDispenseList;
 
     /**
      * Creates new form DispenseHistoryPanel
@@ -24,45 +28,61 @@ public class DispenseHistoryPanel extends javax.swing.JPanel {
         initComponents();
         loadInitialComponent();
         loadMedicineTable();
+        filterField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filterTable();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filterTable();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                filterTable();
+            }
+        });
     }
 
     private void loadInitialComponent() {
-
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
-
         medicineTable.getTableHeader().setReorderingAllowed(false);
         medicineTable.setRowHeight(24);
         medicineTable.setAutoCreateRowSorter(false);
+
+        filterBox.addItem("Medicine ID");
+        filterBox.addItem("Medicine Name");
+        filterBox.addItem("Dispense Date");
     }
 
     public void loadMedicineTable() {
         // Read data from file
-        DoublyLinkedList<DispenseRecord> dispenseRecords
-                = (DoublyLinkedList<DispenseRecord>) FileUtils.readDataFromFile("dispense");
+        masterDispenseList = (DoublyLinkedList<DispenseRecord>) FileUtils.readDataFromFile("dispense");
 
-        // Sort before displaying
-        if (dispenseRecords != null && !dispenseRecords.isEmpty()) {
-            dispenseRecords.sort();   // Uses compareTo from DispenseRecord
+        if (masterDispenseList != null && !masterDispenseList.isEmpty()) {
+            masterDispenseList.sort(); // Uses compareTo from DispenseRecord
         }
 
-        // Define column names
+        populateMedicineTable(masterDispenseList);
+    }
+
+    private void populateMedicineTable(DoublyLinkedList<DispenseRecord> list) {
         String[] columnNames = {
-            "Prescription ID", "Patient Name", "Doctor Name",
-            "Medicine ID", "Medicine Name", "Quantity",
-            "Unit Price (RM)", "Line Total (RM)", "Dispense Date"
+            "Prescription ID", "Patient Name", "Doctor Name", "Medicine ID",
+            "Medicine Name", "Quantity", "Unit Price (RM)", "Line Total (RM)", "Dispense Date"
         };
 
-        // Create a fresh table model
-        javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(columnNames, 0) {
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
 
-        // Populate with sorted records
-        if (dispenseRecords != null && !dispenseRecords.isEmpty()) {
-            for (DispenseRecord record : dispenseRecords) {
+        if (list != null && !list.isEmpty()) {
+            for (DispenseRecord record : list) {
                 Object[] rowData = {
                     record.getPrescriptionId(),
                     record.getPatientName(),
@@ -78,8 +98,42 @@ public class DispenseHistoryPanel extends javax.swing.JPanel {
             }
         }
 
-        // Apply model to table
         medicineTable.setModel(model);
+    }
+
+    private void filterTable() {
+        if (masterDispenseList == null || masterDispenseList.isEmpty()) {
+            return;
+        }
+
+        String criterion = (String) filterBox.getSelectedItem();
+        String searchText = filterField.getText().trim().toLowerCase();
+
+        if (searchText.isEmpty()) {
+            populateMedicineTable(masterDispenseList); // show all
+            return;
+        }
+
+        DoublyLinkedList<DispenseRecord> filteredList = new DoublyLinkedList<>();
+        for (DispenseRecord record : masterDispenseList) {
+            String value = "";
+            switch (criterion) {
+                case "Medicine ID":
+                    value = record.getMedicineId();
+                    break;
+                case "Medicine Name":
+                    value = record.getMedicineName();
+                    break;
+                case "Dispense Date":
+                    value = formatDate(record.getDateTime());
+                    break;
+            }
+            if (value != null && value.toLowerCase().contains(searchText)) {
+                filteredList.insertLast(record);
+            }
+        }
+
+        populateMedicineTable(filteredList);
     }
 
     private String formatDate(String dateTime) {
@@ -88,7 +142,8 @@ public class DispenseHistoryPanel extends javax.swing.JPanel {
         }
         try {
             java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(dateTime);
-            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy");
+            java.time.format.DateTimeFormatter formatter
+                    = java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy");
             return ldt.format(formatter);
         } catch (Exception e) {
             return dateTime;
@@ -109,6 +164,10 @@ public class DispenseHistoryPanel extends javax.swing.JPanel {
         titlePanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
         formWrapperPanel = new javax.swing.JPanel();
+        searchPanel = new javax.swing.JPanel();
+        filterLabel = new javax.swing.JLabel();
+        filterBox = new javax.swing.JComboBox<>();
+        filterField = new javax.swing.JTextField();
         medicineTablePanel = new javax.swing.JScrollPane();
         medicineTable = new javax.swing.JTable();
         ButtonPanel = new javax.swing.JPanel();
@@ -129,6 +188,26 @@ public class DispenseHistoryPanel extends javax.swing.JPanel {
         titlePanel.add(titleLabel, java.awt.BorderLayout.PAGE_START);
 
         formWrapperPanel.setLayout(new java.awt.BorderLayout());
+
+        filterLabel.setText("Filter By :");
+        searchPanel.add(filterLabel);
+
+        filterBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterBoxActionPerformed(evt);
+            }
+        });
+        searchPanel.add(filterBox);
+
+        filterField.setColumns(15);
+        filterField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterFieldActionPerformed(evt);
+            }
+        });
+        searchPanel.add(filterField);
+
+        formWrapperPanel.add(searchPanel, java.awt.BorderLayout.PAGE_START);
 
         medicineTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -186,16 +265,28 @@ public class DispenseHistoryPanel extends javax.swing.JPanel {
         mainFrame.showPanel("pharmacyManagement");
     }//GEN-LAST:event_doneButtonActionPerformed
 
+    private void filterBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterBoxActionPerformed
+
+    }//GEN-LAST:event_filterBoxActionPerformed
+
+    private void filterFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterFieldActionPerformed
+
+    }//GEN-LAST:event_filterFieldActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ButtonPanel;
     private javax.swing.JButton dispenseLogButton;
     private javax.swing.JButton doneButton;
+    private javax.swing.JComboBox<String> filterBox;
+    private javax.swing.JTextField filterField;
+    private javax.swing.JLabel filterLabel;
     private javax.swing.JPanel formWrapperPanel;
     private javax.swing.JLabel logoLabel;
     private javax.swing.JPanel logoPanel;
     private javax.swing.JTable medicineTable;
     private javax.swing.JScrollPane medicineTablePanel;
+    private javax.swing.JPanel searchPanel;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables

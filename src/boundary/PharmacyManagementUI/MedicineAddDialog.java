@@ -1,6 +1,8 @@
 package boundary.PharmacyManagementUI;
 
+import adt.DoublyLinkedList;
 import adt.Pair;
+import control.MedicineControl;
 import enitity.Medicine;
 import javax.swing.*;
 import utility.ImageUtils;
@@ -12,12 +14,19 @@ import utility.ImageUtils;
 public class MedicineAddDialog extends javax.swing.JDialog {
 
     private Pair<String, Medicine> result;
+    private MedicineControl medicineControl;
+    private DoublyLinkedList<Pair<String, Medicine>> medicineList;
+    private boolean successful = false;
 
     /**
      * Creates new form MedicineDialog
      */
-    public MedicineAddDialog(java.awt.Frame parent, boolean modal) {
+    public MedicineAddDialog(java.awt.Frame parent, boolean modal,
+            DoublyLinkedList<Pair<String, Medicine>> medicineList,
+            MedicineControl medicineControl) {
         super(parent, modal);
+        this.medicineList = medicineList;
+        this.medicineControl = medicineControl;
         initComponents();
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
 
@@ -28,6 +37,8 @@ public class MedicineAddDialog extends javax.swing.JDialog {
 
         // Category options
         formCategoryBox.addItem("Select Category");
+        formCategoryBox.setSelectedIndex(0);
+        formCategoryBox.setEnabled(true);
         formCategoryBox.addItem("Antibiotic");
         formCategoryBox.addItem("Analgesic");
         formCategoryBox.addItem("Antipyretic");
@@ -44,6 +55,8 @@ public class MedicineAddDialog extends javax.swing.JDialog {
 
         // Formulation options
         formFormulationBox.addItem("Select Formulation");
+        formFormulationBox.setSelectedIndex(0);
+        formFormulationBox.setEnabled(true);
         formFormulationBox.addItem("Tablet");
         formFormulationBox.addItem("Capsule");
         formFormulationBox.addItem("Liquid");
@@ -62,6 +75,10 @@ public class MedicineAddDialog extends javax.swing.JDialog {
 
     public Pair<String, Medicine> getResult() {
         return result;
+    }
+
+    public boolean wasSuccessful() {
+        return successful;
     }
 
     /**
@@ -213,66 +230,65 @@ public class MedicineAddDialog extends javax.swing.JDialog {
             String category = (String) formCategoryBox.getSelectedItem();
             String formulation = (String) formFormulationBox.getSelectedItem();
             String dosage = formDosageInput.getText().trim();
-            String quantityText = formQuantityInput.getText().trim();
-            String priceText = formPriceInput.getText().trim();
 
-            if (name.isEmpty()) {
-                throw new IllegalArgumentException("Medicine Name cannot be empty.");
-            }
-            if (!name.matches("[a-zA-Z\\s]+")) {
-                throw new IllegalArgumentException("Medicine Name cannot include numbers or special characters.");
-            }
-
-            if (brand.isEmpty()) {
-                throw new IllegalArgumentException("Brand Name cannot be empty.");
-            }
-            if (!brand.matches("[a-zA-Z\\s]+")) {
-                throw new IllegalArgumentException("Brand Name cannot include numbers or special characters.");
-            }
-
-            if (category == null || category.equals("Select Category")) {
-                throw new IllegalArgumentException("Please select a valid Category.");
-            }
-
-            if (formulation == null || formulation.equals("Select Formulation")) {
-                throw new IllegalArgumentException("Please select a valid Formulation.");
-            }
-
-            if (!dosage.isEmpty() && !dosage.matches("[a-zA-Z0-9\\s/]+")) {
-                throw new IllegalArgumentException("Dosage contains invalid characters.");
-            }
-
+            // Quantity validation
             int quantity;
             try {
-                quantity = Integer.parseInt(quantityText);
-                if (quantity < 0) {
-                    throw new IllegalArgumentException("Quantity cannot be negative.");
-                }
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Quantity must be a valid integer.");
+                quantity = Integer.parseInt(formQuantityInput.getText().trim());
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please enter a valid number for quantity.",
+                        "Input Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return; // stop here
             }
 
+            // Price validation
             double price;
             try {
-                price = Double.parseDouble(priceText);
-                if (price < 0) {
-                    throw new IllegalArgumentException("Price cannot be negative.");
-                }
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Price must be a valid number.");
+                price = Double.parseDouble(formPriceInput.getText().trim());
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please enter a valid number for price.",
+                        "Input Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return; // stop here
             }
 
-            Medicine newMed = new Medicine(id, name, brand, category, formulation, dosage, quantity, price);
-            result = new Pair<>(id, newMed);
+            // Create medicine
+            Medicine newMedicine = new Medicine(
+                    "", name, brand, category, formulation, dosage, quantity, price
+            );
 
-            Medicine.setMedicineIndex(Medicine.getMedicineIndex() + 1);
-
-            dispose();
+            if (medicineControl.addMedicine(newMedicine, medicineList)) {
+                medicineControl.saveMedicines(medicineList);
+                result = new Pair<>(newMedicine.getMedicineId(), newMedicine);
+                successful = true;
+                dispose();
+            } else {
+                throw new IllegalArgumentException(
+                        "A medicine with the same name, brand, category, formulation, and dosage already exists."
+                );
+            }
 
         } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Input Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Unexpected error occurred.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Unexpected error occurred.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }//GEN-LAST:event_saveButtonActionPerformed
 

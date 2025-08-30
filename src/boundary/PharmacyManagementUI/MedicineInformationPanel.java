@@ -3,9 +3,9 @@ package boundary.PharmacyManagementUI;
 import adt.DoublyLinkedList;
 import adt.Pair;
 import boundary.MainFrame;
+import control.MedicineControl;
 import enitity.Medicine;
 import java.text.DecimalFormat;
-import utility.FileUtils;
 import utility.ImageUtils;
 import utility.ReportGenerator;
 
@@ -22,10 +22,12 @@ import javax.swing.table.DefaultTableModel;
 public class MedicineInformationPanel extends javax.swing.JPanel {
 
     private MainFrame mainFrame;
+    private MedicineControl medicineControl;
     private DoublyLinkedList<Pair<String, Medicine>> masterMedicineList;
 
     public MedicineInformationPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
+        medicineControl = new MedicineControl();
         initComponents();
 
         loadInitialComponent();
@@ -195,18 +197,7 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
     }
 
     private void loadInitialData() {
-        DoublyLinkedList<Pair<String, Medicine>> medicineList
-                = (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
-
-        if (medicineList == null) {
-            medicineList = new DoublyLinkedList<>(); // initialize empty list if file is empty
-        }
-
-        if (!medicineList.isEmpty()) {
-            Medicine.setMedicineIndex(medicineList.getSize());
-        }
-
-        masterMedicineList = medicineList;
+        masterMedicineList = medicineControl.getAllMedicines();
     }
 
     private void populateMedicineTable(DoublyLinkedList<Pair<String, Medicine>> list) {
@@ -233,14 +224,7 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
     }
 
     public void reloadMedicineTable() {
-        DoublyLinkedList<Pair<String, Medicine>> medicineList
-                = (DoublyLinkedList<Pair<String, Medicine>>) FileUtils.readDataFromFile("medicine");
-
-        if (medicineList == null) {
-            medicineList = new DoublyLinkedList<>();
-        }
-
-        masterMedicineList = medicineList;
+        masterMedicineList = medicineControl.getAllMedicines();
         populateMedicineTable(masterMedicineList);
     }
 
@@ -251,67 +235,16 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
 
     private void filterTable() {
         String selectedCriterion = (String) filterBox.getSelectedItem();
-        String searchText = filterField.getText().trim().toLowerCase();
+        String searchText = filterField.getText().trim();
 
-        if (searchText.isEmpty()) {
-            populateMedicineTable(masterMedicineList);
-            return;
-        }
+        DoublyLinkedList<Pair<String, Medicine>> filteredList
+                = medicineControl.filterMedicines(masterMedicineList, selectedCriterion, searchText);
 
-        DoublyLinkedList<Pair<String, Medicine>> searchResults = new DoublyLinkedList<>();
-
-        for (Pair<String, Medicine> pair : masterMedicineList) {
-            Medicine med = pair.getValue();
-            String id = pair.getKey();
-            boolean match = false;
-
-            switch (selectedCriterion) {
-                case "ID":
-                    match = id.toLowerCase().contains(searchText);
-                    break;
-                case "Name":
-                    match = med.getName().toLowerCase().contains(searchText);
-                    break;
-                case "Brand Name":
-                    match = med.getBrandName().toLowerCase().contains(searchText);
-                    break;
-                case "Category":
-                    match = med.getCategory().toLowerCase().contains(searchText);
-                    break;
-                case "Formulation":
-                    match = med.getFormulation().toLowerCase().contains(searchText);
-                    break;
-                case "Dosage":
-                    match = med.getDosageForm().toLowerCase().contains(searchText);
-                    break;
-                case "Quantity":
-                    match = Integer.toString(med.getQuantity()).contains(searchText);
-                    break;
-                case "Price":
-                    match = String.format("%.2f", med.getPrice()).contains(searchText);
-                    break;
-            }
-
-            if (match) {
-                searchResults.insertLast(pair);
-            }
-        }
-
-        populateMedicineTable(searchResults);
+        populateMedicineTable(filteredList);
     }
 
     private Pair<String, Medicine> findMedicinePairById(String id) {
-        if (id == null || masterMedicineList == null) {
-            return null;
-        }
-
-        for (Pair<String, Medicine> pair : masterMedicineList) {
-            if (id.equals(pair.getKey())) {
-                return pair;
-            }
-        }
-
-        return null;
+        return medicineControl.findMedicineById(id, masterMedicineList);
     }
 
     /**
@@ -450,41 +383,15 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_filterFieldActionPerformed
 
     private void addMedicineButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMedicineButtonActionPerformed
-        MedicineAddDialog dialog = new MedicineAddDialog(mainFrame, true);
+        MedicineAddDialog dialog = new MedicineAddDialog(mainFrame, true, masterMedicineList, medicineControl);
         dialog.setVisible(true);
 
-        Pair<String, Medicine> newMedicinePair = dialog.getResult();
-        if (newMedicinePair != null) {
-            Medicine newMedicine = newMedicinePair.getValue();
-            boolean duplicateExists = false;
-
-            for (Pair<String, Medicine> pair : masterMedicineList) {
-                Medicine existingMed = pair.getValue();
-                // Check if all five fields are the same
-                if (existingMed.getName().equalsIgnoreCase(newMedicine.getName())
-                        && existingMed.getBrandName().equalsIgnoreCase(newMedicine.getBrandName())
-                        && existingMed.getCategory().equalsIgnoreCase(newMedicine.getCategory())
-                        && existingMed.getFormulation().equalsIgnoreCase(newMedicine.getFormulation())
-                        && existingMed.getDosageForm().equalsIgnoreCase(newMedicine.getDosageForm())) {
-                    duplicateExists = true;
-                    break;
-                }
-            }
-
-            if (duplicateExists) {
-                JOptionPane.showMessageDialog(this,
-                        "A medicine with the same name, brand, category, formulation, and dosage already exists.",
-                        "Duplicate Medicine",
-                        JOptionPane.ERROR_MESSAGE);
-            } else {
-                masterMedicineList.insertLast(newMedicinePair);
-                populateMedicineTable(masterMedicineList);
-            }
+        if (dialog.wasSuccessful()) {
+            populateMedicineTable(masterMedicineList);
         }
     }//GEN-LAST:event_addMedicineButtonActionPerformed
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
-        FileUtils.writeDataToFile("medicine", masterMedicineList);
         mainFrame.showPanel("pharmacyManagement");
     }//GEN-LAST:event_doneButtonActionPerformed
 
@@ -501,20 +408,7 @@ public class MedicineInformationPanel extends javax.swing.JPanel {
 
     private void sortBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortBoxActionPerformed
         String selectedSort = (String) sortBox.getSelectedItem();
-
-        if (masterMedicineList == null) {
-            return;
-        }
-
-        // 1. Always sort in ascending order first
-        masterMedicineList.sort();
-
-        // 2. If "DESC" is selected, reverse the sorted list
-        if ("DESC".equals(selectedSort)) {
-            masterMedicineList.reverse();
-        }
-
-        // 3. Refresh the table with the sorted data
+        medicineControl.sortMedicines(masterMedicineList, selectedSort);
         populateMedicineTable(masterMedicineList);
     }//GEN-LAST:event_sortBoxActionPerformed
 
