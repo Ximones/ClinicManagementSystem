@@ -3,7 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/deadb/ClinicManagementSystem/src/boundary/MainFrame.java</file>
+            <file>file:/C:/Users/szepi/ClinicManagementSystem/src/enitity/Patient.java</file>
+            <file>file:/C:/Users/szepi/ClinicManagementSystem/dao/</file>
+            <file>file:/C:/Users/szepi/ClinicManagementSystem/src/control/PatientControl.java</file>
+            <file>file:/C:/Users/szepi/ClinicManagementSystem/src/boundary/PatientManagementUI/PatientRegistrationPanel.java</file>
+            <file>file:/C:/Users/szepi/ClinicManagementSystem/src/boundary/PatientManagementUI/QueueManagementPanel.java</file>
+            <file>file:/C:/Users/szepi/ClinicManagementSystem/src/boundary/PatientManagementUI/PatientManagementPanel.java</file>
         </group>
     </open-files>
 </project-private>

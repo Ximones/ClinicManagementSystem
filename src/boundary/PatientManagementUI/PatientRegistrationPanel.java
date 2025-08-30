@@ -95,7 +95,7 @@ public class PatientRegistrationPanel extends javax.swing.JPanel {
 
 private void filterPatients() {
     String selectedFilter = (String) filterBox.getSelectedItem();
-    String keyword = filterField.getText().trim().toLowerCase();
+    String keyword = filterField.getText().trim(); // do not lowercase for exact match
     tableModel.setRowCount(0);
 
     for (Patient p : patientControl.getAllPatients()) {
@@ -110,15 +110,16 @@ private void filterPatients() {
         }
 
         if (valueToCheck != null) {
-            String normalizedValue = valueToCheck.trim().toLowerCase();
-
-            // Special handling for gender short forms
+            boolean matches;
             if (selectedFilter.equals("Gender")) {
-                if (keyword.equals("m")) keyword = "male";
-                else if (keyword.equals("f")) keyword = "female";
+                // Exact match for gender
+                matches = valueToCheck.equals(keyword); 
+            } else {
+                // Case-insensitive partial match for other fields
+                matches = valueToCheck.toLowerCase().contains(keyword.toLowerCase());
             }
 
-            if (normalizedValue.contains(keyword)) {
+            if (matches) {
                 tableModel.addRow(new Object[]{
                     p.getPatientID(), p.getPatientName(), p.getPatientAge(),
                     p.getPatientIC(), p.getGender(), p.getContact(),
