@@ -299,6 +299,7 @@ public class MainFrame extends javax.swing.JFrame {
         cardPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(800, 600));
 
         cardPanel.setMaximumSize(new java.awt.Dimension(700, 500));
         cardPanel.setMinimumSize(new java.awt.Dimension(700, 500));
