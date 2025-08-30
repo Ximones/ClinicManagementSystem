@@ -34,7 +34,7 @@ public class DoctorEditControl {
     }
 
     /**
-     * Searches for a doctor by ID using a linear search on the master list.
+     * Searches for a doctor by ID using a binary search on the master list.
      * Updates the view to display the doctor's info or an error message.
      *
      * @param doctorId The ID to search for.
@@ -45,14 +45,15 @@ public class DoctorEditControl {
             return;
         }
 
-        doctorPairToEdit = null; // Reset previous search
-        // Linear search through the master list
-        for (Pair<String, Doctor> pair : masterDoctorList) {
-            if (pair.getKey().equalsIgnoreCase(doctorId.trim())) {
-                doctorPairToEdit = pair;
-                break;
-            }
-        }
+        // The master list MUST be sorted by ID for binary search to work.
+        masterDoctorList.sort();
+
+        //    Create a "dummy" Pair object with the key to search for.
+        //    The Doctor value can be null because the Pair's compareTo method only uses the key.
+        Pair<String, Doctor> keyToFind = new Pair<>(doctorId.trim().toUpperCase(), null);
+
+        // Call the binarySearch method from DoublyLinkedList.
+        doctorPairToEdit = masterDoctorList.binarySearch(keyToFind);
 
         if (doctorPairToEdit != null) {
             // If found, display the info and make fields editable
@@ -64,6 +65,7 @@ public class DoctorEditControl {
             view.setFieldsEditable(false);
             view.clearForm();
         }
+
     }
 
     /**
