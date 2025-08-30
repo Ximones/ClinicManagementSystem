@@ -40,7 +40,7 @@ public class PatientRegistrationPanel extends javax.swing.JPanel {
         });
 
         AddPatient.addActionListener(e -> addPatient());
-        Done.addActionListener(e -> saveAllChanges());
+        Done.addActionListener(e -> exitWithoutSaving());
     }
 
     // Refresh from controller
@@ -131,11 +131,14 @@ private void filterPatients() {
 }
 
 
-    private void saveAllChanges() {
-        patientControl.savePatients(); 
-        JOptionPane.showMessageDialog(this, "All patient updates saved!");
-        mainFrame.showPanel("patientManagement");
+    private void exitWithoutSaving() {
+    if (patientTable.isEditing()) {
+        patientTable.getCellEditor().stopCellEditing();
     }
+    JOptionPane.showMessageDialog(this, "Exited without saving changes.");
+    mainFrame.showPanel("patientManagement");
+}
+
     
     
     /**
@@ -276,23 +279,7 @@ sortBox.addActionListener(new java.awt.event.ActionListener() {
     if (patientTable.isEditing()) {
         patientTable.getCellEditor().stopCellEditing();
     }
-
-    for (int row = 0; row < tableModel.getRowCount(); row++) {
-        String id = tableModel.getValueAt(row, 0).toString();
-        Patient p = patientControl.searchPatientById(id); // use control instead of local helper
-        if (p == null) continue;
-
-        p.setPatientName(tableModel.getValueAt(row, 1).toString());
-        p.setPatientAge(Integer.parseInt(tableModel.getValueAt(row, 2).toString()));
-        p.setPatientIC(tableModel.getValueAt(row, 3).toString());
-        p.setGender(tableModel.getValueAt(row, 4).toString());
-        p.setContact(tableModel.getValueAt(row, 5).toString());
-        p.setEmail(tableModel.getValueAt(row, 6).toString());
-        p.setAddress(tableModel.getValueAt(row, 7).toString());
-        p.setDateOfRegistration(tableModel.getValueAt(row, 8).toString());
-    }
     mainFrame.showPanel("patientManagement");
-
     }//GEN-LAST:event_DoneActionPerformed
 
     private void GenerateReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GenerateReportActionPerformed

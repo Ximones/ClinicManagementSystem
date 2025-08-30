@@ -63,6 +63,8 @@ public class PatientControl {
             existing.setDateOfRegistration(updated.getDateOfRegistration());
         }
     }
+    
+
 
     public void sortById(boolean ascending) {
         patientList.sort();
