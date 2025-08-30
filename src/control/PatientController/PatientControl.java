@@ -61,9 +61,10 @@ public class PatientControl {
             existing.setEmail(updated.getEmail());
             existing.setAddress(updated.getAddress());
             existing.setDateOfRegistration(updated.getDateOfRegistration());
-            savePatients();
         }
     }
+    
+
 
     public void sortById(boolean ascending) {
         patientList.sort();
