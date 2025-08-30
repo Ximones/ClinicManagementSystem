@@ -43,6 +43,11 @@ import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
+/**
+ *
+ * @author Chok Chun Fai , Lim Sze Ping , Lee Wan Ching , Tan Jun Yew , Liow Zhen Bang
+ */
+
 public class ReportGenerator {
 
     /**

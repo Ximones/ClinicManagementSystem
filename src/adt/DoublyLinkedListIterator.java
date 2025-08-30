@@ -8,7 +8,7 @@ import java.util.Iterator;
 
 /**
  *
- * @author deadb
+ * @author Chok Chun Fai
  * @param <T>
  */
 public class DoublyLinkedListIterator<T extends Comparable<T>> implements Iterator<T> {

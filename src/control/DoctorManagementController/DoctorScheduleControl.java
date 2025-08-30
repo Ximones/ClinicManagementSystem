@@ -18,7 +18,7 @@ import utility.FileUtils;
 import utility.ReportGenerator;
 
 /**
- * @author deadb 
+ * @author Chok Chun Fai
  * Control class for DoctorSchedulePanel. Handles all business
  * logic for managing doctor schedules.
  */

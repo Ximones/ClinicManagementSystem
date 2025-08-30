@@ -3,6 +3,11 @@ package adt;
 import java.io.Serializable;
 
 /**
+ *
+ * @author Chok Chun Fai
+ */
+
+/**
  * Represents a single node in a Doubly Linked List.
  * Each node acts as a container for a data entry and holds references (pointers)
  * to the next and previous nodes in the sequence.

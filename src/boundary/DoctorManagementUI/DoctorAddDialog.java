@@ -6,6 +6,11 @@ import enitity.Doctor;
 import java.awt.Frame;
 import utility.ImageUtils;
 
+/**
+ *
+ * @author Chok Chun Fai
+ */
+
 public class DoctorAddDialog extends javax.swing.JDialog {
 
     private final DoctorAddControl control;

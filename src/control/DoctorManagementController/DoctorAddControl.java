@@ -11,26 +11,37 @@ import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 
 /**
- * Control class for DoctorAddDialog.
- * Handles validation and creation of a new Doctor entity.
+ *
+ * @author Chok Chun Fai
+ */
+/**
+ * Control class for DoctorAddDialog. Handles validation and creation of a new
+ * Doctor entity.
  */
 public class DoctorAddControl {
 
-    private final DoctorAddDialog view;
+    private final DoctorAddDialog view; // The dialog window this controller manages
     private final Doctor newDoctor; // The entity being created
-    private final int initialDoctorIndex;
+    private final int initialDoctorIndex;  // To store the index before creation for cancellation purposes
 
+    /**
+     * Constructor for the DoctorAddControl.
+     *
+     * @param view The DoctorAddDialog instance that this controller will
+     * manage.
+     */
     public DoctorAddControl(DoctorAddDialog view) {
         this.view = view;
         this.newDoctor = new Doctor(); // Create a new doctor instance to work with
         this.initialDoctorIndex = Doctor.getDoctorIndex(); // Store the index before creation
-        
+
         // The view can be updated with the new ID immediately
         view.setDoctorId(newDoctor.getDoctorID());
     }
 
     /**
-     * Validates form data and saves the new doctor.
+     * Validates form data from the view and populates the new Doctor object. If
+     * successful, it sets the result on the view and closes it.
      */
     public void saveNewDoctor() {
         try {
@@ -51,14 +62,14 @@ public class DoctorAddControl {
                 JOptionPane.showMessageDialog(view, "Please enter a valid Malaysian mobile number (e.g., 0123456789).", "Invalid Phone Number", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
+
             int age = Integer.parseInt(ageStr);
             if (age < 23 || age > 80) {
                 JOptionPane.showMessageDialog(view, "Please enter a realistic age for a doctor (23-80).", "Invalid Age", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            // 3. Update the entity
+            // 3. Update the entity with validated data
             newDoctor.setName(name);
             newDoctor.setAge(age);
             newDoctor.setPhoneNumber(phone);
@@ -77,6 +88,7 @@ public class DoctorAddControl {
 
     /**
      * Handles the cancellation of the add operation.
+     * It resets the static doctor index to its original value.
      */
     public void cancelAdd() {
         // Reset the static doctor index to what it was before this dialog was opened

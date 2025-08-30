@@ -25,7 +25,7 @@ import java.awt.CardLayout;
 
 /**
  *
- * @author Chok Chun Fai
+ * @author Chok Chun Fai, Lee Wan Ching , Lim Sze Ping , Liow Zhen Bang , Tan Jun Yew
  */
 public class MainFrame extends javax.swing.JFrame {
 

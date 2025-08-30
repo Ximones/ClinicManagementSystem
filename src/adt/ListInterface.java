@@ -5,7 +5,7 @@ package adt;
  * (ADT). It outlines all the standard operations that a list implementation
  * should support.
  *
- * @author deadb
+ * @author Chok Chun Fai
  * @param <T> The type of data the list will hold.
  */
 public interface ListInterface<T> {
@@ -140,4 +140,10 @@ public interface ListInterface<T> {
      * found.
      */
     public Object findByKey(Object key);
+
+    public void sort();
+
+    public void reverse();
+
+    public T binarySearch(T keyToFind);
 }

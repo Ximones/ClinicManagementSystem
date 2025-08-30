@@ -3,6 +3,11 @@ package adt;
 import java.io.Serializable;
 
 /**
+ *
+ * @author Chok Chun Fai
+ */
+
+/**
  * A simple, generic class to hold a key-value pair. This is a helper class used
  * to simulate Map-like behavior in a List.
  *

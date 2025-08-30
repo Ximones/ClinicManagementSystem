@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.Iterator;
 
 /**
+ *
+ * @author Chok Chun Fai
+ */
+/**
  * A generic Doubly Linked List implementation. It manages a sequence of nodes,
  * each linked to its previous and next node. Implements Iterator to allow for
  * use in for-each loops. Implements a custom ListInterface.
@@ -272,7 +276,6 @@ public class DoublyLinkedList<T extends Comparable<T>> implements Iterable<T>, L
         Node<T> current = head;
         int index = 0;
         while (current != null) {
-            // **FIXED BUG:** Compare the entry data, not the node itself.
             if (current.entry.equals(anEntry)) {
                 return index;
             }
@@ -379,6 +382,12 @@ public class DoublyLinkedList<T extends Comparable<T>> implements Iterable<T>, L
         return null; // Return null if key is not found
     }
 
+    /**
+     * Sorts the list in ascending order using a Bubble Sort algorithm. This
+     * method requires that the elements of type T implement the Comparable
+     * interface.
+     */
+    @Override
     public void sort() {
         if (getSize() < 2) {
             return; // No need to sort
@@ -401,6 +410,11 @@ public class DoublyLinkedList<T extends Comparable<T>> implements Iterable<T>, L
         } while (wasChanged);
     }
 
+    /**
+     * Reverses the order of the list in-place by swapping the next and previous
+     * pointers of each node.
+     */
+    @Override
     public void reverse() {
         if (head == null || head.next == null) {
             return; // Nothing to reverse
@@ -416,12 +430,21 @@ public class DoublyLinkedList<T extends Comparable<T>> implements Iterable<T>, L
             // Move to the next node (which is now in current.prev)
             current = current.prev;
         }
-        // The new head is the last node we processed
+        // After the loop, the old tail's 'prev' pointer (which is now 'next') is the new head
         if (temp != null) {
             head = temp.prev;
         }
     }
 
+    /**
+     * Performs a binary search on the list to find a specific key. IMPORTANT:
+     * This method requires the list to be sorted first.
+     *
+     * @param keyToFind The element (which must have a comparable key) to search
+     * for.
+     * @return The found element, or null if not found.
+     */
+    @Override
     public T binarySearch(T keyToFind) {
         int low = 0;
         int high = getSize() - 1;
@@ -434,7 +457,7 @@ public class DoublyLinkedList<T extends Comparable<T>> implements Iterable<T>, L
             Node<T> midNode = getElement(mid + 1); // +1 because getElement is 1-based
 
             if (midNode == null) {
-                break; // Should not happen in a correct implementation
+                break; // Should not happen
             }
 
             T midEntry = midNode.getEntry();
