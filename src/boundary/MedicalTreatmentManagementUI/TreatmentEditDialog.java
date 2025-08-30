@@ -6,7 +6,7 @@ package boundary.MedicalTreatmentManagementUI;
 
 import adt.DoublyLinkedList;
 import adt.Pair;
-import control.TreatmentControl;
+import control.TreatmentController.TreatmentControl;
 import enitity.Treatment;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;

@@ -7,7 +7,7 @@ package boundary.MedicalTreatmentManagementUI;
 import adt.DoublyLinkedList;
 import adt.Pair;
 import boundary.MainFrame;
-import control.TreatmentControl;
+import control.TreatmentController.TreatmentControl;
 import enitity.Consultation;
 import enitity.Treatment;
 import java.util.Iterator;

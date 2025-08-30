@@ -3,7 +3,7 @@ package boundary.PharmacyManagementUI;
 import adt.DoublyLinkedList;
 import adt.Pair;
 import boundary.MainFrame;
-import control.MedicineControl;
+import control.PharmacyController.MedicineControl;
 import enitity.Medicine;
 import java.text.DecimalFormat;
 import utility.ImageUtils;

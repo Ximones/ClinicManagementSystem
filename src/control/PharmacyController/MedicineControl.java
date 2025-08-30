@@ -1,4 +1,4 @@
-package control;
+package control.PharmacyController;
 
 import adt.DoublyLinkedList;
 import adt.Pair;

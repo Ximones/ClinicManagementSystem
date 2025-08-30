@@ -1,6 +1,6 @@
 package boundary;
 
-import control.ConsultationControl;
+import control.ConsultationController.ConsultationControl;
 import boundary.DoctorManagementUI.DoctorInformationPanel;
 import boundary.DoctorManagementUI.DoctorManagementPanel;
 import boundary.DoctorManagementUI.DoctorSchedulePanel;

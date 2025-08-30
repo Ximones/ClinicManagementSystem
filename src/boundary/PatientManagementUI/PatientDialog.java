@@ -6,7 +6,7 @@ package boundary.PatientManagementUI;
 
 import enitity.Patient;
 import adt.Pair;
-import control.PatientControl;
+import control.PatientController.PatientControl;
 import javax.swing.*;
 import java.time.LocalDate;
 

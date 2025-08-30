@@ -8,7 +8,7 @@ import utility.ImageUtils;
 import boundary.MainFrame;
 import enitity.Patient;
 import adt.DoublyLinkedList;
-import control.PatientControl;
+import control.PatientController.PatientControl;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;

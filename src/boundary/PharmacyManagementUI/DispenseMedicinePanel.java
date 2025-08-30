@@ -9,8 +9,8 @@ import enitity.Prescription;
 import enitity.PrescriptionItem;
 import utility.FileUtils;
 import utility.ImageUtils;
-import control.ConsultationControl;
-import control.MedicineControl;
+import control.ConsultationController.ConsultationControl;
+import control.PharmacyController.MedicineControl;
 import java.awt.Color;
 
 import javax.swing.*;

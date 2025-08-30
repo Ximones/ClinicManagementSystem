@@ -2,7 +2,7 @@ package boundary.PharmacyManagementUI;
 
 import adt.DoublyLinkedList;
 import adt.Pair;
-import control.MedicineControl;
+import control.PharmacyController.MedicineControl;
 import enitity.Medicine;
 import javax.swing.*;
 import utility.ImageUtils;

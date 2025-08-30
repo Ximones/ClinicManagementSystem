@@ -1,7 +1,7 @@
 package boundary.ConsultationManagementUI;
 
 import boundary.MainFrame;
-import control.ConsultationControl;
+import control.ConsultationController.ConsultationControl;
 import enitity.Appointment;
 import enitity.Consultation;
 import enitity.Patient;
