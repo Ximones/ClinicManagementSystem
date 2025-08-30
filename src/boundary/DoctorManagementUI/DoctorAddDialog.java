@@ -1,56 +1,63 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JDialog.java to edit this template
- */
 package boundary.DoctorManagementUI;
 
-import adt.DoublyLinkedList;
 import adt.Pair;
+import control.DoctorManagementController.DoctorAddControl; // Import the controller
 import enitity.Doctor;
-import java.util.regex.Pattern;
-import javax.swing.JOptionPane;
+import java.awt.Frame;
 import utility.ImageUtils;
 
-/**
- *
- * @author Chok Chun Fai
- */
 public class DoctorAddDialog extends javax.swing.JDialog {
 
-    // This variable will hold the new doctor if "Save" is clicked.
-    private Pair<String, Doctor> result = null;
-    private int lastDocIndex = Doctor.getDoctorIndex();
-    Doctor newDoctor = new Doctor();
+    private final DoctorAddControl control;
+    private Pair<String, Doctor> result = null; // To hold the final result
 
-    /**
-     * Creates new form DoctorDialog
-     *
-     * @param parent
-     * @param modal
-     */
-    public DoctorAddDialog(java.awt.Frame parent, boolean modal) {
+    public DoctorAddDialog(Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
-        formDocIDfield.setText(newDoctor.getDoctorID());
-        DoublyLinkedList<String> position = new DoublyLinkedList<>();
-        position.insertLast("Consultation");
-        position.insertLast("Doctor");
-        position.insertLast("Internship");
-        for (String i : position) {
-            formPositionBox.addItem(i);
-        }
+
+        // The controller is created when the dialog is created
+        this.control = new DoctorAddControl(this);
+
+        setupComponents();
         this.setLocationRelativeTo(parent);
     }
 
-    /**
-     * A public method for the main panel to call to get the result. Returns
-     * null if the user clicked "Cancel".
-     *
-     * @return
-     */
+    private void setupComponents() {
+        // Populate the position dropdown
+        formPositionBox.addItem("Consultant");
+        formPositionBox.addItem("Doctor");
+        formPositionBox.addItem("Internship");
+    }
+
     public Pair<String, Doctor> getResult() {
         return result;
+    }
+
+    public void setResultAndClose(Pair<String, Doctor> result) {
+        this.result = result;
+        this.dispose();
+    }
+
+    // Getters for the controller to access form data
+    public void setDoctorId(String id) {
+        formDocIDfield.setText(id);
+    }
+
+    public String getDoctorName() {
+        return formNameInput.getText();
+    }
+
+    public String getDoctorAge() {
+        return formAgeInput.getText();
+    }
+
+    public String getDoctorPhone() {
+        return formPhoneInput.getText();
+    }
+
+    public String getDoctorPosition() {
+        return (String) formPositionBox.getSelectedItem();
     }
 
     /**
@@ -167,53 +174,11 @@ public class DoctorAddDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-
-        try {
-
-            // 1. Get all data from the form fields
-            String name = formNameInput.getText().trim();
-            int age = Integer.parseInt(formAgeInput.getText());
-            String phone = formPhoneInput.getText().trim();
-            String position = (String) formPositionBox.getSelectedItem();
-
-            // Basic validation
-            if (formNameInput.getText().trim().isEmpty() || formAgeInput.getText().trim().isEmpty() || formPhoneInput.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Field cannot be empty.", "Validation Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            String phoneRegex = "^(\\+?6?01)[0-9]{7,9}$";
-            if (!Pattern.matches(phoneRegex, formPhoneInput.getText().trim())) {
-                JOptionPane.showMessageDialog(this, "Please enter a valid Malaysian mobile number (e.g., 0123456789).", "Invalid Phone Number", JOptionPane.ERROR_MESSAGE);
-                return; // Stop the save process
-            }
-
-            if (age < 23 || age > 80) {
-                JOptionPane.showMessageDialog(this, "Please enter a realistic age for a doctor (23-80).", "Invalid Age", JOptionPane.ERROR_MESSAGE);
-                return; // Stop the save process
-            }
-
-            // 2. Create the new objects
-            newDoctor.setName(name);
-            newDoctor.setAge(age);
-            newDoctor.setPhoneNumber(phone);
-            newDoctor.setPosition(position);
-            newDoctor.setStatus("Present");
-
-            // 3. Store the result and close the dialog
-            this.result = new Pair<>(newDoctor.getDoctorID(), newDoctor);
-            JOptionPane.showMessageDialog(this, "Doctor information updated successfully.");
-            this.dispose();
-
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Please enter a valid number for age.");
-        }
+        control.saveNewDoctor();
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        this.result = null;
-        Doctor.setDoctorIndex(lastDocIndex);
-        this.dispose();
+        control.cancelAdd();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     /**

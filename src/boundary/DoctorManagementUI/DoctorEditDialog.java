@@ -6,11 +6,9 @@ package boundary.DoctorManagementUI;
 
 import adt.DoublyLinkedList;
 import adt.Pair;
+import control.DoctorManagementController.DoctorEditControl;
 import enitity.Doctor;
 import java.awt.Frame;
-import java.util.regex.Pattern;
-import javax.swing.JOptionPane;
-import utility.FileUtils;
 import utility.ImageUtils;
 
 /**
@@ -19,53 +17,87 @@ import utility.ImageUtils;
  */
 public class DoctorEditDialog extends javax.swing.JDialog {
 
-    // This variable will hold the new doctor if "Save" is clicked.
-    private DoublyLinkedList<Pair<String, Doctor>> masterDoctorList;
-    private Doctor doctorToEdit = null; // To store the found doctor
+    private final DoctorEditControl control;
 
     /**
-     * Creates new form DoctorDialog
      *
      * @param parent
      * @param modal
-     * @param doctorList
+     * @param masterDoctorList
      */
-    public DoctorEditDialog(Frame parent, boolean modal, DoublyLinkedList<Pair<String, Doctor>> doctorList) {
+    public DoctorEditDialog(Frame parent, boolean modal, DoublyLinkedList<Pair<String, Doctor>> masterDoctorList) {
         super(parent, modal);
-        this.masterDoctorList = doctorList; // Store the master list
         initComponents();
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
 
-        // Populate the position combo box
-        DoublyLinkedList<String> position = new DoublyLinkedList<>();
-        position.insertLast("Consultant");
-        position.insertLast("Doctor");
-        position.insertLast("Internship");
-        for (String i : position) {
-            formPositionBox.addItem(i);
-        }
+        // Initialize the controller
+        this.control = new DoctorEditControl(this, masterDoctorList);
 
-        DoublyLinkedList<String> status = new DoublyLinkedList<>();
-        status.insertLast("Present");
-        status.insertLast("Absent");
-        status.insertLast("Resigned");
+        // Setup UI components like the position combo box
+        setupComponents();
 
-        for (String i : status) {
-            formStatusBox.addItem(i);
-        }
         this.setLocationRelativeTo(parent);
+    }
 
-        // Disable form fields and save button until a doctor is found
+    private void setupComponents() {
+        // This is static data, so it can remain in the view
+        formPositionBox.addItem("Consultant");
+        formPositionBox.addItem("Doctor");
+        formPositionBox.addItem("Internship");
+
+        formStatusBox.addItem("Present");
+        formStatusBox.addItem("Absent");
+        formStatusBox.addItem("Resigned");
+
         setFieldsEditable(false);
     }
 
-    private void setFieldsEditable(boolean editable) {
-        formNameInput.setEditable(editable);
-        formAgeInput.setEditable(editable);
-        formPhoneInput.setEditable(editable);
+    public void displayDoctorInfo(String id, Doctor doc) {
+        formDocIDfield.setText(id);
+        formNameInput.setText(doc.getName());
+        formAgeInput.setText(String.valueOf(doc.getAge()));
+        formPhoneInput.setText(doc.getPhoneNumber());
+        formPositionBox.setSelectedItem(doc.getPosition());
+    }
+
+    public void clearForm() {
+        formDocIDfield.setText("");
+        formNameInput.setText("");
+        formAgeInput.setText("");
+        formPhoneInput.setText("");
+        formPositionBox.setSelectedIndex(0);
+    }
+
+    public void setFieldsEditable(boolean editable) {
+        formDocIDfield.setEnabled(editable);
+        formNameInput.setEnabled(editable);
+        formAgeInput.setEnabled(editable);
+        formPhoneInput.setEnabled(editable);
+        formPositionBox.setEnabled(editable);
         formPositionBox.setEnabled(editable);
         formStatusBox.setEnabled(editable);
         saveButton.setEnabled(editable);
+    }
+
+    // Getters for the controller to retrieve form data
+    public String getDoctorName() {
+        return formNameInput.getText();
+    }
+
+    public int getDoctorAge() {
+        return Integer.parseInt(formAgeInput.getText());
+    }
+
+    public String getDoctorPhone() {
+        return formPhoneInput.getText();
+    }
+
+    public String getDoctorPosition() {
+        return (String) formPositionBox.getSelectedItem();
+    }
+
+    public String getDoctorStatus() {
+        return (String) formStatusBox.getSelectedItem();
     }
 
     /**
@@ -216,49 +248,7 @@ public class DoctorEditDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        // Ensure a doctor has been successfully found before saving
-        if (this.doctorToEdit != null) {
-            try {
-                // Get the new values from the form fields
-                String newName = formNameInput.getText().trim();
-                int newAge = Integer.parseInt(formAgeInput.getText().trim());
-                String newPhone = formPhoneInput.getText().trim();
-                String newPosition = (String) formPositionBox.getSelectedItem();
-                String newStatus = (String) formStatusBox.getSelectedItem();
-
-                // Validate that the name is not empty
-                if (newName.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Doctor name cannot be empty.");
-                    return;
-                }
-
-                if (newAge < 23 || newAge > 80) {
-                    JOptionPane.showMessageDialog(this, "Please enter a realistic age for a doctor (23-80).", "Invalid Age", JOptionPane.ERROR_MESSAGE);
-                    return; // Stop the save process
-                }
-                
-                String phoneRegex = "^(\\+?6?01)[0-9]{7,9}$";
-                if (!Pattern.matches(phoneRegex, newPhone)) {
-                    JOptionPane.showMessageDialog(this, "Please enter a valid Malaysian mobile number (e.g., 0123456789).", "Invalid Phone Number", JOptionPane.ERROR_MESSAGE);
-                    return; // Stop the save process
-                }
-
-                // Update the original Doctor object directly.
-                // This works because doctorToEdit is a reference to the object in the master list.
-                doctorToEdit.setName(newName);
-                doctorToEdit.setAge(newAge);
-                doctorToEdit.setPhoneNumber(newPhone);
-                doctorToEdit.setPosition(newPosition);
-                doctorToEdit.setStatus(newStatus);
-
-                JOptionPane.showMessageDialog(this, "Doctor information updated successfully.");
-                FileUtils.writeDataToFile("doctors", masterDoctorList);
-                this.dispose(); // Close the dialog
-
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this, "Please enter a valid number for age.");
-            }
-        }
+        control.saveDoctorChanges();
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
@@ -266,47 +256,7 @@ public class DoctorEditDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
-        String idToFind = searchTextField.getText().trim().toUpperCase();
-        if (idToFind.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a Doctor ID to find.");
-            return;
-        }
-
-        // 1. You MUST sort the list by ID first for binary search to work
-        masterDoctorList.sort();
-
-        // 2. Create a "dummy" Pair with the key to search for
-        Pair<String, Doctor> keyToFind = new Pair<>(idToFind, null);
-
-        // 3. Perform the binary search
-        Pair<String, Doctor> foundPair = masterDoctorList.binarySearch(keyToFind);
-
-        if (foundPair != null) {
-            // 4. If found, store the doctor and populate the form fields
-            this.doctorToEdit = foundPair.getValue();
-
-            formDocIDfield.setText(doctorToEdit.getDoctorID());
-            formNameInput.setText(doctorToEdit.getName());
-            formAgeInput.setText(String.valueOf(doctorToEdit.getAge()));
-            formPhoneInput.setText(doctorToEdit.getPhoneNumber());
-            formPositionBox.setSelectedItem(doctorToEdit.getPosition());
-            formStatusBox.setSelectedItem(doctorToEdit.getStatus());
-
-            // 5. Enable the form fields and "Save" button
-            setFieldsEditable(true);
-
-        } else {
-            JOptionPane.showMessageDialog(this, "Doctor with ID '" + idToFind + "' not found.");
-            // Clear the form and keep fields disabled
-            formDocIDfield.setText("");
-            formNameInput.setText("");
-            formAgeInput.setText("");
-            formPhoneInput.setText("");
-            formPositionBox.setSelectedIndex(0);
-            formStatusBox.setSelectedIndex(0);
-            this.doctorToEdit = null;
-            setFieldsEditable(false);
-        }
+        control.searchDoctorById(searchTextField.getText());
     }//GEN-LAST:event_searchButtonActionPerformed
 
     private void searchTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchTextFieldActionPerformed

@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
 package boundary.DoctorManagementUI;
 
 import adt.DoublyLinkedList;
@@ -9,13 +5,11 @@ import adt.Pair;
 import boundary.MainFrame;
 import enitity.Doctor;
 import utility.ImageUtils;
-import utility.FileUtils;
-import utility.ReportGenerator;
-
-import javax.swing.JOptionPane;
+import control.DoctorManagementController.DoctorInformationControl;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import utility.FileUtils;
 
 /**
  *
@@ -23,8 +17,8 @@ import javax.swing.table.DefaultTableModel;
  */
 public class DoctorInformationPanel extends javax.swing.JPanel {
 
-    MainFrame mainFrame;
-    private DoublyLinkedList<Pair<String, Doctor>> masterDoctorList;
+    private final MainFrame mainFrame;
+    private final DoctorInformationControl control;
 
     /**
      * Creates new form DoctorInformationPanel
@@ -34,63 +28,60 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
     public DoctorInformationPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         initComponents();
+        DoublyLinkedList<Pair<String, Doctor>> masterDoctorList = (DoublyLinkedList<Pair<String, Doctor>>) FileUtils.readDataFromFile("doctors");
+        // Create the controller and pass it a reference to this view
+        this.control = new DoctorInformationControl(this, mainFrame);
 
         loadInitialComponent();
 
-        loadInitialData();
+        populateDoctorTable(control.getMasterDoctorList());
 
-        populateDoctorTable(masterDoctorList);
-
+        // DocumentListener now calls the controller's filter method
         filterField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                // Called when a character is inserted
-                filterTable();
+                control.filterDoctorList();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                // Called when a character is removed
-                filterTable();
+                control.filterDoctorList();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                // Not typically used for plain text fields, but good to include
-                filterTable();
+                control.filterDoctorList();
             }
         });
+    }
+// Public method to re-read from disk and refresh the table when panel is shown
+
+    public void reloadData() {
+        DoublyLinkedList<Pair<String, Doctor>> masterDoctorList = (DoublyLinkedList<Pair<String, Doctor>>) FileUtils.readDataFromFile("doctors");
+        if (masterDoctorList == null) {
+            masterDoctorList = new DoublyLinkedList<>();
+        }
+        populateDoctorTable(masterDoctorList);
     }
 
     private void loadInitialComponent() {
 
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
 
-        // Set up for combobox
-        DoublyLinkedList<String> sortCriteria = new DoublyLinkedList<>();
-        sortCriteria.insertLast("ASC");
-        sortCriteria.insertLast("DESC");
-        for (String i : sortCriteria) {
-            sortBox.addItem(i);
-        }
+        // Setup for comboboxes
+        sortBox.addItem("ASC");
+        sortBox.addItem("DESC");
+        filterBox.addItem("ID");
+        filterBox.addItem("Name");
+        filterBox.addItem("Position");
 
-        DoublyLinkedList<String> filterCriteria = new DoublyLinkedList<>();
-        filterCriteria.insertLast("ID");
-        filterCriteria.insertLast("Name");
-        filterCriteria.insertLast("Position");
-        for (String i : filterCriteria) {
-            filterBox.addItem(i);
-        }
-
-        // Set up for table 
+        // Setup for table model
         DefaultTableModel model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                // Not allow to edit
                 return false;
             }
         };
-        
         doctorTable.setModel(model);
         model.addColumn("ID");
         model.addColumn("Name");
@@ -98,27 +89,24 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
         model.addColumn("Contact");
         model.addColumn("Position");
         model.addColumn("Status");
-    }
 
-    private void loadInitialData() {
+        // DocumentListener now calls the controller's filter method
+        filterField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                control.filterDoctorList();
+            }
 
-        DoublyLinkedList<Pair<String, Doctor>> doctorList = (DoublyLinkedList<Pair<String, Doctor>>) FileUtils.readDataFromFile("doctors");
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                control.filterDoctorList();
+            }
 
-        if (!doctorList.isEmpty()) {
-            Doctor.setDoctorIndex(doctorList.getSize());
-        }
-
-        masterDoctorList = doctorList;
-    }
-
-    // Public method to re-read from disk and refresh the table when panel is shown
-    public void reloadData() {
-        DoublyLinkedList<Pair<String, Doctor>> doctorList = (DoublyLinkedList<Pair<String, Doctor>>) FileUtils.readDataFromFile("doctors");
-        if (doctorList == null) {
-            doctorList = new DoublyLinkedList<>();
-        }
-        masterDoctorList = doctorList;
-        populateDoctorTable(masterDoctorList);
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                control.filterDoctorList();
+            }
+        });
     }
 
     /**
@@ -126,74 +114,42 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
      *
      * @param doctorList The list of Doctor objects to display.
      */
-    private void populateDoctorTable(DoublyLinkedList<Pair<String, Doctor>> doctorMasterList) {
-        // 1. Get the Table Model
+    public void populateDoctorTable(DoublyLinkedList<Pair<String, Doctor>> doctorList) {
+
         DefaultTableModel model = (DefaultTableModel) doctorTable.getModel();
+        model.setRowCount(0); // Clear existing rows
 
-        // 2. Clear Previous Data
-        // This removes all existing rows from the table.
-        model.setRowCount(0);
+        if (doctorList == null) {
+            return; // Guard against null list
+        }
 
-        int rowIndex = 0;
-
-        for (Pair<String, Doctor> pair : doctorMasterList) {
+        // Loop through the list of doctors
+        for (Pair<String, Doctor> pair : doctorList) {
             Doctor doctor = pair.getValue();
 
-            // 1. add a new (empty) row first
-            model.addRow(new Object[model.getColumnCount()]);
-
-            // 2. Now you can update the cells in the row you just created
-            model.setValueAt(pair.getKey(), rowIndex, 0);
-            model.setValueAt(doctor.getName(), rowIndex, 1);
-            model.setValueAt(doctor.getAge(), rowIndex, 2);
-            model.setValueAt(doctor.getPhoneNumber(), rowIndex, 3);
-            model.setValueAt(doctor.getPosition(), rowIndex, 4);
-            model.setValueAt(doctor.getStatus(), rowIndex, 5);
-
-            rowIndex++;
+            // ** THE FIX IS HERE: Add a new empty row before setting values **
+            model.addRow(new Object[]{
+                pair.getKey(),
+                doctor.getName(),
+                doctor.getAge(),
+                doctor.getPhoneNumber(),
+                doctor.getPosition(),
+                doctor.getStatus()
+            });
         }
     }
 
-    private void filterTable() {
-        // Get the current search inputs
-        String selectedCriterion = (String) filterBox.getSelectedItem();
-        String searchText = filterField.getText().trim().toLowerCase();
+    // Getter methods for the controller to get UI state
+    public String getFilterCriterion() {
+        return (String) filterBox.getSelectedItem();
+    }
 
-        // If search text is empty, show all doctors
-        if (searchText.isEmpty()) {
-            populateDoctorTable(masterDoctorList);
-            return;
-        }
+    public String getFilterSearchText() {
+        return filterField.getText();
+    }
 
-        DoublyLinkedList<Pair<String, Doctor>> searchResults = new DoublyLinkedList<>();
-
-        // Loop through the master list to find matches
-        for (Pair<String, Doctor> pair : masterDoctorList) {
-            Doctor doctor = pair.getValue();
-            String doctorId = pair.getKey();
-            boolean match = false;
-
-            if ("ID".equals(selectedCriterion)) {
-                if (doctorId.toLowerCase().contains(searchText)) {
-                    match = true;
-                }
-            } else if ("Name".equals(selectedCriterion)) {
-                if (doctor.getName().toLowerCase().contains(searchText)) {
-                    match = true;
-                }
-            } else if ("Position".equals(selectedCriterion)) {
-                if (doctor.getPosition().toLowerCase().contains(searchText)) {
-                    match = true;
-                }
-            }
-
-            if (match) {
-                searchResults.insertLast(pair);
-            }
-        }
-
-        // Update the table with the filtered results
-        populateDoctorTable(searchResults);
+    public String getSelectedSort() {
+        return (String) sortBox.getSelectedItem();
     }
 
     /**
@@ -324,29 +280,11 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addDoctorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDoctorButtonActionPerformed
-        DoctorAddDialog dialog = new DoctorAddDialog(mainFrame, true);
-
-        dialog.setVisible(true);
-
-        // Get the result from the dialog
-        Pair<String, Doctor> newDoctorPair = dialog.getResult();
-
-        // Check if the user clicked "Save" (result will not be null)
-        if (newDoctorPair != null) {
-            // Add the new doctor to your master list
-            masterDoctorList.insertLast(newDoctorPair);
-
-            FileUtils.writeDataToFile("doctors", masterDoctorList);
-
-            // Refresh the table with the complete, updated list
-            populateDoctorTable(masterDoctorList);
-        }
+        control.addNewDoctor();
     }//GEN-LAST:event_addDoctorButtonActionPerformed
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
-
-        FileUtils.writeDataToFile("doctors", masterDoctorList);
-        mainFrame.showPanel("doctorManagement");
+        control.Exit();
     }//GEN-LAST:event_doneButtonActionPerformed
 
     private void filterBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterBoxActionPerformed
@@ -358,40 +296,15 @@ public class DoctorInformationPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_filterFieldActionPerformed
 
     private void reportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reportButtonActionPerformed
-        // Generate the first report
-        ReportGenerator.generateSpecializationReport(masterDoctorList);
-        // Generate the second report
-        ReportGenerator.generateAvailabilityReport(masterDoctorList);
-
-        JOptionPane.showMessageDialog(this, "Reports generated successfully!");
+        control.generateReports();
     }//GEN-LAST:event_reportButtonActionPerformed
 
     private void sortBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortBoxActionPerformed
-        String selectedSort = (String) sortBox.getSelectedItem();
-
-        if (masterDoctorList == null) {
-            return;
-        }
-
-        // 1. Always sort in ascending order first
-        masterDoctorList.sort();
-
-        // 2. If "DESC" is selected, reverse the sorted list
-        if ("DESC".equals(selectedSort)) {
-            masterDoctorList.reverse();
-        }
-
-        // 3. Refresh the table with the sorted data
-        populateDoctorTable(masterDoctorList);
+        control.sortDoctorList();
     }//GEN-LAST:event_sortBoxActionPerformed
 
     private void editDoctorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editDoctorButtonActionPerformed
-        // Create and show the dialog, passing the master list to it
-        DoctorEditDialog dialog = new DoctorEditDialog(mainFrame, true, masterDoctorList);
-        dialog.setVisible(true);
-
-        // After the dialog is closed, refresh the main table to show any potential updates
-        populateDoctorTable(masterDoctorList);
+        control.editDoctor();
     }//GEN-LAST:event_editDoctorButtonActionPerformed
 
 
