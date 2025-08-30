@@ -106,26 +106,59 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         }
     }
     
-    // Filters the table based on the search input
+    // Filters the table based on the search input using the control's filter method
     private void filterTable() {
-        String query = searchInput.getText().trim().toLowerCase();
+        String query = searchInput.getText().trim();
         if (query.isEmpty()) {
             populateTable(masterTreatmentList);
             return;
         }
 
+        // Use the control's filter method which searches across Patient Name, Doctor Name, and Diagnosis
+        // We'll search across multiple criteria to maintain the same functionality as before
         DoublyLinkedList<Pair<String, Treatment>> searchResults = new DoublyLinkedList<>();
-        for (Pair<String, Treatment> pair : masterTreatmentList) {
-            Treatment t = pair.getValue();
-            boolean match = t.getConsultation().getPatient().getPatientName().toLowerCase().contains(query) ||
-                            t.getConsultation().getDoctor().getName().toLowerCase().contains(query) ||
-                            t.getDiagnosis().toLowerCase().contains(query);
-            if (match) {
+        
+        // Search in Patient Name
+        DoublyLinkedList<Pair<String, Treatment>> patientResults = treatmentControl.filterTreatments("Patient Name", query);
+        for (Pair<String, Treatment> pair : patientResults) {
+            searchResults.insertLast(pair);
+        }
+        
+        // Search in Doctor Name
+        DoublyLinkedList<Pair<String, Treatment>> doctorResults = treatmentControl.filterTreatments("Doctor Name", query);
+        for (Pair<String, Treatment> pair : doctorResults) {
+            // Avoid duplicates
+            boolean exists = false;
+            for (Pair<String, Treatment> existing : searchResults) {
+                if (existing.getKey().equals(pair.getKey())) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
                 searchResults.insertLast(pair);
             }
         }
+        
+        // Search in Diagnosis
+        DoublyLinkedList<Pair<String, Treatment>> diagnosisResults = treatmentControl.filterTreatments("Diagnosis", query);
+        for (Pair<String, Treatment> pair : diagnosisResults) {
+            // Avoid duplicates
+            boolean exists = false;
+            for (Pair<String, Treatment> existing : searchResults) {
+                if (existing.getKey().equals(pair.getKey())) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                searchResults.insertLast(pair);
+            }
+        }
+        
         populateTable(searchResults);
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

@@ -172,17 +172,74 @@ public class TreatmentControl {
     }
     
     /**
-     * Finds a specific treatment by its ID.
+     * Finds a specific treatment by its ID using binary search.
      * @param treatmentId The ID of the treatment to find.
      * @return The Treatment object if found, otherwise null.
      */
     public Treatment findTreatmentById(String treatmentId) {
+        if (treatmentId == null || treatmentList == null) {
+            return null;
+        }
+
+        // Sort the list for binary search
+        treatmentList.sort();
+
+        // Create a "dummy" Pair object with the key to search for.
+        // The Treatment value can be null because the Pair's compareTo method only uses the key.
+        Pair<String, Treatment> searchKey = new Pair<>(treatmentId.trim().toUpperCase(), null);
+        
+        // Call the binarySearch method from DoublyLinkedList.
+        Pair<String, Treatment> foundPair = treatmentList.binarySearch(searchKey);
+        
+        return foundPair != null ? foundPair.getValue() : null;
+    }
+
+    /**
+     * Filters treatments based on various criteria using .contains method.
+     * @param criterion The criterion to filter by ("ID", "Patient Name", "Doctor Name", "Diagnosis", "Treatment Details", "Notes").
+     * @param searchText The text to search for.
+     * @return A filtered list of treatments.
+     */
+    public DoublyLinkedList<Pair<String, Treatment>> filterTreatments(String criterion, String searchText) {
+        if (searchText == null || searchText.trim().isEmpty()) {
+            return treatmentList;
+        }
+
+        String lowerSearchText = searchText.trim().toLowerCase();
+        DoublyLinkedList<Pair<String, Treatment>> filteredList = new DoublyLinkedList<>();
+
         for (Pair<String, Treatment> pair : treatmentList) {
-            if (pair.getKey().equalsIgnoreCase(treatmentId)) {
-                return pair.getValue();
+            Treatment treatment = pair.getValue();
+            String id = pair.getKey();
+            boolean match = false;
+
+            switch (criterion) {
+                case "ID":
+                    match = id.toLowerCase().contains(lowerSearchText);
+                    break;
+                case "Patient Name":
+                    match = treatment.getConsultation().getPatient().getPatientName().toLowerCase().contains(lowerSearchText);
+                    break;
+                case "Doctor Name":
+                    match = treatment.getConsultation().getDoctor().getName().toLowerCase().contains(lowerSearchText);
+                    break;
+                case "Diagnosis":
+                    match = treatment.getDiagnosis().toLowerCase().contains(lowerSearchText);
+                    break;
+                case "Treatment Details":
+                    match = treatment.getTreatmentDetails().toLowerCase().contains(lowerSearchText);
+                    break;
+                case "Notes":
+                    match = treatment.getNotes().toLowerCase().contains(lowerSearchText);
+                    break;
+            }
+
+            if (match) {
+                filteredList.insertLast(pair);
             }
         }
-        return null;
+
+        return filteredList;
     }
 
     /**
