@@ -91,7 +91,7 @@ public class MedicineEditDialog extends javax.swing.JDialog {
         }
     }
 
-    private void setFieldsEditable(boolean editable) {
+    public void setFieldsEditable(boolean editable) {
         formNameInput.setEditable(editable);
         formBrandNameInput.setEditable(editable);
         formCategoryBox.setEnabled(editable);
@@ -102,7 +102,7 @@ public class MedicineEditDialog extends javax.swing.JDialog {
         saveButton.setEnabled(editable);
     }
 
-    private void clearForm() {
+    public void clearForm() {
         formMedIDfield.setText("");
         formNameInput.setText("");
         formBrandNameInput.setText("");
@@ -111,6 +111,49 @@ public class MedicineEditDialog extends javax.swing.JDialog {
         formDosageInput.setText("");
         formQuantityInput.setText("");
         formPriceInput.setText("");
+    }
+
+    public String getMedicineName() {
+        return formNameInput.getText();
+    }
+
+    public String getMedicineBrandName() {
+        return formBrandNameInput.getText();
+    }
+
+    public String getMedicineCategory() {
+        return (String) formCategoryBox.getSelectedItem();
+    }
+
+    public String getMedicineFormulation() {
+        return (String) formFormulationBox.getSelectedItem();
+    }
+
+    public String getMedicineDosage() {
+        return formDosageInput.getText();
+    }
+
+    public int getMedicineQuantity() {
+        return Integer.parseInt(formQuantityInput.getText());
+    }
+
+    public double getMedicinePrice() {
+        return Double.parseDouble(formPriceInput.getText());
+    }
+
+    public void setMedicineToEdit(Medicine medicine) {
+        this.medicineToEdit = medicine;
+    }
+
+    public void displayMedicineInfo(String id, Medicine medicine) {
+        formMedIDfield.setText(id);
+        formNameInput.setText(medicine.getName());
+        formBrandNameInput.setText(medicine.getBrandName());
+        formCategoryBox.setSelectedItem(medicine.getCategory());
+        formFormulationBox.setSelectedItem(medicine.getFormulation());
+        formDosageInput.setText(medicine.getDosageForm());
+        formQuantityInput.setText(String.valueOf(medicine.getQuantity()));
+        formPriceInput.setText(String.valueOf(medicine.getPrice()));
     }
 
     /**
@@ -284,106 +327,11 @@ public class MedicineEditDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_searchTextFieldActionPerformed
 
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
-        String idToFind = searchTextField.getText().trim().toUpperCase();
-        if (idToFind.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a Medicine ID to find.");
-            return;
-        }
-
-        Pair<String, Medicine> foundPair = medicineControl.findMedicineById(idToFind, masterMedicineList);
-
-        if (foundPair != null) {
-            this.medicineToEdit = foundPair.getValue();
-
-            formMedIDfield.setText(medicineToEdit.getMedicineId());
-            formNameInput.setText(medicineToEdit.getName());
-            formBrandNameInput.setText(medicineToEdit.getBrandName());
-            formCategoryBox.setSelectedItem(medicineToEdit.getCategory());
-            formFormulationBox.setSelectedItem(medicineToEdit.getFormulation());
-            formDosageInput.setText(medicineToEdit.getDosageForm());
-            formQuantityInput.setText(String.valueOf(medicineToEdit.getQuantity()));
-            formPriceInput.setText(df2.format(medicineToEdit.getPrice()));
-
-            setFieldsEditable(true);
-        } else {
-            JOptionPane.showMessageDialog(this, "Medicine with ID '" + idToFind + "' not found.");
-            clearForm();
-            this.medicineToEdit = null;
-            setFieldsEditable(false);
-        }
+        medicineControl.searchMedicineById(searchTextField.getText(), this, masterMedicineList);
     }//GEN-LAST:event_searchButtonActionPerformed
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        if (medicineToEdit == null) {
-            JOptionPane.showMessageDialog(this, "Please search for a medicine first.");
-            return;
-        }
-
-        try {
-            String name = formNameInput.getText().trim();
-            String brand = formBrandNameInput.getText().trim();
-            String category = (String) formCategoryBox.getSelectedItem();
-            String formulation = (String) formFormulationBox.getSelectedItem();
-            String dosage = formDosageInput.getText().trim();
-
-            // Quantity validation
-            int quantity;
-            try {
-                quantity = Integer.parseInt(formQuantityInput.getText().trim());
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Please enter a valid number for quantity.",
-                        "Input Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-                return; // stop execution
-            }
-
-            // Price validation
-            double price;
-            try {
-                price = Double.parseDouble(formPriceInput.getText().trim());
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Please enter a valid number for price.",
-                        "Input Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-                return; // stop execution
-            }
-
-            // Build updated medicine
-            Medicine updatedMedicine = new Medicine(
-                    "", name, brand, category, formulation, dosage, quantity, price
-            );
-
-            if (medicineControl.updateMedicine(medicineToEdit.getMedicineId(), updatedMedicine, masterMedicineList)) {
-                medicineControl.saveMedicines(masterMedicineList);
-                JOptionPane.showMessageDialog(this, "Medicine information updated successfully.");
-                dispose();
-            } else {
-                JOptionPane.showMessageDialog(
-                        this, "Failed to update medicine.", "Update Error", JOptionPane.ERROR_MESSAGE
-                );
-            }
-
-        } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    e.getMessage(),
-                    "Input Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Unexpected error occurred.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        }
+        medicineControl.saveMedicineChanges(this, medicineToEdit, masterMedicineList);
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed

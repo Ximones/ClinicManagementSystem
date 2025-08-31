@@ -2,7 +2,9 @@ package control.PharmacyController;
 
 import adt.DoublyLinkedList;
 import adt.Pair;
+import boundary.PharmacyManagementUI.MedicineEditDialog;
 import enitity.Medicine;
+import javax.swing.JOptionPane;
 import utility.FileUtils;
 
 /**
@@ -96,6 +98,109 @@ public class MedicineControl {
 
         Pair<String, Medicine> searchKey = new Pair<>(medicineId.toUpperCase(), null);
         return medicineList.binarySearch(searchKey);
+    }
+
+    public void searchMedicineById(String searchText, MedicineEditDialog dialog,
+            DoublyLinkedList<Pair<String, Medicine>> medicineList) {
+
+        String idToFind = searchText.trim().toUpperCase();
+
+        if (idToFind.isEmpty()) {
+            JOptionPane.showMessageDialog(dialog, "Please enter a Medicine ID to find.");
+            return;
+        }
+
+        // Use binary search after sorting
+        medicineList.sort();
+        Pair<String, Medicine> searchKey = new Pair<>(idToFind, null);
+        Pair<String, Medicine> foundPair = medicineList.binarySearch(searchKey);
+
+        if (foundPair != null) {
+            Medicine medicine = foundPair.getValue();
+            dialog.setMedicineToEdit(medicine);
+            dialog.displayMedicineInfo(foundPair.getKey(), medicine);
+            dialog.setFieldsEditable(true);
+        } else {
+            JOptionPane.showMessageDialog(dialog, "Medicine with ID '" + idToFind + "' not found.");
+            dialog.clearForm();
+            dialog.setMedicineToEdit(null);
+            dialog.setFieldsEditable(false);
+        }
+    }
+
+    public void saveMedicineChanges(MedicineEditDialog dialog, Medicine medicineToEdit,
+            DoublyLinkedList<Pair<String, Medicine>> medicineList) {
+
+        if (medicineToEdit == null) {
+            JOptionPane.showMessageDialog(dialog, "Please search for a medicine first.");
+            return;
+        }
+
+        try {
+            String name = dialog.getMedicineName().trim();
+            String brand = dialog.getMedicineBrandName().trim();
+            String category = dialog.getMedicineCategory();
+            String formulation = dialog.getMedicineFormulation();
+            String dosage = dialog.getMedicineDosage().trim();
+
+            // Quantity validation
+            int quantity;
+            try {
+                quantity = dialog.getMedicineQuantity();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "Please enter a valid number for quantity.",
+                        "Input Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
+
+            // Price validation
+            double price;
+            try {
+                price = dialog.getMedicinePrice();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "Please enter a valid number for price.",
+                        "Input Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
+
+            // Build updated medicine
+            Medicine updatedMedicine = new Medicine(
+                    "", name, brand, category, formulation, dosage, quantity, price
+            );
+
+            if (updateMedicine(medicineToEdit.getMedicineId(), updatedMedicine, medicineList)) {
+                saveMedicines(medicineList);
+                JOptionPane.showMessageDialog(dialog, "Medicine information updated successfully.");
+                dialog.dispose();
+            } else {
+                JOptionPane.showMessageDialog(
+                        dialog, "Failed to update medicine.", "Update Error", JOptionPane.ERROR_MESSAGE
+                );
+            }
+
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(
+                    dialog,
+                    e.getMessage(),
+                    "Input Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                    dialog,
+                    "Unexpected error occurred.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
     }
 
     public boolean updateMedicineStock(String medicineId, int quantityChange,
