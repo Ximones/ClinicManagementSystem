@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package control.DoctorManagementController;
 
 import adt.DoublyLinkedList;
@@ -87,7 +83,6 @@ public class DoctorInformationControl {
      * and refreshes the view upon its closure.
      */
     public void editDoctor() {
-        // You would enhance this to get the selected doctor from the table in the view
         DoctorEditDialog dialog = new DoctorEditDialog(mainFrame, true, masterDoctorList);
         dialog.setVisible(true);
         // After the dialog closes, the master list may have been updated.
