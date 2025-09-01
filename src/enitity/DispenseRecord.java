@@ -3,6 +3,11 @@ package enitity;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * Entity class representing a dispense record for medicine dispensing
+ *
+ * @author Lee Wan Ching
+ */
 public class DispenseRecord implements Serializable, Comparable<DispenseRecord> {
 
     private static final long serialVersionUID = 1L;

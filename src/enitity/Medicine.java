@@ -2,6 +2,11 @@ package enitity;
 
 import java.io.Serializable;
 
+/**
+ * Entity class representing medicine information
+ *
+ * @author Lee Wan Ching
+ */
 public class Medicine implements Comparable<Medicine>, Serializable {
 
     private static final long serialVersionUID = 1L;
