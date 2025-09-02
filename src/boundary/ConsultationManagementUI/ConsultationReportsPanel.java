@@ -138,15 +138,12 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         JPanel panel = new JPanel(new FlowLayout());
         
         JButton generateButton = new JButton("Generate Report");
-        JButton exportButton = new JButton("Export Report");
         JButton backButton = new JButton("Back");
         
         generateButton.addActionListener(e -> generateReport());
-        exportButton.addActionListener(e -> exportReport());
         backButton.addActionListener(e -> mainFrame.showPanel("consultationManagement"));
         
         panel.add(generateButton);
-        panel.add(exportButton);
         panel.add(backButton);
         
         return panel;
@@ -241,12 +238,7 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
     }
     
 
-    
-    private void exportReport() {
-        JOptionPane.showMessageDialog(this, "Export functionality is not available without preview.", 
-                                    "Info", JOptionPane.INFORMATION_MESSAGE);
-    }
-    
+
 
     
     private void addReportToTable(String reportType, String status) {
