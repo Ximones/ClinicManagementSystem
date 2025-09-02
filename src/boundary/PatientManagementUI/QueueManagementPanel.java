@@ -8,6 +8,7 @@ import adt.DoublyLinkedList;
 import adt.Node;
 import adt.Pair;
 import boundary.MainFrame;
+import control.PatientController.QueueControl;
 import enitity.Patient;
 import enitity.QueueEntry;
 import javax.swing.JOptionPane;
@@ -327,37 +328,35 @@ public void setVisible(boolean aFlag) {
     }//GEN-LAST:event_filterFieldActionPerformed
 
     private void AddPatientQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddPatientQueueActionPerformed
-       QueueDialog dialog = new QueueDialog(mainFrame, true);
-       dialog.setLocationRelativeTo(this);
-       dialog.setVisible(true);
+     QueueDialog dialog = new QueueDialog(mainFrame, true);
+    dialog.setLocationRelativeTo(this);
+    dialog.setVisible(true);
 
-       Patient selectedPatient = dialog.getResult();
+    Patient selectedPatient = dialog.getResult();
+    if (selectedPatient != null) {
+        // ✅ Use QueueControl to generate queue number
+        QueueControl queueControl = new QueueControl();
+        QueueEntry entry = queueControl.addToQueue(selectedPatient);
 
-if (selectedPatient != null) {
-    String queueNo = generateQueueNumber();
-    String status = "Waiting";
+        queueList.insertLast(entry);
+        saveQueueData();
 
-    // Create QueueEntry object
-    QueueEntry entry = new QueueEntry(selectedPatient, queueNo, status);
-    queueList.insertLast(entry);
-    saveQueueData(); // save to file
+        javax.swing.table.DefaultTableModel model = 
+            (javax.swing.table.DefaultTableModel) queueTable.getModel();
 
-    javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) queueTable.getModel();
-    if (model.getColumnCount() == 0) {
-        model.setColumnIdentifiers(new String[] {
-            "Patient ID", "Patient Name", "IC No", "Queue No", "Status"
+        if (model.getColumnCount() == 0) {
+            model.setColumnIdentifiers(new String[] {
+                "Patient ID", "Patient Name", "IC No", "Queue No", "Status"
+            });
+        }
+        model.addRow(new Object[] {
+            selectedPatient.getPatientID(),
+            selectedPatient.getPatientName(),
+            selectedPatient.getPatientIC(),
+            entry.getQueueNumber(),
+            entry.getStatus()
         });
-    }
-
-    model.addRow(new Object[] {
-        selectedPatient.getPatientID(),
-        selectedPatient.getPatientName(),
-        selectedPatient.getPatientIC(),
-        queueNo,
-        status
-    });
-}
-
+  }
     }//GEN-LAST:event_AddPatientQueueActionPerformed
 
     private void filterBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterBoxActionPerformed

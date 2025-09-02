@@ -3,12 +3,14 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Acer/OneDrive/Documents/NetBeansProjects/ClinicManagementSystem/src/adt/DoublyLinkedList.java</file>
-            <file>file:/C:/Users/Acer/OneDrive/Documents/NetBeansProjects/ClinicManagementSystem/src/adt/ListInterface.java</file>
-            <file>file:/C:/Users/Acer/OneDrive/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/MedicalTreatmentManagementUI/TreatmentEditDialog.java</file>
-            <file>file:/C:/Users/Acer/OneDrive/Documents/NetBeansProjects/ClinicManagementSystem/src/boundary/MedicalTreatmentManagementUI/DiagnosisEntryPanel.java</file>
-            <file>file:/C:/Users/Acer/OneDrive/Documents/NetBeansProjects/ClinicManagementSystem/src/control/TreatmentController/TreatmentControl.java</file>
-            <file>file:/C:/Users/Acer/OneDrive/Documents/NetBeansProjects/ClinicManagementSystem/src/adt/DoublyLinkedListIterator.java</file>
+            <file>file:/C:/Users/szepi/ClinicManagementSystem/src/enitity/Patient.java</file>
+            <file>file:/C:/Users/szepi/ClinicManagementSystem/dao/</file>
+            <file>file:/C:/Users/szepi/ClinicManagementSystem/src/boundary/PatientManagementUI/PatientRegistrationPanel.java</file>
+            <file>file:/C:/Users/szepi/ClinicManagementSystem/src/control/PatientController/PatientControl.java</file>
+            <file>file:/C:/Users/szepi/ClinicManagementSystem/src/boundary/PatientManagementUI/PatientDialog.java</file>
+            <file>file:/C:/Users/szepi/ClinicManagementSystem/src/boundary/PatientManagementUI/PatientManagementPanel.java</file>
+            <file>file:/C:/Users/szepi/ClinicManagementSystem/src/boundary/PatientManagementUI/QueueDialog.java</file>
+            <file>file:/C:/Users/szepi/ClinicManagementSystem/src/boundary/PatientManagementUI/QueueManagementPanel.java</file>
         </group>
     </open-files>
 </project-private>
