@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package control.ConsultationController;
 
 import adt.DoublyLinkedList;
@@ -671,6 +667,24 @@ public class ConsultationControl {
      */
     public DoublyLinkedList<Pair<String, Prescription>> getAllPrescriptions() {
         return prescriptionList;
+    }
+    
+    /**
+     * Deletes a prescription by ID
+     *
+     * @param prescriptionID The prescription ID to delete
+     * @return true if deleted successfully, false otherwise
+     */
+    public boolean deletePrescription(String prescriptionID) {
+        for (int i = 1; i <= prescriptionList.getSize(); i++) {
+            Node<Pair<String, Prescription>> node = prescriptionList.getElement(i);
+            if (node != null && node.getEntry().getKey().equals(prescriptionID)) {
+                prescriptionList.deleteAtPosition(i);
+                saveData();
+                return true;
+            }
+        }
+        return false;
     }
 
     public void reloadPrescriptions() {

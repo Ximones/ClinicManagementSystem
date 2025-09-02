@@ -16,6 +16,11 @@ import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
 import utility.ImageUtils;
 
+/**
+ * Panel for managing patient queue in consultation management
+ *
+ * @author Zhen Bang
+ */
 public class QueuePanel extends javax.swing.JPanel {
 
     private MainFrame mainFrame;
@@ -146,6 +151,14 @@ public class QueuePanel extends javax.swing.JPanel {
             return;
         }
         
+        // Check for undispensed prescriptions and remove them
+        try {
+            removeUndispensedPrescriptions(nextPatient.getPatient());
+        } catch (RuntimeException e) {
+            // User cancelled the consultation
+            return;
+        }
+        
         // Mark patient as consulting
         boolean success = consultationControl.markPatientConsulting(nextPatient.getQueueNumber());
         
@@ -199,6 +212,63 @@ public class QueuePanel extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, 
                 "Consultation completed. Patient moved to prescribing phase.", 
                 "Consultation Completed", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+    
+    /**
+     * Removes undispensed prescriptions for a patient when starting a new consultation
+     * @param patient The patient whose prescriptions should be checked
+     */
+    private void removeUndispensedPrescriptions(Patient patient) {
+        if (patient == null) return;
+        
+        // Get all prescriptions for this patient
+        java.util.List<enitity.Prescription> patientPrescriptions = consultationControl.getPrescriptionsByPatient(patient.getPatientID());
+        
+        if (patientPrescriptions.isEmpty()) {
+            return; // No prescriptions to check
+        }
+        
+        // Check if any prescriptions are undispensed (status is not "Dispensed")
+        java.util.List<enitity.Prescription> undispensedPrescriptions = new java.util.ArrayList<>();
+        for (enitity.Prescription prescription : patientPrescriptions) {
+            if (!"Dispensed".equals(prescription.getStatus())) {
+                undispensedPrescriptions.add(prescription);
+            }
+        }
+        
+        if (!undispensedPrescriptions.isEmpty()) {
+            // Show confirmation dialog
+            StringBuilder message = new StringBuilder();
+            message.append("Found ").append(undispensedPrescriptions.size()).append(" undispensed prescription(s) for ").append(patient.getPatientName()).append(":\n\n");
+            
+            for (enitity.Prescription prescription : undispensedPrescriptions) {
+                message.append("• Prescription ID: ").append(prescription.getPrescriptionID()).append("\n");
+                message.append("  Diagnosis: ").append(prescription.getDiagnosis()).append("\n");
+                message.append("  Status: ").append(prescription.getStatus()).append("\n\n");
+            }
+            
+            message.append("These prescriptions will be removed as medicine was not dispensed.\n");
+            message.append("Do you want to continue with the new consultation?");
+            
+            int choice = JOptionPane.showConfirmDialog(this, 
+                message.toString(), 
+                "Remove Undispensed Prescriptions", JOptionPane.YES_NO_OPTION);
+                
+            if (choice == JOptionPane.YES_OPTION) {
+                // Remove the undispensed prescriptions
+                for (enitity.Prescription prescription : undispensedPrescriptions) {
+                    consultationControl.deletePrescription(prescription.getPrescriptionID());
+                }
+                
+                JOptionPane.showMessageDialog(this, 
+                    "Removed " + undispensedPrescriptions.size() + " undispensed prescription(s).\n" +
+                    "Proceeding with new consultation.", 
+                    "Prescriptions Removed", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                // User cancelled - don't start consultation
+                throw new RuntimeException("Consultation cancelled by user");
+            }
         }
     }
 

@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
 import utility.FileUtils;
 /**
  *
- * @author szepi
+ * @author szeping
  */
 public class PatientControl {
     private DoublyLinkedList<Patient> patientList;

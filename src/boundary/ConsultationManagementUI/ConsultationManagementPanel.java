@@ -5,6 +5,8 @@ import utility.ImageUtils;
 
 /**
  * Main Consultation Management Panel (reset)
+ *
+ * @author Zhen Bang
  */
 public class ConsultationManagementPanel extends javax.swing.JPanel {
 
