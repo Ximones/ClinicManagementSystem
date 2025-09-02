@@ -57,6 +57,8 @@ public class ConsultationControl {
                 = (DoublyLinkedList<Pair<String, Appointment>>) FileUtils.readDataFromFile("appointments");
         if (loadedAppointments != null) {
             this.appointmentList = loadedAppointments;
+            // Update appointment index to prevent duplicate IDs
+            updateAppointmentIndex();
         }
 
         // Load prescriptions
@@ -719,6 +721,31 @@ public class ConsultationControl {
             }
         }
         Consultation.setConsultationIndex(maxIndex);
+    }
+
+    /**
+     * Updates the appointment index to prevent duplicate IDs
+     */
+    private void updateAppointmentIndex() {
+        if (appointmentList.isEmpty()) {
+            enitity.Appointment.setAppointmentIndex(0);
+            return;
+        }
+        int maxIndex = 0;
+        for (Pair<String, Appointment> pair : appointmentList) {
+            String appointmentID = pair.getKey();
+            if (appointmentID.startsWith("A")) {
+                try {
+                    int index = Integer.parseInt(appointmentID.substring(1));
+                    if (index > maxIndex) {
+                        maxIndex = index;
+                    }
+                } catch (NumberFormatException e) {
+                    // Skip invalid IDs
+                }
+            }
+        }
+        enitity.Appointment.setAppointmentIndex(maxIndex);
     }
 
     /**
