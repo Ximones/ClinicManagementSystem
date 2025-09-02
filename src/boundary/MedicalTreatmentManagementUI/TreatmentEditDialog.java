@@ -7,6 +7,7 @@ package boundary.MedicalTreatmentManagementUI;
 import adt.DoublyLinkedList;
 import adt.Pair;
 import control.TreatmentController.TreatmentControl;
+import control.TreatmentController.TreatmentEditControl;
 import enitity.Treatment;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
@@ -18,27 +19,25 @@ import utility.ImageUtils;
  */
 public class TreatmentEditDialog extends javax.swing.JDialog {
 
-    private TreatmentControl treatmentControl;
-    private Treatment treatmentToEdit;
-    private DoublyLinkedList<Pair<String, Double>> treatmentTypes = new DoublyLinkedList<>();
+    private final TreatmentEditControl control;
 
-    public TreatmentEditDialog(java.awt.Frame parent, boolean modal, TreatmentControl control) {
+    public TreatmentEditDialog(java.awt.Frame parent, boolean modal, TreatmentControl treatmentControl) {
         super(parent, modal);
-        this.treatmentControl = control;
         initComponents();
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
         setLocationRelativeTo(parent);
         
-        initializeTreatmentTypes();
+        // Initialize the controller
+        this.control = new TreatmentEditControl(treatmentControl);
+        
+        // Setup UI components
+        setupComponents();
         setFieldsEditable(false);
     }
     
-    private void initializeTreatmentTypes() {
-        treatmentTypes.insertLast(new Pair<>("Standard Consultation", 30.00));
-        treatmentTypes.insertLast(new Pair<>("Minor Wound Dressing", 50.00));
-        treatmentTypes.insertLast(new Pair<>("Vaccination Shot", 80.00));
-        treatmentTypes.insertLast(new Pair<>("Blood Test", 120.00));
-        treatmentTypes.insertLast(new Pair<>("Specialist Referral", 20.00));
+    private void setupComponents() {
+        // Get treatment types from the controller
+        DoublyLinkedList<Pair<String, Double>> treatmentTypes = control.getTreatmentTypes();
         
         DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
         model.addElement("-- Select Treatment Type --");
@@ -46,13 +45,69 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
             model.addElement(pair.getKey() + String.format(" (RM %.2f)", pair.getValue()));
         }
         treatmentTypeComboBox.setModel(model);
+
+        // ID should never be editable from the edit dialog
+        treatmentIdField.setEditable(false);
     }
 
-    private void setFieldsEditable(boolean editable) {
+    public void setFieldsEditable(boolean editable) {
         diagnosisInput.setEditable(editable);
         treatmentTypeComboBox.setEnabled(editable);
         notesInput.setEditable(editable);
         saveButton.setEnabled(editable);
+    }
+
+    public void displayTreatmentInfo(Treatment treatment) {
+        treatmentIdField.setText(treatment.getTreatmentID());
+        diagnosisInput.setText(treatment.getDiagnosis());
+        notesInput.setText(treatment.getNotes());
+        
+        // Find and select the matching treatment type in the combo box
+        for (int i = 1; i < treatmentTypeComboBox.getItemCount(); i++) {
+            String item = (String) treatmentTypeComboBox.getItemAt(i);
+            if (item.startsWith(treatment.getTreatmentDetails())) {
+                treatmentTypeComboBox.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+
+    public void clearForm() {
+        treatmentIdField.setText("");
+        diagnosisInput.setText("");
+        notesInput.setText("");
+        treatmentTypeComboBox.setSelectedIndex(0);
+    }
+
+    // Getters for the controller to retrieve form data
+    public String getDiagnosis() {
+        return diagnosisInput.getText().trim();
+    }
+
+    public String getTreatmentDetails() {
+        int treatmentTypeIndex = treatmentTypeComboBox.getSelectedIndex();
+        if (treatmentTypeIndex <= 0) {
+            return null;
+        }
+        
+        DoublyLinkedList<Pair<String, Double>> treatmentTypes = control.getTreatmentTypes();
+        Pair<String, Double> selectedTreatmentPair = treatmentTypes.getElement(treatmentTypeIndex).getEntry();
+        return selectedTreatmentPair.getKey();
+    }
+
+    public double getCost() {
+        int treatmentTypeIndex = treatmentTypeComboBox.getSelectedIndex();
+        if (treatmentTypeIndex <= 0) {
+            return 0.0;
+        }
+        
+        DoublyLinkedList<Pair<String, Double>> treatmentTypes = control.getTreatmentTypes();
+        Pair<String, Double> selectedTreatmentPair = treatmentTypes.getElement(treatmentTypeIndex).getEntry();
+        return selectedTreatmentPair.getValue();
+    }
+
+    public String getNotes() {
+        return notesInput.getText().trim();
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -254,38 +309,17 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        if (treatmentToEdit == null) return;
-
-        StringBuilder errors = new StringBuilder();
-        String diagnosis = diagnosisInput.getText().trim().toLowerCase();
-        int treatmentTypeIndex = treatmentTypeComboBox.getSelectedIndex();
-
-        if (diagnosis.isEmpty()) {
-            errors.append("- Diagnosis cannot be empty.\n");
+        String diagnosis = getDiagnosis();
+        String details = getTreatmentDetails();
+        double cost = getCost();
+        String notes = getNotes();
+        control.TreatmentController.TreatmentEditControl.OperationResult result = control.saveTreatmentChanges(diagnosis, details, cost, notes);
+        if (result.success) {
+            JOptionPane.showMessageDialog(this, result.message, "Success", JOptionPane.INFORMATION_MESSAGE);
+            this.dispose();
+        } else {
+            JOptionPane.showMessageDialog(this, result.message, "Validation Error", JOptionPane.ERROR_MESSAGE);
         }
-        if (treatmentTypeIndex <= 0) {
-            errors.append("- Please select a treatment type.\n");
-        }
-        
-        if (errors.length() > 0) {
-            JOptionPane.showMessageDialog(this, errors.toString(), "Validation Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        Pair<String, Double> selectedTreatmentPair = treatmentTypes.getElement(treatmentTypeIndex).getEntry();
-        String newDetails = selectedTreatmentPair.getKey();
-        double newCost = selectedTreatmentPair.getValue();
-        String newNotes = notesInput.getText().trim();
-
-        treatmentToEdit.setDiagnosis(diagnosis);
-        treatmentToEdit.setTreatmentDetails(newDetails);
-        treatmentToEdit.setCost(newCost);
-        treatmentToEdit.setNotes(newNotes);
-
-        treatmentControl.updateTreatment();
-        
-        JOptionPane.showMessageDialog(this, "Treatment " + treatmentToEdit.getTreatmentID() + " updated successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
-        this.dispose();
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
@@ -293,39 +327,15 @@ public class TreatmentEditDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
-        String idToSearch = searchInput.getText().trim().toUpperCase();
-        if (idToSearch.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a Treatment ID.", "Input Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // **FIX**: Create a new control instance to load the latest data from the file.
-        this.treatmentControl = new TreatmentControl();
-        treatmentToEdit = treatmentControl.findTreatmentById(idToSearch);
-
-        if (treatmentToEdit != null) {
-            treatmentIdField.setText(treatmentToEdit.getTreatmentID());
-            diagnosisInput.setText(treatmentToEdit.getDiagnosis());
-            notesInput.setText(treatmentToEdit.getNotes());
-            
-            // Find and select the matching treatment type in the combo box
-            for (int i = 1; i < treatmentTypeComboBox.getItemCount(); i++) {
-                String item = (String) treatmentTypeComboBox.getItemAt(i);
-                if (item.startsWith(treatmentToEdit.getTreatmentDetails())) {
-                    treatmentTypeComboBox.setSelectedIndex(i);
-                    break;
-                }
-            }
-            
+        String idToSearch = searchInput.getText();
+        Treatment found = control.searchTreatmentById(idToSearch);
+        if (found != null) {
+            displayTreatmentInfo(found);
             setFieldsEditable(true);
         } else {
             JOptionPane.showMessageDialog(this, "Treatment with ID '" + idToSearch + "' not found.", "Not Found", JOptionPane.WARNING_MESSAGE);
             setFieldsEditable(false);
-            // Clear fields if not found
-            treatmentIdField.setText("");
-            diagnosisInput.setText("");
-            notesInput.setText("");
-            treatmentTypeComboBox.setSelectedIndex(0);
+            clearForm();
         }
     }//GEN-LAST:event_searchButtonActionPerformed
 

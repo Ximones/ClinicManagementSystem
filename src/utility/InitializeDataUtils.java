@@ -246,6 +246,17 @@ public class InitializeDataUtils {
 
     }
   
+    // Initialize Treatment Types Data
+    public static DoublyLinkedList<Pair<String, Double>> getTreatmentTypes() {
+        DoublyLinkedList<Pair<String, Double>> treatmentTypes = new DoublyLinkedList<>();
+        treatmentTypes.insertLast(new Pair<>("Standard Consultation", 30.00));
+        treatmentTypes.insertLast(new Pair<>("Minor Wound Dressing", 50.00));
+        treatmentTypes.insertLast(new Pair<>("Vaccination Shot", 80.00));
+        treatmentTypes.insertLast(new Pair<>("Blood Test", 120.00));
+        treatmentTypes.insertLast(new Pair<>("Specialist Referral", 20.00));
+        return treatmentTypes;
+    }
+
     // Initialize Queue Test Data
     private static int lastQueueNumber = 1000; // for generating E1001, E1002, ...
 

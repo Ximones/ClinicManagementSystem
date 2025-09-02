@@ -16,6 +16,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import utility.FileUtils;
 import utility.ImageUtils;
+import utility.InitializeDataUtils;
 
 /**
  *
@@ -25,7 +26,6 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     private MainFrame mainFrame;
     private TreatmentControl treatmentControl = new TreatmentControl();
     private DoublyLinkedList<Pair<String, Consultation>> consultationList;
-    private DoublyLinkedList<Pair<String, Double>> treatmentTypes = new DoublyLinkedList<>();
 
     public DiagnosisEntryPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -37,11 +37,8 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     }
     
     private void initializeTreatmentTypes() {
-        treatmentTypes.insertLast(new Pair<>("Standard Consultation", 30.00));
-        treatmentTypes.insertLast(new Pair<>("Minor Wound Dressing", 50.00));
-        treatmentTypes.insertLast(new Pair<>("Vaccination Shot", 80.00));
-        treatmentTypes.insertLast(new Pair<>("Blood Test", 120.00));
-        treatmentTypes.insertLast(new Pair<>("Specialist Referral", 20.00));
+        // Get treatment types from the utility class
+        DoublyLinkedList<Pair<String, Double>> treatmentTypes = InitializeDataUtils.getTreatmentTypes();
         
         DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
         model.addElement("-- Select Treatment Type --");
@@ -52,6 +49,7 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     }
 
     public void loadConsultations() {
+        // Always read fresh data from file
         consultationList = (DoublyLinkedList<Pair<String, Consultation>>) FileUtils.readDataFromFile("consultations");
         DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
         model.addElement("-- Select a Consultation --");
@@ -69,6 +67,12 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
     
     // Public method to be called by MainFrame for auto-refresh
     public void reloadData() {
+        loadConsultations();
+        updateRecentTreatmentsDisplay();
+    }
+    
+    // Method to be called when panel becomes visible
+    public void onPanelShow() {
         loadConsultations();
         updateRecentTreatmentsDisplay();
     }
@@ -326,23 +330,20 @@ public class DiagnosisEntryPanel extends javax.swing.JPanel {
         }
 
         // Get selected treatment and its fixed price
+        DoublyLinkedList<Pair<String, Double>> treatmentTypes = InitializeDataUtils.getTreatmentTypes();
         Pair<String, Double> selectedTreatmentPair = treatmentTypes.getElement(treatmentTypeIndex).getEntry();
         String treatmentDetails = selectedTreatmentPair.getKey();
         double cost = selectedTreatmentPair.getValue();
         String notes = notesInput.getText().trim();
 
-        treatmentControl.addTreatment(selectedConsultation, diagnosis, treatmentDetails, cost, notes);
-        
-        if (selectedConsultation != null) {
-            selectedConsultation.setStatus("Completed");
-            FileUtils.writeDataToFile("consultations", consultationList);
-        }
+        // Delegate persistence and consultation completion to the control layer
+        treatmentControl.addTreatmentAndCompleteConsultation(selectedConsultation, diagnosis, treatmentDetails, cost, notes);
 
         JOptionPane.showMessageDialog(this, "Treatment record saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
         clearForm();
-        loadConsultations();
-        updateRecentTreatmentsDisplay();
+        // Refresh all data to show the latest information
+        onPanelShow();
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed

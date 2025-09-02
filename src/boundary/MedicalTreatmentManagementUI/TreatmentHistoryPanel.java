@@ -8,14 +8,13 @@ import adt.DoublyLinkedList;
 import adt.Pair;
 import boundary.MainFrame;
 import control.TreatmentController.TreatmentControl;
+import control.TreatmentController.TreatmentHistoryControl;
 import enitity.Treatment;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
-import utility.FileUtils;
 import utility.ImageUtils;
-import utility.ReportGenerator;
 
 /**
  *
@@ -25,6 +24,7 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
     
     private MainFrame mainFrame;
     private TreatmentControl treatmentControl = new TreatmentControl();
+    private TreatmentHistoryControl historyControl;
     private DoublyLinkedList<Pair<String, Treatment>> masterTreatmentList;
 
     /**
@@ -35,6 +35,10 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         this.mainFrame = mainFrame;
         initComponents();
         logoLabel = ImageUtils.getImageLabel("tarumt_logo.png", logoLabel);
+        
+        // Initialize the controller
+        this.historyControl = new TreatmentHistoryControl(this, treatmentControl);
+        
         setupTable();
         loadAndDisplayTreatments();
         
@@ -71,15 +75,19 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
 
     // Loads data from the file and populates the table
     public void loadAndDisplayTreatments() {
-        masterTreatmentList = (DoublyLinkedList<Pair<String, Treatment>>) FileUtils.readDataFromFile("treatments");
-        if (masterTreatmentList == null) {
-            masterTreatmentList = new DoublyLinkedList<>();
-        }
+        // Always create a fresh control instance to get the latest data from file
+        TreatmentControl freshControl = new TreatmentControl();
+        masterTreatmentList = freshControl.getAllTreatments();
         populateTable(masterTreatmentList);
     }
     
     // Public method for MainFrame to call to refresh data
     public void reloadData() {
+        loadAndDisplayTreatments();
+    }
+    
+    // Method to be called when panel becomes visible
+    public void onPanelShow() {
         loadAndDisplayTreatments();
     }
     
@@ -109,53 +117,7 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
     // Filters the table based on the search input using the control's filter method
     private void filterTable() {
         String query = searchInput.getText().trim();
-        if (query.isEmpty()) {
-            populateTable(masterTreatmentList);
-            return;
-        }
-
-        // Use the control's filter method which searches across Patient Name, Doctor Name, and Diagnosis
-        // We'll search across multiple criteria to maintain the same functionality as before
-        DoublyLinkedList<Pair<String, Treatment>> searchResults = new DoublyLinkedList<>();
-        
-        // Search in Patient Name
-        DoublyLinkedList<Pair<String, Treatment>> patientResults = treatmentControl.filterTreatments("Patient Name", query);
-        for (Pair<String, Treatment> pair : patientResults) {
-            searchResults.insertLast(pair);
-        }
-        
-        // Search in Doctor Name
-        DoublyLinkedList<Pair<String, Treatment>> doctorResults = treatmentControl.filterTreatments("Doctor Name", query);
-        for (Pair<String, Treatment> pair : doctorResults) {
-            // Avoid duplicates
-            boolean exists = false;
-            for (Pair<String, Treatment> existing : searchResults) {
-                if (existing.getKey().equals(pair.getKey())) {
-                    exists = true;
-                    break;
-                }
-            }
-            if (!exists) {
-                searchResults.insertLast(pair);
-            }
-        }
-        
-        // Search in Diagnosis
-        DoublyLinkedList<Pair<String, Treatment>> diagnosisResults = treatmentControl.filterTreatments("Diagnosis", query);
-        for (Pair<String, Treatment> pair : diagnosisResults) {
-            // Avoid duplicates
-            boolean exists = false;
-            for (Pair<String, Treatment> existing : searchResults) {
-                if (existing.getKey().equals(pair.getKey())) {
-                    exists = true;
-                    break;
-                }
-            }
-            if (!exists) {
-                searchResults.insertLast(pair);
-            }
-        }
-        
+        DoublyLinkedList<Pair<String, Treatment>> searchResults = historyControl.filterTreatments(query);
         populateTable(searchResults);
     }
 
@@ -290,41 +252,31 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
         TreatmentEditDialog dialog = new TreatmentEditDialog(mainFrame, true, treatmentControl);
         dialog.setVisible(true);
-        loadAndDisplayTreatments(); // Refresh table after edit dialog closes
+        // Refresh table after edit dialog closes to show any changes
+        onPanelShow();
     }//GEN-LAST:event_editButtonActionPerformed
 
     private void report1ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_report1ButtonActionPerformed
-        // Create a fresh control instance to load the latest data from the file
-        TreatmentControl freshControl = new TreatmentControl();
-        DoublyLinkedList<Pair<String, Integer>> frequencyData = freshControl.getDiagnosisFrequency();
-        
-        if (frequencyData.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No treatment data to generate report.", "Report Error", JOptionPane.ERROR_MESSAGE);
-            return;
+        onPanelShow(); // Ensure data is fresh before generating report
+        control.TreatmentController.TreatmentHistoryControl.OperationResult result = historyControl.generateDiagnosisFrequencyReport();
+        if (result.success) {
+            JOptionPane.showMessageDialog(this, result.message, "Success", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, result.message, "Report Error", JOptionPane.ERROR_MESSAGE);
         }
-        ReportGenerator.generateDiagnosisFrequencyReport(frequencyData);
-        JOptionPane.showMessageDialog(this, "Report generated: 'Common_Diagnoses_Report.pdf'", "Success", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_report1ButtonActionPerformed
 
     private void report2ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_report2ButtonActionPerformed
+        onPanelShow(); // Ensure data is fresh before generating report
         String patientId = JOptionPane.showInputDialog(this, "Enter Patient ID (e.g., P001):");
-        if (patientId == null || patientId.trim().isEmpty()) {
-            return;
+        control.TreatmentController.TreatmentHistoryControl.OperationResult result = historyControl.generatePatientHistoryReport(patientId);
+        if (result.success) {
+            JOptionPane.showMessageDialog(this, result.message, "Success", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            if (patientId != null) {
+                JOptionPane.showMessageDialog(this, result.message, "Report Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
-        
-        String finalPatientId = patientId.trim().toUpperCase();
-        
-        // Create a fresh control instance to load the latest data from the file
-        TreatmentControl freshControl = new TreatmentControl();
-        DoublyLinkedList<Treatment> patientHistory = freshControl.getTreatmentsForPatient(finalPatientId);
-        
-        if (patientHistory.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No treatments found for Patient ID: " + finalPatientId, "Report Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        
-        ReportGenerator.generatePatientHistoryReport(patientHistory);
-        JOptionPane.showMessageDialog(this, "Report generated: 'Patient_History_" + finalPatientId + ".pdf'", "Success", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_report2ButtonActionPerformed
 
     private void sortComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortComboBoxActionPerformed
@@ -337,18 +289,18 @@ public class TreatmentHistoryPanel extends javax.swing.JPanel {
         String sortBy = selection.contains("Date") ? "Date" : "Cost";
         String order = selection.contains("Oldest") || selection.contains("Lowest") ? "ASC" : "DESC";
         
-        DoublyLinkedList<Pair<String, Treatment>> sortedList = treatmentControl.bubbleSortTreatments(masterTreatmentList, sortBy, order);
+        DoublyLinkedList<Pair<String, Treatment>> sortedList = historyControl.sortTreatments(sortBy, order, masterTreatmentList);
         populateTable(sortedList);
     }//GEN-LAST:event_sortComboBoxActionPerformed
 
     private void popularReportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_popularReportButtonActionPerformed
-        loadAndDisplayTreatments(); // Ensure data is fresh before generating report
-        if (masterTreatmentList.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No treatment data to generate report.", "Report Error", JOptionPane.ERROR_MESSAGE);
-            return;
+        onPanelShow(); // Ensure data is fresh before generating report
+        control.TreatmentController.TreatmentHistoryControl.OperationResult result = historyControl.generateTreatmentTypePopularityReport(masterTreatmentList);
+        if (result.success) {
+            JOptionPane.showMessageDialog(this, result.message, "Success", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, result.message, "Report Error", JOptionPane.ERROR_MESSAGE);
         }
-        ReportGenerator.generateTreatmentTypePopularityReport(masterTreatmentList);
-        JOptionPane.showMessageDialog(this, "Report generated: 'Treatment_Type_Popularity_Report.pdf'", "Success", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_popularReportButtonActionPerformed
 
     private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed

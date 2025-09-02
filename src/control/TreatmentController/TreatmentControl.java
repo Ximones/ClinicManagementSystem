@@ -59,6 +59,39 @@ public class TreatmentControl {
     }
 
     /**
+     * Adds a new treatment and marks the linked consultation as Completed.
+     * This centralizes persistence to preserve ECB and avoid Boundary writing files.
+     * @param consultation The consultation this treatment is linked to.
+     * @param diagnosis The diagnosis made by the doctor.
+     * @param details A description of the treatment.
+     * @param cost The cost of the treatment.
+     * @param notes Any additional notes.
+     */
+    public void addTreatmentAndCompleteConsultation(Consultation consultation, String diagnosis, String details, double cost, String notes) {
+        // Add treatment (persists treatments file)
+        addTreatment(consultation, diagnosis, details, cost, notes);
+
+        if (consultation == null || consultation.getConsultationID() == null) {
+            return;
+        }
+
+        // Read latest consultations list, update status, and persist
+        DoublyLinkedList<Pair<String, Consultation>> consultationList = (DoublyLinkedList<Pair<String, Consultation>>) FileUtils.readDataFromFile("consultations");
+        if (consultationList == null) {
+            return;
+        }
+
+        for (Pair<String, Consultation> pair : consultationList) {
+            if (pair.getKey().equals(consultation.getConsultationID())) {
+                pair.getValue().setStatus("Completed");
+                break;
+            }
+        }
+
+        FileUtils.writeDataToFile("consultations", consultationList);
+    }
+
+    /**
      * Retrieves the entire list of treatments.
      * @return A DoublyLinkedList of all treatment records.
      */

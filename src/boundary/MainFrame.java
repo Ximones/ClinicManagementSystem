@@ -264,7 +264,7 @@ public class MainFrame extends javax.swing.JFrame {
                     }
                 }
                 if (comp instanceof boundary.MedicalTreatmentManagementUI.TreatmentHistoryPanel) {
-                    ((boundary.MedicalTreatmentManagementUI.TreatmentHistoryPanel) comp).reloadData();
+                    ((boundary.MedicalTreatmentManagementUI.TreatmentHistoryPanel) comp).onPanelShow();
                 }
                 break;
             }
@@ -277,7 +277,7 @@ public class MainFrame extends javax.swing.JFrame {
                     }
                 }
                 if (comp instanceof boundary.MedicalTreatmentManagementUI.DiagnosisEntryPanel) {
-                    ((boundary.MedicalTreatmentManagementUI.DiagnosisEntryPanel) comp).reloadData();
+                    ((boundary.MedicalTreatmentManagementUI.DiagnosisEntryPanel) comp).onPanelShow();
                 }
                 break;
             }
