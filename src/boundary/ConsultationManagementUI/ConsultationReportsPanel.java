@@ -200,9 +200,7 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
             
             switch (selectedReport) {
                 case "Consultation Statistics Report":
-                    reportContent = generateConsultationStatisticsReport(fromDate, toDate);
-                    // Generate PDF
-                    ReportGenerator.generateConsultationStatisticsPDF(consultationControl.getConsultationList(), fromDateTime, toDateTime);
+                    generateConsultationStatisticsReport();
                     break;
                 case "Appointment Summary Report":
                     reportContent = generateAppointmentSummaryReport(fromDate, toDate);
@@ -249,56 +247,35 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         model.addRow(new Object[]{reportType, currentTime, status});
     }
     
-    private String generateConsultationStatisticsReport(Date fromDate, Date toDate) {
-        StringBuilder report = new StringBuilder();
-        report.append("CONSULTATION STATISTICS REPORT\n");
-        report.append("==============================\n\n");
+    private LocalDateTime getFromDate() {
+        Date fromDate = (Date) fromDateSpinner.getValue();
+        return fromDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+    private LocalDateTime getToDate() {
+        Date toDate = (Date) toDateSpinner.getValue();
+        return toDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+    private void generateConsultationStatisticsReport() {
+        DoublyLinkedList<Pair<String, Consultation>> consultations = consultationControl.getAllConsultations();
         
-        LocalDateTime fromDateTime = fromDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
-        LocalDateTime toDateTime = toDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
-        
-        List<Consultation> consultations = consultationControl.getAllConsultations();
-        
-        int totalConsultations = 0;
-        int completedConsultations = 0;
-        int scheduledConsultations = 0;
-        int cancelledConsultations = 0;
-        
-        for (Consultation consultation : consultations) {
-            if (consultation.getConsultationDateTime() != null &&
-                !consultation.getConsultationDateTime().isBefore(fromDateTime) &&
-                !consultation.getConsultationDateTime().isAfter(toDateTime)) {
-                
-                totalConsultations++;
-                
-                switch (consultation.getStatus()) {
-                    case "Completed":
-                        completedConsultations++;
-                        break;
-                    case "Scheduled":
-                        scheduledConsultations++;
-                        break;
-                    case "Cancelled":
-                        cancelledConsultations++;
-                        break;
-                }
-            }
+        if (consultations.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No consultation data available for report generation.", 
+                                        "No Data", JOptionPane.INFORMATION_MESSAGE);
+            return;
         }
         
-        report.append("Date Range: ").append(fromDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-        report.append(" to ").append(toDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).append("\n\n");
+        // Get date range from spinners
+        LocalDateTime fromDate = getFromDate();
+        LocalDateTime toDate = getToDate();
         
-        report.append("Total Consultations: ").append(totalConsultations).append("\n");
-        report.append("Completed: ").append(completedConsultations).append("\n");
-        report.append("Scheduled: ").append(scheduledConsultations).append("\n");
-        report.append("Cancelled: ").append(cancelledConsultations).append("\n\n");
+        // Generate the report
+        ReportGenerator.generateConsultationStatisticsPDF(consultations, fromDate, toDate);
         
-        if (totalConsultations > 0) {
-            double completionRate = (double) completedConsultations / totalConsultations * 100;
-            report.append("Completion Rate: ").append(String.format("%.1f%%", completionRate)).append("\n");
-        }
-        
-        return report.toString();
+        JOptionPane.showMessageDialog(this, "Consultation Statistics Report generated successfully!\n" +
+                                        "File: Consultation_Statistics_Report.pdf", 
+                                        "Report Generated", JOptionPane.INFORMATION_MESSAGE);
     }
     
     private String generateAppointmentSummaryReport(Date fromDate, Date toDate) {
@@ -309,7 +286,7 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         LocalDateTime fromDateTime = fromDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
         LocalDateTime toDateTime = toDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
         
-        List<Appointment> appointments = consultationControl.getAllAppointments();
+        DoublyLinkedList<Pair<String, Appointment>> appointments = consultationControl.getAllAppointments();
         
         int totalAppointments = 0;
         int confirmedAppointments = 0;
@@ -317,7 +294,8 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         int cancelledAppointments = 0;
         int noShowAppointments = 0;
         
-        for (Appointment appointment : appointments) {
+        for (Pair<String, Appointment> pair : appointments) {
+            Appointment appointment = pair.getValue();
             if (appointment.getAppointmentDateTime() != null &&
                 !appointment.getAppointmentDateTime().isBefore(fromDateTime) &&
                 !appointment.getAppointmentDateTime().isAfter(toDateTime)) {
@@ -367,12 +345,13 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         report.append("PATIENT CONSULTATION HISTORY\n");
         report.append("============================\n\n");
         
-        List<Consultation> consultations = consultationControl.getAllConsultations();
+        DoublyLinkedList<Pair<String, Consultation>> consultations = consultationControl.getAllConsultations();
         
         // Group consultations by patient
         java.util.Map<String, java.util.List<Consultation>> patientConsultations = new java.util.HashMap<>();
         
-        for (Consultation consultation : consultations) {
+        for (Pair<String, Consultation> pair : consultations) {
+            Consultation consultation = pair.getValue();
             if (consultation.getPatient() != null) {
                 String patientName = consultation.getPatient().getPatientName();
                 patientConsultations.computeIfAbsent(patientName, k -> new java.util.ArrayList<>()).add(consultation);
@@ -400,12 +379,13 @@ public class ConsultationReportsPanel extends javax.swing.JPanel {
         report.append("MONTHLY CONSULTATION SUMMARY\n");
         report.append("============================\n\n");
         
-        List<Consultation> consultations = consultationControl.getAllConsultations();
+        DoublyLinkedList<Pair<String, Consultation>> consultations = consultationControl.getAllConsultations();
         
         // Group consultations by month
         java.util.Map<String, Integer> monthlyConsultations = new java.util.HashMap<>();
         
-        for (Consultation consultation : consultations) {
+        for (Pair<String, Consultation> pair : consultations) {
+            Consultation consultation = pair.getValue();
             if (consultation.getConsultationDateTime() != null) {
                 String monthYear = consultation.getConsultationDateTime().format(DateTimeFormatter.ofPattern("MMMM yyyy"));
                 monthlyConsultations.put(monthYear, monthlyConsultations.getOrDefault(monthYear, 0) + 1);

@@ -325,10 +325,11 @@ public class ConsultationPanel extends javax.swing.JPanel {
         DefaultTableModel model = (DefaultTableModel) consultationTable.getModel();
         model.setRowCount(0);
         
-        List<Consultation> consultations = consultationControl.getAllConsultations();
+        DoublyLinkedList<Pair<String, Consultation>> consultations = consultationControl.getAllConsultations();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         
-        for (Consultation consultation : consultations) {
+        for (Pair<String, Consultation> pair : consultations) {
+            Consultation consultation = pair.getValue();
             String date = consultation.getConsultationDateTime() != null ? 
                          consultation.getConsultationDateTime().format(fmt) : "-";
             
@@ -515,7 +516,7 @@ public class ConsultationPanel extends javax.swing.JPanel {
         String patientName = (String) consultationTable.getValueAt(selectedRow, 1);
         
         // Check for related prescriptions
-        List<Prescription> relatedPrescriptions = consultationControl.getPrescriptionsByConsultation(consultationID);
+        DoublyLinkedList<Pair<String, Prescription>> relatedPrescriptions = consultationControl.getPrescriptionsByConsultation(consultationID);
         boolean hasRelatedPrescriptions = !relatedPrescriptions.isEmpty();
         
         StringBuilder confirmMessage = new StringBuilder();
@@ -524,9 +525,10 @@ public class ConsultationPanel extends javax.swing.JPanel {
         confirmMessage.append("Patient: ").append(patientName).append("\n\n");
         
         if (hasRelatedPrescriptions) {
-            confirmMessage.append("WARNING: This consultation has ").append(relatedPrescriptions.size())
+            confirmMessage.append("WARNING: This consultation has ").append(relatedPrescriptions.getSize())
                          .append(" related prescription(s) that will also be deleted:\n");
-            for (Prescription prescription : relatedPrescriptions) {
+            for (Pair<String, Prescription> pair : relatedPrescriptions) {
+                Prescription prescription = pair.getValue();
                 confirmMessage.append("  - Prescription ID: ").append(prescription.getPrescriptionID()).append("\n");
             }
             confirmMessage.append("\n");

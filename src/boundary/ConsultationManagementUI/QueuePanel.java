@@ -4,6 +4,8 @@ import boundary.MainFrame;
 import control.ConsultationController.ConsultationControl;
 import enitity.QueueEntry;
 import enitity.Patient;
+import enitity.Consultation;
+import enitity.Prescription;
 import java.util.List;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -15,6 +17,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
 import utility.ImageUtils;
+import adt.DoublyLinkedList;
+import adt.Pair;
 
 /**
  * Panel for managing patient queue in consultation management
@@ -58,8 +62,9 @@ public class QueuePanel extends javax.swing.JPanel {
         consultationControl.reloadQueue();
         DefaultTableModel model = (DefaultTableModel) queueTable.getModel();
         model.setRowCount(0);
-        List<QueueEntry> entries = consultationControl.getAllQueueEntries();
-        for (QueueEntry e : entries) {
+        DoublyLinkedList<Pair<String, QueueEntry>> entries = consultationControl.getAllQueueEntries();
+        for (Pair<String, QueueEntry> pair : entries) {
+            QueueEntry e = pair.getValue();
             model.addRow(new Object[]{
                 e.getQueueNumber(), 
                 e.getPatient() != null ? e.getPatient().getPatientName() : "-", 
@@ -120,9 +125,10 @@ public class QueuePanel extends javax.swing.JPanel {
             completeConsultationButton.setEnabled(true);
         } else {
             // No patient consulting - check if there are waiting patients
-            List<QueueEntry> entries = consultationControl.getAllQueueEntries();
+            DoublyLinkedList<Pair<String, QueueEntry>> entries = consultationControl.getAllQueueEntries();
             boolean hasWaitingPatients = false;
-            for (QueueEntry entry : entries) {
+            for (Pair<String, QueueEntry> pair : entries) {
+                QueueEntry entry = pair.getValue();
                 if ("Waiting".equals(entry.getStatus())) {
                     hasWaitingPatients = true;
                     break;
@@ -136,10 +142,11 @@ public class QueuePanel extends javax.swing.JPanel {
     
     private void startConsultation() {
         // Get the first waiting patient
-        List<QueueEntry> entries = consultationControl.getAllQueueEntries();
+        DoublyLinkedList<Pair<String, QueueEntry>> entries = consultationControl.getAllQueueEntries();
         QueueEntry nextPatient = null;
         
-        for (QueueEntry entry : entries) {
+        for (Pair<String, QueueEntry> pair : entries) {
+            QueueEntry entry = pair.getValue();
             if ("Waiting".equals(entry.getStatus())) {
                 nextPatient = entry;
                 break;
@@ -172,9 +179,9 @@ public class QueuePanel extends javax.swing.JPanel {
             refreshQueueDisplay();
             // Also mark latest consultation for this patient as In Progress
             try {
-                java.util.List<enitity.Consultation> list = consultationControl.getConsultationsByPatient(nextPatient.getPatient().getPatientID());
+                DoublyLinkedList<Pair<String, Consultation>> list = consultationControl.getConsultationsByPatient(nextPatient.getPatient().getPatientID());
                 if (!list.isEmpty()) {
-                    enitity.Consultation latest = list.get(list.size() - 1);
+                    Consultation latest = list.getLast().getEntry().getValue();
                     consultationControl.updateConsultationStatus(latest.getConsultationID(), "In Progress");
                 }
             } catch (Exception ignore) {}
@@ -223,7 +230,7 @@ public class QueuePanel extends javax.swing.JPanel {
         if (patient == null) return;
         
         // Get all prescriptions for this patient
-        java.util.List<enitity.Prescription> patientPrescriptions = consultationControl.getPrescriptionsByPatient(patient.getPatientID());
+        DoublyLinkedList<Pair<String, Prescription>> patientPrescriptions = consultationControl.getPrescriptionsByPatient(patient.getPatientID());
         
         if (patientPrescriptions.isEmpty()) {
             return; // No prescriptions to check
@@ -231,7 +238,8 @@ public class QueuePanel extends javax.swing.JPanel {
         
         // Check if any prescriptions are undispensed (status is not "Dispensed")
         java.util.List<enitity.Prescription> undispensedPrescriptions = new java.util.ArrayList<>();
-        for (enitity.Prescription prescription : patientPrescriptions) {
+        for (Pair<String, Prescription> pair : patientPrescriptions) {
+            Prescription prescription = pair.getValue();
             if (!"Dispensed".equals(prescription.getStatus())) {
                 undispensedPrescriptions.add(prescription);
             }

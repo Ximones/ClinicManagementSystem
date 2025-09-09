@@ -297,8 +297,9 @@ public class AppointmentPanel extends javax.swing.JPanel {
         statusComboBox.addItem("No-show");
         
         // Load and populate consultations
-        List<Consultation> consultations = consultationControl.getAllConsultations();
-        for (Consultation consultation : consultations) {
+        DoublyLinkedList<Pair<String, Consultation>> consultations = consultationControl.getAllConsultations();
+        for (Pair<String, Consultation> pair : consultations) {
+            Consultation consultation = pair.getValue();
             String item = consultation.getConsultationID() + " - " + 
                          (consultation.getPatient() != null ? consultation.getPatient().getPatientName() : "N/A");
             consultationComboBox.addItem(item);
@@ -311,10 +312,11 @@ public class AppointmentPanel extends javax.swing.JPanel {
         DefaultTableModel model = (DefaultTableModel) appointmentTable.getModel();
         model.setRowCount(0);
         
-        List<Appointment> appointments = consultationControl.getAllAppointments();
+        DoublyLinkedList<Pair<String, Appointment>> appointments = consultationControl.getAllAppointments();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         
-        for (Appointment appointment : appointments) {
+        for (Pair<String, Appointment> pair : appointments) {
+            Appointment appointment = pair.getValue();
             String date = appointment.getAppointmentDateTime() != null ? 
                          appointment.getAppointmentDateTime().format(fmt) : "-";
             
@@ -459,13 +461,14 @@ public class AppointmentPanel extends javax.swing.JPanel {
     }
     
     private void showTodayAppointments() {
-        List<Appointment> todayAppointments = consultationControl.getTodayAppointments();
+        DoublyLinkedList<Pair<String, Appointment>> todayAppointments = consultationControl.getTodayAppointments();
         
         if (todayAppointments.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No appointments scheduled for today.", "Today's Appointments", JOptionPane.INFORMATION_MESSAGE);
         } else {
             StringBuilder message = new StringBuilder("Today's Appointments:\n\n");
-            for (Appointment appointment : todayAppointments) {
+            for (Pair<String, Appointment> pair : todayAppointments) {
+                Appointment appointment = pair.getValue();
                 message.append("ID: ").append(appointment.getAppointmentID()).append("\n");
                 message.append("Patient: ").append(appointment.getPatient() != null ? appointment.getPatient().getPatientName() : "N/A").append("\n");
                 message.append("Doctor: ").append(appointment.getDoctor() != null ? appointment.getDoctor().getName() : "N/A").append("\n");
@@ -477,13 +480,14 @@ public class AppointmentPanel extends javax.swing.JPanel {
     }
     
     private void showUpcomingAppointments() {
-        List<Appointment> upcomingAppointments = consultationControl.getUpcomingAppointments();
+        DoublyLinkedList<Pair<String, Appointment>> upcomingAppointments = consultationControl.getUpcomingAppointments();
         
         if (upcomingAppointments.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No upcoming appointments.", "Upcoming Appointments", JOptionPane.INFORMATION_MESSAGE);
         } else {
             StringBuilder message = new StringBuilder("Upcoming Appointments:\n\n");
-            for (Appointment appointment : upcomingAppointments) {
+            for (Pair<String, Appointment> pair : upcomingAppointments) {
+                Appointment appointment = pair.getValue();
                 message.append("ID: ").append(appointment.getAppointmentID()).append("\n");
                 message.append("Patient: ").append(appointment.getPatient() != null ? appointment.getPatient().getPatientName() : "N/A").append("\n");
                 message.append("Doctor: ").append(appointment.getDoctor() != null ? appointment.getDoctor().getName() : "N/A").append("\n");

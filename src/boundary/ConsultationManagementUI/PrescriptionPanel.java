@@ -292,10 +292,12 @@ public class PrescriptionPanel extends javax.swing.JPanel {
                 
                 // Auto-mark the latest consultation for this patient as Completed
                 try {
-                    java.util.List<Consultation> list = consultationControl.getConsultationsByPatient(currentPrescriptioning.getPatient().getPatientID());
+                    // Get consultations for this patient
+                    DoublyLinkedList<Pair<String, Consultation>> list = consultationControl.getConsultationsByPatient(currentPrescriptioning.getPatient().getPatientID());
                     if (!list.isEmpty()) {
-                        Consultation latest = list.get(list.size() - 1);
-                        consultationControl.updateConsultationStatus(latest.getConsultationID(), "Completed");
+                        // Get the latest consultation (last in the list)
+                        Consultation latestConsultation = list.getLast().getEntry().getValue();
+                        consultationComboBox.addItem(latestConsultation.getConsultationID() + " - " + latestConsultation.getFormattedDateTime());
                     }
                 } catch (Exception ignore) {}
 
@@ -313,8 +315,9 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         // If there's a prescribing patient from queue, preselect and lock it
         enitity.QueueEntry prescriptioningPatient = consultationControl.getCurrentPrescriptioningPatient();
         if (prescriptioningPatient != null) {
-            List<Consultation> consultations = consultationControl.getAllConsultations();
-            for (Consultation consultation : consultations) {
+            DoublyLinkedList<Pair<String, Consultation>> consultations = consultationControl.getAllConsultations();
+            for (Pair<String, Consultation> pair : consultations) {
+                Consultation consultation = pair.getValue();
                 if (consultation.getPatient() != null && 
                     consultation.getPatient().getPatientID().equals(prescriptioningPatient.getPatient().getPatientID())) {
                     String item = consultation.getConsultationID() + " - " + 
@@ -330,8 +333,9 @@ public class PrescriptionPanel extends javax.swing.JPanel {
         }
         
         // Add all other consultations
-        List<Consultation> consultations = consultationControl.getAllConsultations();
-        for (Consultation consultation : consultations) {
+        DoublyLinkedList<Pair<String, Consultation>> consultations = consultationControl.getAllConsultations();
+        for (Pair<String, Consultation> pair : consultations) {
+            Consultation consultation = pair.getValue();
             String item = consultation.getConsultationID() + " - " + 
                          (consultation.getPatient() != null ? consultation.getPatient().getPatientName() : "N/A");
             Object selectedItem = consultationComboBox.getSelectedItem();

@@ -13,8 +13,6 @@ import enitity.Medicine;
 import enitity.QueueEntry;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import utility.FileUtils;
 
 /**
@@ -214,7 +212,7 @@ public class ConsultationControl {
      */
     public boolean deleteConsultation(String consultationID) {
         // First, check if there are any related prescriptions
-        List<Prescription> relatedPrescriptions = getPrescriptionsByConsultation(consultationID);
+        DoublyLinkedList<Pair<String, Prescription>> relatedPrescriptions = getPrescriptionsByConsultation(consultationID);
         boolean hasRelatedPrescriptions = !relatedPrescriptions.isEmpty();
         
         // Delete the consultation
@@ -258,14 +256,14 @@ public class ConsultationControl {
      * @param patientID The patient ID
      * @return List of consultations for the patient
      */
-    public List<Consultation> getConsultationsByPatient(String patientID) {
-        List<Consultation> patientConsultations = new ArrayList<>();
+    public DoublyLinkedList<Pair<String, Consultation>> getConsultationsByPatient(String patientID) {
+        DoublyLinkedList<Pair<String, Consultation>> patientConsultations = new DoublyLinkedList<>();
 
         for (Pair<String, Consultation> pair : consultationList) {
             Consultation consultation = pair.getValue();
             if (consultation.getPatient() != null
                     && consultation.getPatient().getPatientID().equals(patientID)) {
-                patientConsultations.add(consultation);
+                patientConsultations.insertLast(pair);
             }
         }
 
@@ -278,14 +276,14 @@ public class ConsultationControl {
      * @param doctorID The doctor ID
      * @return List of consultations for the doctor
      */
-    public List<Consultation> getConsultationsByDoctor(String doctorID) {
-        List<Consultation> doctorConsultations = new ArrayList<>();
+    public DoublyLinkedList<Pair<String, Consultation>> getConsultationsByDoctor(String doctorID) {
+        DoublyLinkedList<Pair<String, Consultation>> doctorConsultations = new DoublyLinkedList<>();
 
         for (Pair<String, Consultation> pair : consultationList) {
             Consultation consultation = pair.getValue();
             if (consultation.getDoctor() != null
                     && consultation.getDoctor().getDoctorID().equals(doctorID)) {
-                doctorConsultations.add(consultation);
+                doctorConsultations.insertLast(pair);
             }
         }
 
@@ -298,14 +296,14 @@ public class ConsultationControl {
      * @param date The date to search for
      * @return List of consultations on the specified date
      */
-    public List<Consultation> getConsultationsByDate(LocalDate date) {
-        List<Consultation> dateConsultations = new ArrayList<>();
+    public DoublyLinkedList<Pair<String, Consultation>> getConsultationsByDate(LocalDate date) {
+        DoublyLinkedList<Pair<String, Consultation>> dateConsultations = new DoublyLinkedList<>();
 
         for (Pair<String, Consultation> pair : consultationList) {
             Consultation consultation = pair.getValue();
             if (consultation.getConsultationDateTime() != null
                     && consultation.getConsultationDateTime().toLocalDate().equals(date)) {
-                dateConsultations.add(consultation);
+                dateConsultations.insertLast(pair);
             }
         }
 
@@ -317,11 +315,11 @@ public class ConsultationControl {
      *
      * @return List of all consultations
      */
-    public List<Consultation> getAllConsultations() {
-        List<Consultation> allConsultations = new ArrayList<>();
+    public DoublyLinkedList<Pair<String, Consultation>> getAllConsultations() {
+        DoublyLinkedList<Pair<String, Consultation>> allConsultations = new DoublyLinkedList<>();
 
         for (Pair<String, Consultation> pair : consultationList) {
-            allConsultations.add(pair.getValue());
+            allConsultations.insertLast(pair);
         }
 
         return allConsultations;
@@ -333,13 +331,13 @@ public class ConsultationControl {
      * @param status The status to filter by
      * @return List of consultations with the specified status
      */
-    public List<Consultation> getConsultationsByStatus(String status) {
-        List<Consultation> statusConsultations = new ArrayList<>();
+    public DoublyLinkedList<Pair<String, Consultation>> getConsultationsByStatus(String status) {
+        DoublyLinkedList<Pair<String, Consultation>> statusConsultations = new DoublyLinkedList<>();
 
         for (Pair<String, Consultation> pair : consultationList) {
             Consultation consultation = pair.getValue();
             if (consultation.getStatus().equals(status)) {
-                statusConsultations.add(consultation);
+                statusConsultations.insertLast(pair);
             }
         }
 
@@ -415,13 +413,13 @@ public class ConsultationControl {
      *
      * @return List of today's appointments
      */
-    public List<Appointment> getTodayAppointments() {
-        List<Appointment> todayAppointments = new ArrayList<>();
+    public DoublyLinkedList<Pair<String, Appointment>> getTodayAppointments() {
+        DoublyLinkedList<Pair<String, Appointment>> todayAppointments = new DoublyLinkedList<>();
 
         for (Pair<String, Appointment> pair : appointmentList) {
             Appointment appointment = pair.getValue();
             if (appointment.isToday()) {
-                todayAppointments.add(appointment);
+                todayAppointments.insertLast(pair);
             }
         }
 
@@ -433,13 +431,13 @@ public class ConsultationControl {
      *
      * @return List of upcoming appointments
      */
-    public List<Appointment> getUpcomingAppointments() {
-        List<Appointment> upcomingAppointments = new ArrayList<>();
+    public DoublyLinkedList<Pair<String, Appointment>> getUpcomingAppointments() {
+        DoublyLinkedList<Pair<String, Appointment>> upcomingAppointments = new DoublyLinkedList<>();
 
         for (Pair<String, Appointment> pair : appointmentList) {
             Appointment appointment = pair.getValue();
             if (appointment.isUpcoming()) {
-                upcomingAppointments.add(appointment);
+                upcomingAppointments.insertLast(pair);
             }
         }
 
@@ -452,14 +450,14 @@ public class ConsultationControl {
      * @param patientID The patient ID
      * @return List of appointments for the patient
      */
-    public List<Appointment> getAppointmentsByPatient(String patientID) {
-        List<Appointment> patientAppointments = new ArrayList<>();
+    public DoublyLinkedList<Pair<String, Appointment>> getAppointmentsByPatient(String patientID) {
+        DoublyLinkedList<Pair<String, Appointment>> patientAppointments = new DoublyLinkedList<>();
 
         for (Pair<String, Appointment> pair : appointmentList) {
             Appointment appointment = pair.getValue();
             if (appointment.getPatient() != null
                     && appointment.getPatient().getPatientID().equals(patientID)) {
-                patientAppointments.add(appointment);
+                patientAppointments.insertLast(pair);
             }
         }
 
@@ -472,14 +470,14 @@ public class ConsultationControl {
      * @param doctorID The doctor ID
      * @return List of appointments for the doctor
      */
-    public List<Appointment> getAppointmentsByDoctor(String doctorID) {
-        List<Appointment> doctorAppointments = new ArrayList<>();
+    public DoublyLinkedList<Pair<String, Appointment>> getAppointmentsByDoctor(String doctorID) {
+        DoublyLinkedList<Pair<String, Appointment>> doctorAppointments = new DoublyLinkedList<>();
 
         for (Pair<String, Appointment> pair : appointmentList) {
             Appointment appointment = pair.getValue();
             if (appointment.getDoctor() != null
                     && appointment.getDoctor().getDoctorID().equals(doctorID)) {
-                doctorAppointments.add(appointment);
+                doctorAppointments.insertLast(pair);
             }
         }
 
@@ -491,11 +489,11 @@ public class ConsultationControl {
      *
      * @return List of all appointments
      */
-    public List<Appointment> getAllAppointments() {
-        List<Appointment> allAppointments = new ArrayList<>();
+    public DoublyLinkedList<Pair<String, Appointment>> getAllAppointments() {
+        DoublyLinkedList<Pair<String, Appointment>> allAppointments = new DoublyLinkedList<>();
 
         for (Pair<String, Appointment> pair : appointmentList) {
-            allAppointments.add(pair.getValue());
+            allAppointments.insertLast(pair);
         }
 
         return allAppointments;
@@ -628,14 +626,14 @@ public class ConsultationControl {
      * @param patientID The patient ID
      * @return List of prescriptions for the patient
      */
-    public List<Prescription> getPrescriptionsByPatient(String patientID) {
-        List<Prescription> patientPrescriptions = new ArrayList<>();
+    public DoublyLinkedList<Pair<String, Prescription>> getPrescriptionsByPatient(String patientID) {
+        DoublyLinkedList<Pair<String, Prescription>> patientPrescriptions = new DoublyLinkedList<>();
 
         for (Pair<String, Prescription> pair : prescriptionList) {
             Prescription prescription = pair.getValue();
             if (prescription.getPatient() != null
                     && prescription.getPatient().getPatientID().equals(patientID)) {
-                patientPrescriptions.add(prescription);
+                patientPrescriptions.insertLast(pair);
             }
         }
 
@@ -648,14 +646,14 @@ public class ConsultationControl {
      * @param consultationID The consultation ID
      * @return List of prescriptions for the consultation
      */
-    public List<Prescription> getPrescriptionsByConsultation(String consultationID) {
-        List<Prescription> consultationPrescriptions = new ArrayList<>();
+    public DoublyLinkedList<Pair<String, Prescription>> getPrescriptionsByConsultation(String consultationID) {
+        DoublyLinkedList<Pair<String, Prescription>> consultationPrescriptions = new DoublyLinkedList<>();
 
         for (Pair<String, Prescription> pair : prescriptionList) {
             Prescription prescription = pair.getValue();
             if (prescription.getConsultation() != null
                     && prescription.getConsultation().getConsultationID().equals(consultationID)) {
-                consultationPrescriptions.add(prescription);
+                consultationPrescriptions.insertLast(pair);
             }
         }
 
@@ -911,19 +909,20 @@ public class ConsultationControl {
      *
      * @return List of all queue entries
      */
-    public List<QueueEntry> getAllQueueEntries() {
-        List<QueueEntry> allEntries = new ArrayList<>();
+    public DoublyLinkedList<Pair<String, QueueEntry>> getAllQueueEntries() {
+        DoublyLinkedList<Pair<String, QueueEntry>> allEntries = new DoublyLinkedList<>();
 
         try {
             // Try new format (Pair<String, QueueEntry>)
             for (Pair<String, QueueEntry> pair : queueList) {
-                allEntries.add(pair.getValue());
+                allEntries.insertLast(pair);
             }
         } catch (ClassCastException e) {
             // Handle old format (direct QueueEntry objects)
             for (Object obj : queueList) {
                 if (obj instanceof QueueEntry) {
-                    allEntries.add((QueueEntry) obj);
+                    QueueEntry entry = (QueueEntry) obj;
+                    allEntries.insertLast(new Pair<>(entry.getQueueNumber(), entry));
                 }
             }
         }

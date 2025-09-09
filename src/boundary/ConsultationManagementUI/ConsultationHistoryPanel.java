@@ -36,7 +36,7 @@ public class ConsultationHistoryPanel extends javax.swing.JPanel {
     private JTextField searchField;
     private JSpinner fromDateSpinner;
     private JSpinner toDateSpinner;
-    private List<Consultation> allConsultations;
+    private DoublyLinkedList<Pair<String, Consultation>> allConsultations;
     
     /**
      * Creates new form ConsultationHistoryPanel
@@ -300,20 +300,21 @@ public class ConsultationHistoryPanel extends javax.swing.JPanel {
         allConsultations = consultationControl.getAllConsultations();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         
-        for (Consultation consultation : allConsultations) {
+        for (Pair<String, Consultation> pair : allConsultations) {
+            Consultation consultation = pair.getValue();
             String date = consultation.getConsultationDateTime() != null ? 
                          consultation.getConsultationDateTime().format(fmt) : "-";
             
             model.addRow(new Object[]{
                 consultation.getConsultationID(),
-                consultation.getPatient() != null ? consultation.getPatient().getPatientName() : "N/A",
-                consultation.getDoctor() != null ? consultation.getDoctor().getName() : "N/A",
+                consultation.getPatient() != null ? consultation.getPatient().getPatientName() : "-",
+                consultation.getDoctor() != null ? consultation.getDoctor().getName() : "-",
                 date,
                 consultation.getConsultationType(),
                 consultation.getStatus(),
                 consultation.getSymptoms(),
-                consultation.getDiagnosis(),
-                consultation.getNotes()
+                consultation.getDiagnosis() != null ? consultation.getDiagnosis() : "-",
+                consultation.getNotes() != null ? consultation.getNotes() : "-"
             });
         }
     }
@@ -335,7 +336,8 @@ public class ConsultationHistoryPanel extends javax.swing.JPanel {
         
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         
-        for (Consultation consultation : allConsultations) {
+        for (Pair<String, Consultation> pair : allConsultations) {
+            Consultation consultation = pair.getValue();
             // Apply filters
             if (!matchesSearch(consultation, searchText)) continue;
             if (!matchesPatient(consultation, selectedPatient)) continue;
@@ -350,14 +352,14 @@ public class ConsultationHistoryPanel extends javax.swing.JPanel {
             
             model.addRow(new Object[]{
                 consultation.getConsultationID(),
-                consultation.getPatient() != null ? consultation.getPatient().getPatientName() : "N/A",
-                consultation.getDoctor() != null ? consultation.getDoctor().getName() : "N/A",
+                consultation.getPatient() != null ? consultation.getPatient().getPatientName() : "-",
+                consultation.getDoctor() != null ? consultation.getDoctor().getName() : "-",
                 date,
                 consultation.getConsultationType(),
                 consultation.getStatus(),
                 consultation.getSymptoms(),
-                consultation.getDiagnosis(),
-                consultation.getNotes()
+                consultation.getDiagnosis() != null ? consultation.getDiagnosis() : "-",
+                consultation.getNotes() != null ? consultation.getNotes() : "-"
             });
         }
         
